@@ -8,9 +8,11 @@ Negative cycle detection for weighed graphs.
 
 #include <cassert>
 #include <optional>
+#include <type_traits> // for is_same_v
 #include <unordered_map>
 #include <utility> // for pair
 #include <vector>
+#include <functional>
 
 /*!
  * @brief negative cycle
@@ -26,13 +28,21 @@ Negative cycle detection for weighed graphs.
  */
 template <typename DiGraph> //
 class NegCycleFinder {
-  using Node1 = decltype(std::declval<DiGraph>().begin()->first);
+  using Node1 = decltype((*std::declval<DiGraph>().begin()).first);
   using Node = std::remove_cv_t<std::remove_reference_t<Node1>>;
-  using Edge = std::pair<Node, Node>;
+  using Nbrs1 = decltype((*std::declval<DiGraph>().begin()).second);
+  using Nbrs = std::remove_cv_t<std::remove_reference_t<Nbrs1>>;
+  using Edge1 = decltype((*std::declval<Nbrs>().begin()).second);
+  using Edge = std::remove_cv_t<std::remove_reference_t<Edge1>>;
+  // using Cycle = std::vector<std::pair<Edge, std::pair<Node, Node>>>;
   using Cycle = std::vector<Edge>;
 
+  using Node2 = decltype((*std::declval<Nbrs>().begin()).first);
+  using NodeTo = std::remove_cv_t<std::remove_reference_t<Node2>>;
+  static_assert(std::is_same_v<Node, NodeTo>, "NodeFrom should be equal to NodeTo");
+
 private:
-  std::unordered_map<Node, Node> _pred;
+  std::unordered_map<Node, std::pair<Node, Edge>> _pred;
   const DiGraph &_digraph;
 
 public:
@@ -84,7 +94,7 @@ private:
         if (this->_pred.find(utx) == this->_pred.end()) { // not contains utx
           break;
         }
-        utx = this->_pred[utx];
+        utx = this->_pred[utx].first;
         if (visited.find(utx) != visited.end()) { // contains utx
           if (visited[utx] == vtx) {
             // should be "yield utx";
@@ -115,12 +125,10 @@ private:
   auto _relax(Mapping &&dist, Callable &&get_weight) -> bool {
     auto changed = false;
     for (const auto &[utx, nbrs] : this->_digraph) {
-      for (const auto &[vtx, edge_identifier] : nbrs) {
-        // Allow self-loop
-        const auto weight = get_weight(edge_identifier);
-        const auto distance = dist[utx] + weight;
+      for (const auto &[vtx, edge] : nbrs) {
+        const auto distance = dist[utx] + get_weight(edge);
         if (dist[vtx] > distance) {
-          this->_pred[vtx] = utx;
+          this->_pred[vtx] = std::make_pair(utx, edge);
           dist[vtx] = distance;
           changed = true;
         }
@@ -139,15 +147,15 @@ private:
     auto vtx = handle;
     auto cycle = Cycle{}; // TODO
     do {
-      const auto &utx = this->_pred[vtx];
-      cycle.push_back(Edge{utx, vtx});
+      const auto &[utx, edge] = this->_pred[vtx];
+      cycle.push_back(edge);
       vtx = utx;
     } while (vtx != handle);
     return cycle;
   }
 
   /*!
-   * @brief check if it is really a negative cycle
+   * @brief check if it is really a negative cycle???
    *
    * @tparam Mapping
    * @tparam Callable
@@ -162,9 +170,8 @@ private:
                     Callable &&get_weight) const -> bool {
     auto vtx = handle;
     do {
-      const auto utx = this->_pred.at(vtx);
-      const auto weight = get_weight(Edge{utx, vtx}); // TODO
-      if (dist.at(vtx) > dist.at(utx) + weight) {
+      const auto& [utx, edge] = this->_pred.at(vtx);
+      if (dist.at(vtx) > dist.at(utx) + get_weight(edge)) {
         return true;
       }
       vtx = utx;

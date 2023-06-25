@@ -24,7 +24,14 @@ CPMAddPackage(
 # -stdlib=libc++) elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC") # using Visual Studio C++
 # add_compile_options(/std:c++latest /await) endif()
 
+CPMAddPackage(
+  NAME Py2Cpp
+  GIT_TAG 1.4.6
+  GITHUB_REPOSITORY luk036/py2cpp
+  OPTIONS "INSTALL_ONLY YES" # create an installable target
+)
+
 set(SPECIFIC_LIBS
     # cppcoro::cppcoro
-    Threads::Threads fmt::fmt
+    Threads::Threads Py2Cpp::Py2Cpp fmt::fmt
 )
