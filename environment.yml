@@ -1,0 +1,7 @@
+name: primal-dual-approx-py
+channels:
+  - conda-forge
+dependencies:
+  - pytest
+  - pytest-benchmark
+  - networkx
