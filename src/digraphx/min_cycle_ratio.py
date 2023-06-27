@@ -1,12 +1,9 @@
 from fractions import Fraction
 from typing import Generic, List, Mapping, MutableMapping, Tuple, TypeVar
-
+from .neg_cycle import Node, Edge, Domain, Cycle
 from .parametric import MaxParametricSolver, ParametricAPI
 
-Domain = TypeVar("Domain", int, float, Fraction)  # Comparable Ring
 Ratio = TypeVar("Ratio", float, Fraction)  # Comparable field
-Node = TypeVar("Node")
-Cycle = List[Tuple[Node, Node]]
 Graph = Mapping[Node, Mapping[Node, Mapping[str, Domain]]]
 GraphMut = MutableMapping[Node, MutableMapping[Node, MutableMapping[str, Domain]]]
 
@@ -25,7 +22,7 @@ def set_default(gra: GraphMut, weight: str, value: Domain) -> None:
                 gra[u][v][weight] = value
 
 
-class CycleRatioAPI(ParametricAPI[Node, Ratio]):
+class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
     def __init__(self, gra: GraphMut, K: type) -> None:
         """_summary_
 
@@ -36,7 +33,7 @@ class CycleRatioAPI(ParametricAPI[Node, Ratio]):
         self.gra = gra
         self.K = K
 
-    def distance(self, ratio: Ratio, e: Tuple[Node, Node]) -> Ratio:
+    def distance(self, ratio: Ratio, edge: MutableMapping[str, Domain]) -> Ratio:
         """[summary]
 
         Arguments:
@@ -46,8 +43,7 @@ class CycleRatioAPI(ParametricAPI[Node, Ratio]):
         Returns:
             [type]: [description]
         """
-        u, v = e
-        return self.gra[u][v]["cost"] - ratio * self.gra[u][v]["time"]
+        return self.K(edge["cost"]) - ratio * edge["time"]
 
     def zero_cancel(self, cycle: Cycle) -> Ratio:
         """Calculate the ratio of the cycle
@@ -58,12 +54,12 @@ class CycleRatioAPI(ParametricAPI[Node, Ratio]):
         Returns:
             Ratio: _description_
         """
-        total_cost = sum(self.gra[u][v]["cost"] for (u, v) in cycle)
-        total_time = sum(self.gra[u][v]["time"] for (u, v) in cycle)
+        total_cost = sum(edge["cost"] for edge in cycle)
+        total_time = sum(edge["time"] for edge in cycle)
         return self.K(total_cost) / total_time
 
 
-class MinCycleRatioSolver(Generic[Node, Ratio]):
+class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
     """Minimum cost-to-time ratio problem:
 
     Given: G(Node, E)
@@ -82,7 +78,7 @@ class MinCycleRatioSolver(Generic[Node, Ratio]):
         """
         self.gra = gra
 
-    def run(self, dist: MutableMapping[Node, Ratio], r0: Ratio) -> Tuple[Ratio, Cycle]:
+    def run(self, dist: MutableMapping[Node, Domain], r0: Ratio) -> Tuple[Ratio, Cycle]:
         """_summary_
 
         Args:

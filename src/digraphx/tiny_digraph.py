@@ -3,9 +3,12 @@ from .lict import Lict
 
 
 # NUM_NODES = 1000
+class DiGraphAdapter(nx.DiGraph):
+    def items(self):
+        return self.adjacency()
 
 
-class TinyDiGraph(nx.DiGraph):
+class TinyDiGraph(DiGraphAdapter):
     num_nodes = 0
 
     def cheat_node_dict(self):

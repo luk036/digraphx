@@ -9,9 +9,9 @@ from typing import MutableMapping, Mapping, TypeVar, Generic, Any
 from fractions import Fraction
 
 Node = TypeVar("Node")  # Hashable
-Edge = TypeVar("Edge") # Hashable
+Edge = TypeVar("Edge")  # Hashable
 Domain = TypeVar("Domain", int, float, Fraction)  # Comparable Ring
-Cycle = List[Edge] # List of Edges
+Cycle = List[Edge]  # List of Edges
 
 
 class NegCycleFinder(Generic[Node, Edge, Domain]):
@@ -47,7 +47,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
     def relax(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Edge], Domain],
+        get_weight: Callable[[Edge], Any],
     ) -> bool:
         """Perform a updating of dist and pred
 
@@ -61,8 +61,8 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         changed = False
         for utx, nbrs in self.digraph.items():
             for vtx, edge in nbrs.items():
-                weight = get_weight(edge)
-                distance = dist[utx] + weight
+                D = type(dist[utx]) # D could be integer
+                distance = dist[utx] + D(get_weight(edge))
                 if dist[vtx] > distance:
                     dist[vtx] = distance
                     self.pred[vtx] = (utx, edge)
@@ -72,7 +72,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
     def howard(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Edge], Domain],
+        get_weight: Callable[[Edge], Any],
     ) -> Generator[Cycle, None, None]:
         """_summary_
 
@@ -115,7 +115,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         self,
         handle: Node,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Edge], Domain],
+        get_weight: Callable[[Edge], Any],
     ) -> bool:
         """Check if the cycle list is negative
 
@@ -128,11 +128,12 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             bool: _description_
         """
         vtx = handle
+        D = type(dist[vtx])
+
         # do while loop in C++
         while True:
             utx, edge = self.pred[vtx]
-            weight = get_weight(edge)
-            if dist[vtx] > dist[utx] + weight:
+            if dist[vtx] > dist[utx] + D(get_weight(edge)):
                 return True
             vtx = utx
             if vtx == handle:

@@ -3,6 +3,10 @@ from typing import Iterator, TypeVar, List
 
 T = TypeVar("T")
 
+"""
+List to Dict Adapter
+"""
+
 
 class Lict(MutableMapping[int, T]):
     def __init__(self, lst: List[T]) -> None:

@@ -1,24 +1,21 @@
 # -*- coding: utf-8 -*-
 from abc import abstractmethod
-from .neg_cycle import NegCycleFinder
-from typing import Tuple, List, Any
+from .neg_cycle import NegCycleFinder, Node, Edge, Domain, Cycle
+from typing import Tuple, List
 from typing import MutableMapping, Mapping, TypeVar, Generic
 from fractions import Fraction
 
-
 Ratio = TypeVar("Ratio", float, Fraction)  # Comparable field
-Node = TypeVar("Node")
-Cycle = List[Tuple[Node, Node]]
 
 
-class ParametricAPI(Generic[Node, Ratio]):
+class ParametricAPI(Generic[Node, Edge, Ratio]):
     @abstractmethod
-    def distance(self, ratio: Ratio, edge: Tuple[Node, Node]) -> Ratio:
+    def distance(self, ratio: Ratio, edge: Edge) -> Ratio:
         """_summary_
 
         Args:
             ratio (Ratio): _description_
-            edge (Tuple[Node, Node]): _description_
+            edge (Edge): _description_
 
         Returns:
             Ratio: _description_
@@ -26,7 +23,7 @@ class ParametricAPI(Generic[Node, Ratio]):
         pass
 
     @abstractmethod
-    def zero_cancel(self, cycle: List[Tuple[Node, Node]]) -> Ratio:
+    def zero_cancel(self, cycle: Cycle) -> Ratio:
         """_summary_
 
         Args:
@@ -38,7 +35,7 @@ class ParametricAPI(Generic[Node, Ratio]):
         pass
 
 
-class MaxParametricSolver(Generic[Node, Ratio]):
+class MaxParametricSolver(Generic[Node, Edge, Ratio]):
     """Maximum parametric problem:
 
     Solve:
@@ -48,7 +45,9 @@ class MaxParametricSolver(Generic[Node, Ratio]):
     """
 
     def __init__(
-        self, gra: Mapping[Node, Mapping[Node, Any]], omega: ParametricAPI[Node, Ratio]
+        self,
+        gra: Mapping[Node, Mapping[Node, Edge]],
+        omega: ParametricAPI[Node, Edge, Ratio],
     ) -> None:
         """initialize
 
@@ -57,10 +56,10 @@ class MaxParametricSolver(Generic[Node, Ratio]):
             omega (ParametricAPI): _description_
         """
         self.ncf = NegCycleFinder(gra)
-        self.omega: ParametricAPI[Node, Ratio] = omega
+        self.omega: ParametricAPI[Node, Edge, Ratio] = omega
 
     def run(
-        self, dist: MutableMapping[Node, Ratio], ratio: Ratio
+        self, dist: MutableMapping[Node, Domain], ratio: Ratio
     ) -> Tuple[Ratio, Cycle]:
         """run
 
