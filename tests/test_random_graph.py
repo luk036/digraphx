@@ -1,7 +1,7 @@
 import networkx as nx
 import numpy as np
 
-from netoptim.min_cycle_ratio import MinCycleRatioSolver
+from digraphx.min_cycle_ratio import MinCycleRatioSolver
 
 
 def vdc(n, base=2):

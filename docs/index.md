@@ -1,4 +1,4 @@
-# netoptim
+# digraphx
 
 Network Optimization Python Code
 

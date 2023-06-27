@@ -3,10 +3,10 @@ from __future__ import print_function
 
 from fractions import Fraction
 
-from netoptim.lict import Lict
+from digraphx.lict import Lict
 
 # from networkx.utils import generate_unique_node
-from netoptim.min_cycle_ratio import MinCycleRatioSolver, set_default
+from digraphx.min_cycle_ratio import MinCycleRatioSolver, set_default
 
 from .test_neg_cycle import (
     create_test_case1,

@@ -1,5 +1,5 @@
 """
-    Setup file for netoptim.
+    Setup file for digraphx.
     Use setup.cfg to configure your project.
 
     This file was generated with PyScaffold 4.3.1.

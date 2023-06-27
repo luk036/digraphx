@@ -1,8 +1,8 @@
 ========
-netoptim
+digraphx
 ========
 
-This is the documentation of **netoptim**.
+This is the documentation of **digraphx**.
 
 .. note::
 

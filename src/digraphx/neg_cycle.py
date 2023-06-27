@@ -9,18 +9,19 @@ from typing import MutableMapping, Mapping, TypeVar, Generic, Any
 from fractions import Fraction
 
 Node = TypeVar("Node")  # Hashable
+Edge = TypeVar("Edge") # Hashable
 Domain = TypeVar("Domain", int, float, Fraction)  # Comparable Ring
-Cycle = List[Tuple[Node, Node]]
+Cycle = List[Edge] # List of Edges
 
 
-class NegCycleFinder(Generic[Node, Domain]):
-    pred: Dict[Node, Node] = {}
+class NegCycleFinder(Generic[Node, Edge, Domain]):
+    pred: Dict[Node, Tuple[Node, Edge]] = {}
 
-    def __init__(self, gra: Mapping[Node, Mapping[Node, Any]]) -> None:
+    def __init__(self, gra: Mapping[Node, Mapping[Node, Edge]]) -> None:
         """_summary_
 
         Args:
-            gra (Mapping[Node, Mapping[Node, Any]]): adjacent list
+            gra (Mapping[Node, Mapping[Node, Edge]]): adjacent list
         """
         self.digraph = gra
 
@@ -37,7 +38,7 @@ class NegCycleFinder(Generic[Node, Domain]):
                 visited[utx] = vtx
                 if utx not in self.pred:
                     break
-                utx = self.pred[utx]
+                utx, _ = self.pred[utx]
                 if utx in visited:
                     if visited[utx] == vtx:
                         yield utx
@@ -46,7 +47,7 @@ class NegCycleFinder(Generic[Node, Domain]):
     def relax(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Tuple[Node, Node]], Domain],
+        get_weight: Callable[[Edge], Domain],
     ) -> bool:
         """Perform a updating of dist and pred
 
@@ -58,20 +59,20 @@ class NegCycleFinder(Generic[Node, Domain]):
             bool: _description_
         """
         changed = False
-        for utx in self.digraph:
-            for vtx in self.digraph[utx]:
-                weight = get_weight((utx, vtx))
+        for utx, nbrs in self.digraph.items():
+            for vtx, edge in nbrs.items():
+                weight = get_weight(edge)
                 distance = dist[utx] + weight
                 if dist[vtx] > distance:
                     dist[vtx] = distance
-                    self.pred[vtx] = utx
+                    self.pred[vtx] = (utx, edge)
                     changed = True
         return changed
 
     def howard(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Tuple[Node, Node]], Domain],
+        get_weight: Callable[[Edge], Domain],
     ) -> Generator[Cycle, None, None]:
         """_summary_
 
@@ -103,8 +104,8 @@ class NegCycleFinder(Generic[Node, Domain]):
         vtx = handle
         cycle = list()
         while True:
-            utx = self.pred[vtx]
-            cycle.append((utx, vtx))
+            utx, edge = self.pred[vtx]
+            cycle.append(edge)
             vtx = utx
             if vtx == handle:
                 break
@@ -114,7 +115,7 @@ class NegCycleFinder(Generic[Node, Domain]):
         self,
         handle: Node,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Tuple[Node, Node]], Domain],
+        get_weight: Callable[[Edge], Domain],
     ) -> bool:
         """Check if the cycle list is negative
 
@@ -129,8 +130,8 @@ class NegCycleFinder(Generic[Node, Domain]):
         vtx = handle
         # do while loop in C++
         while True:
-            utx = self.pred[vtx]
-            weight = get_weight((utx, vtx))
+            utx, edge = self.pred[vtx]
+            weight = get_weight(edge)
             if dist[vtx] > dist[utx] + weight:
                 return True
             vtx = utx

@@ -34,7 +34,7 @@ except ImportError:
     from sphinx import apidoc
 
 output_dir = os.path.join(__location__, "api")
-module_dir = os.path.join(__location__, "../src/netoptim")
+module_dir = os.path.join(__location__, "../src/digraphx")
 try:
     shutil.rmtree(output_dir)
 except FileNotFoundError:
@@ -105,7 +105,7 @@ source_suffix = [".rst", ".md"]
 master_doc = "index"
 
 # General information about the project.
-project = "netoptim"
+project = "digraphx"
 copyright = "2022, Wai-Shing Luk"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -117,7 +117,7 @@ copyright = "2022, Wai-Shing Luk"
 # If you don’t need the separation provided between version and release,
 # just set them both to the same value.
 try:
-    from netoptim import __version__ as version
+    from digraphx import __version__ as version
 except ImportError:
     version = ""
 
@@ -244,7 +244,7 @@ html_static_path = ["_static"]
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "netoptim-doc"
+htmlhelp_basename = "digraphx-doc"
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -261,7 +261,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ("index", "user_guide.tex", "netoptim Documentation", "Wai-Shing Luk", "manual")
+    ("index", "user_guide.tex", "digraphx Documentation", "Wai-Shing Luk", "manual")
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

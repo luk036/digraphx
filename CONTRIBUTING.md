@@ -28,7 +28,7 @@
 
 # Contributing
 
-Welcome to `netoptim` contributor's guide.
+Welcome to `digraphx` contributor's guide.
 
 This document focuses on getting any potential contributor familiarized with
 the development processes, but [other kinds of contributions] are also appreciated.
@@ -44,7 +44,7 @@ behavior guidelines.
 
 ## Issue Reports
 
-If you experience bugs or general issues with `netoptim`, please have a look
+If you experience bugs or general issues with `digraphx`, please have a look
 on the [issue tracker].
 If you don't see anything useful there, please feel free to fire an issue report.
 
@@ -62,10 +62,10 @@ you help us to identify the root cause of the issue.
 
 ## Documentation Improvements
 
-You can help improve `netoptim` docs by making them more readable and coherent, or
+You can help improve `digraphx` docs by making them more readable and coherent, or
 by adding missing information and correcting mistakes.
 
-`netoptim` documentation uses [Sphinx] as its main documentation compiler.
+`digraphx` documentation uses [Sphinx] as its main documentation compiler.
 This means that the docs are kept in the same repository as the project code, and
 that any documentation update is done in the same way was a code contribution.
 
@@ -78,7 +78,7 @@ that any documentation update is done in the same way was a code contribution.
 
    :::{tip}
       Please notice that the [GitHub web interface] provides a quick way of
-      propose changes in `netoptim`'s files. While this mechanism can
+      propose changes in `digraphx`'s files. While this mechanism can
       be tricky for normal code contributions, it works perfectly fine for
       contributing to the docs, and can be quite handy.
 
@@ -135,8 +135,8 @@ source <PATH TO VENV>/bin/activate
 or [Miniconda]:
 
 ```
-conda create -n netoptim python=3 six virtualenv pytest pytest-cov
-conda activate netoptim
+conda create -n digraphx python=3 six virtualenv pytest pytest-cov
+conda activate digraphx
 ```
 
 ### Clone the repository
@@ -149,8 +149,8 @@ conda activate netoptim
 3. Clone this copy to your local disk:
 
    ```
-   git clone git@github.com:YourLogin/netoptim.git
-   cd netoptim
+   git clone git@github.com:YourLogin/digraphx.git
+   cd digraphx
    ```
 
 4. You should run:
@@ -172,7 +172,7 @@ conda activate netoptim
    pre-commit install
    ```
 
-   `netoptim` comes with a lot of hooks configured to automatically help the
+   `digraphx` comes with a lot of hooks configured to automatically help the
    developer to check the code being written.
 
 ### Implement your changes
@@ -317,7 +317,7 @@ package:
 
 If you are part of the group of maintainers and have correct user permissions
 on [PyPI], the following steps can be used to release a new version for
-`netoptim`:
+`digraphx`:
 
 1. Make sure all unit tests are successful.
 2. Tag the current commit on the main branch with a release tag, e.g., `v1.2.3`.
@@ -370,5 +370,5 @@ on [PyPI], the following steps can be used to release a new version for
 
 ```
 
-[repository]: https://github.com/<USERNAME>/netoptim
-[issue tracker]: https://github.com/<USERNAME>/netoptim/issues
+[repository]: https://github.com/<USERNAME>/digraphx
+[issue tracker]: https://github.com/<USERNAME>/digraphx/issues

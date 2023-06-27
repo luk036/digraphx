@@ -6,7 +6,7 @@ import numpy as np
 from ellalgo.cutting_plane import cutting_plane_optim
 from ellalgo.ell import Ell
 
-from netoptim.optscaling_oracle import OptScalingOracle
+from digraphx.optscaling_oracle import OptScalingOracle
 
 
 def vdc(n, base=2):

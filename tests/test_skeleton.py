@@ -1,6 +1,6 @@
 import pytest
 
-from netoptim.skeleton import fib, main
+from digraphx.skeleton import fib, main
 
 __author__ = "Wai-Shing Luk"
 __copyright__ = "Wai-Shing Luk"
