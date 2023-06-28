@@ -2,7 +2,6 @@ import networkx as nx
 from .lict import Lict
 
 
-# NUM_NODES = 1000
 class DiGraphAdapter(nx.DiGraph):
     def items(self):
         return self.adjacency()

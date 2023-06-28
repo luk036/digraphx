@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 from abc import abstractmethod
 from .neg_cycle import NegCycleFinder, Node, Edge, Domain, Cycle
 from typing import Tuple
 from typing import MutableMapping, Mapping, TypeVar, Generic
 from fractions import Fraction
 
-Ratio = TypeVar("Ratio", float, Fraction)  # Comparable field
+Ratio = TypeVar("Ratio", Fraction, float)  # Comparable field
 
 
 class ParametricAPI(Generic[Node, Edge, Ratio]):
@@ -52,7 +51,7 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
         """initialize
 
         Args:
-            gra (Mapping[Node, Mapping[Node, Any]]): _description_
+            gra (Mapping[Node, Mapping[Node, Edge]]): _description_
             omega (ParametricAPI): _description_
         """
         self.ncf = NegCycleFinder(gra)
@@ -70,12 +69,17 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
         Returns:
             Tuple[Ratio, Cycle]: _description_
         """
+        D = type(next(iter(dist.values())))
+
+        def get_weight(e: Edge) -> Domain:
+            return D(self.omega.distance(ratio, e))
+
         r_min = ratio
         c_min = []
         cycle = []
 
         while True:
-            for ci in self.ncf.howard(dist, lambda e: self.omega.distance(ratio, e)):
+            for ci in self.ncf.howard(dist, get_weight):
                 ri = self.omega.zero_cancel(ci)
                 if r_min > ri:
                     r_min = ri

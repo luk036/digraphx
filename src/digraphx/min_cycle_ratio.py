@@ -3,7 +3,7 @@ from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar
 from .neg_cycle import Node, Edge, Domain, Cycle
 from .parametric import MaxParametricSolver, ParametricAPI
 
-Ratio = TypeVar("Ratio", float, Fraction)  # Comparable field
+Ratio = TypeVar("Ratio", Fraction, float)  # Comparable field
 Graph = Mapping[Node, Mapping[Node, Mapping[str, Domain]]]
 GraphMut = MutableMapping[Node, MutableMapping[Node, MutableMapping[str, Domain]]]
 
@@ -23,14 +23,16 @@ def set_default(gra: GraphMut, weight: str, value: Domain) -> None:
 
 
 class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
-    def __init__(self, gra: Graph, K: type) -> None:
+    def __init__(
+        self, gra: Mapping[Node, Mapping[Node, Mapping[str, Domain]]], K: type
+    ) -> None:
         """_summary_
 
         Args:
-            gra (Mapping[Node, Mapping[Node, Any]]): _description_
-            T (type): _description_
+            gra (Mapping[Node, Mapping[Node, Mapping[str, Domain]]]): _description_
+            K (type): _description_
         """
-        self.gra = gra
+        self.gra: Mapping[Node, Mapping[Node, Mapping[str, Domain]]] = gra
         self.K = K
 
     def distance(self, ratio: Ratio, edge: MutableMapping[str, Domain]) -> Ratio:
