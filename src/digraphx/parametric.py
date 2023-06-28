@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from abc import abstractmethod
 from .neg_cycle import NegCycleFinder, Node, Edge, Domain, Cycle
-from typing import Tuple, List
+from typing import Tuple
 from typing import MutableMapping, Mapping, TypeVar, Generic
 from fractions import Fraction
 

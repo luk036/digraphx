@@ -6,6 +6,7 @@ from fractions import Fraction
 from digraphx.lict import Lict
 
 # from networkx.utils import generate_unique_node
+# from digraphx.tiny_digraph import DiGraphAdapter
 from digraphx.min_cycle_ratio import MinCycleRatioSolver, set_default
 
 from .test_neg_cycle import (
@@ -23,7 +24,7 @@ def test_cycle_ratio_raw():
         "a1": {"a0": {"cost": 0, "time": 1}, "a2": {"cost": 3, "time": 1}},
         "a2": {"a1": {"cost": 1, "time": 1}, "a0": {"cost": 2, "time": 1}},
     }
-    dist = {vtx: Fraction(0, 1) for vtx in gra}
+    dist = {vtx: 0 for vtx in gra}
     solver = MinCycleRatioSolver(gra)
     ratio, cycle = solver.run(dist, Fraction(10000, 1))
     print(ratio)
@@ -37,7 +38,8 @@ def test_cycle_ratio():
     set_default(gra, "time", 1)
     set_default(gra, "cost", 1)
     gra[1][2]["cost"] = 5
-    dist = list(Fraction(0, 1) for _ in gra)
+    # dist = list(0 for _ in gra)
+    dist = {vtx: 0 for vtx in gra}
     solver = MinCycleRatioSolver(gra)
     ratio, cycle = solver.run(dist, Fraction(10000, 1))
     print(ratio)
@@ -75,7 +77,7 @@ def test_cycle_ratio_tiny_graph():
     gra[2][0]["cost"] = 2
     gra[0][2]["cost"] = 4
     # make sure no parallel edges in above!!!
-    dist = Lict([Fraction(0, 1) for _ in range(3)])
+    dist = Lict([0 for _ in range(3)])
     solver = MinCycleRatioSolver(gra)
     ratio, cycle = solver.run(dist, Fraction(10000, 1))
     print(ratio)

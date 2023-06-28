@@ -1,5 +1,5 @@
 from fractions import Fraction
-from typing import Generic, List, Mapping, MutableMapping, Tuple, TypeVar
+from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar
 from .neg_cycle import Node, Edge, Domain, Cycle
 from .parametric import MaxParametricSolver, ParametricAPI
 
@@ -16,14 +16,14 @@ def set_default(gra: GraphMut, weight: str, value: Domain) -> None:
         weight (str): _description_
         value (Any): _description_
     """
-    for u in gra:
-        for v in gra[u]:
-            if gra[u][v].get(weight, None) is None:
-                gra[u][v][weight] = value
+    for _, nbrs in gra.items():
+        for _, e in nbrs.items():
+            if e.get(weight, None) is None:
+                e[weight] = value
 
 
 class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
-    def __init__(self, gra: GraphMut, K: type) -> None:
+    def __init__(self, gra: Graph, K: type) -> None:
         """_summary_
 
         Args:
@@ -76,7 +76,7 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
         Args:
             gra (Mapping[Node, Mapping[Node, Any]]): _description_
         """
-        self.gra = gra
+        self.gra: Graph = gra
 
     def run(self, dist: MutableMapping[Node, Domain], r0: Ratio) -> Tuple[Ratio, Cycle]:
         """_summary_

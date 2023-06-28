@@ -53,7 +53,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
 
         Args:
             dist (MutableMapping[Node, Domain]): _description_
-            get_weight (Callable[[Tuple[Node, Node]], Domain]): _description_
+            get_weight (Callable[[Tuple[Node, Node]], Any]): _description_
 
         Returns:
             bool: _description_
@@ -78,7 +78,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
 
         Args:
             dist (MutableMapping[Node, Domain]): _description_
-            get_weight (Callable[[Tuple[Node, Node]], Domain]): _description_
+            get_weight (Callable[[Edge], Any]): _description_
 
         Yields:
             Generator[Cycle, None, None]: cycle list
@@ -122,7 +122,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         Args:
             handle (Node): _description_
             dist (MutableMapping[Node, Any]): _description_
-            get_weight (Callable[[Tuple[Node, Node]], Any]): _description_
+            get_weight (Callable[[Edge], Any]): _description_
 
         Returns:
             bool: _description_
