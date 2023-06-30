@@ -1,7 +1,7 @@
 """
-Negative cycle detection for weighed graphs.
+Negative cycle detection for directed graphs.
 1. Based on Howard's policy graph algorithm
-2. Looking for more than one negative cycles
+2. Looking for more than one negative cycle
 """
 from typing import Dict, Callable, Generator, Tuple, List
 from typing import MutableMapping, Mapping, TypeVar, Generic
@@ -20,7 +20,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         """_summary_
 
         Args:
-            gra (Mapping[Node, Mapping[Node, Edge]]): adjacent list
+            gra (Mapping[Node, Mapping[Node, Edge]]): adjacency list
         """
         self.digraph = gra
 
@@ -28,7 +28,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         """Find a cycle on the policy graph
 
         Yields:
-            Generator[Node, None, None]: node: a start node of the cycle
+            Generator[Node, None, None]: a start node of the cycle
         """
         visited: Dict[Node, Node] = {}
         for vtx in filter(lambda vtx: vtx not in visited, self.digraph):
@@ -52,7 +52,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
 
         Args:
             dist (MutableMapping[Node, Domain]): _description_
-            get_weight (Callable[[Tuple[Node, Node]], Domain]): _description_
+            get_weight (Callable[[Edge], Domain]): _description_
 
         Returns:
             bool: _description_
