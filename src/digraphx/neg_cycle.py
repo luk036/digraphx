@@ -14,6 +14,19 @@ Cycle = List[Edge]  # List of Edges
 
 
 class NegCycleFinder(Generic[Node, Edge, Domain]):
+    """Negative Cycle Finder by Howard's method
+   
+    Howard's method is a minimum cycle ratio (MCR) algorithm that uses a policy
+    iteration algorithm to find the minimum cycle ratio of a directed graph. The
+    algorithm maintains a set of candidate cycles and iteratively updates the
+    cycle with the minimum ratio until convergence. To detect negative cycles,
+    Howard's method uses a cycle detection algorithm that is based on the
+    Bellman-Ford relaxation algorithm. Specifically, the algorithm maintains a
+    predecessor graph of the original graph and performs cycle detection on this
+    graph using the Bellman-Ford relaxation algorithm. If a negative cycle is
+    detected, the algorithm terminates and returns the cycle.
+    """
+
     pred: Dict[Node, Tuple[Node, Edge]] = {}
 
     def __init__(self, gra: Mapping[Node, Mapping[Node, Edge]]) -> None:

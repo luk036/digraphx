@@ -35,12 +35,17 @@ class ParametricAPI(Generic[Node, Edge, Ratio]):
 
 
 class MaxParametricSolver(Generic[Node, Edge, Ratio]):
-    """Maximum parametric problem:
+    """Maximum Parametric Solver
 
-    Solve:
-        max  ratio
-        s.t. dist[v] - dist[u] <= distance(u, v, ratio)
-             for all (u, v) in gra
+    This class solves the following parametric network problem:
+
+        max  r
+        s.t. dist[v] - dist[u] <= distrance(e, r)
+             forall e(u, v) in G(V, E)
+
+    A parametric network problem refers to a type of optimization problem that
+    involves finding the optimal solution to a network flow problem as a function
+    of one single parameter.
     """
 
     def __init__(

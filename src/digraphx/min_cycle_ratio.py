@@ -62,14 +62,26 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
 
 
 class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
-    """Minimum cost-to-time ratio problem:
+    """Minimum Cycle Ratio Solver
 
-    Given: G(Node, E)
+    This class solves the following parametric network problem:
 
-    Solve:
-        max  ratio
+        max  r
         s.t. dist[v] - dist[u] <= cost(u, v) - ratio * time(u, v)
              for all (u, v) in E
+
+    The minimum cycle ratio (MCR) problem is a fundamental problem in the
+    analysis of directed graphs. Given a directed graph, the MCR problem seeks to
+    find the cycle with the minimum ratio of the sum of edge weights to the
+    number of edges in the cycle. In other words, the MCR problem seeks to find
+    the "tightest" cycle in the graph, where the tightness of a cycle is measured
+    by the ratio of the total weight of the cycle to its length.
+
+    The MCR problem has many applications in the analysis of discrete event
+    systems, such as digital circuits and communication networks. It is closely
+    related to other problems in graph theory, such as the shortest path problem
+    and the maximum flow problem. Efficient algorithms for solving the MCR
+    problem are therefore of great practical importance.
     """
 
     def __init__(self, gra: Graph) -> None:
