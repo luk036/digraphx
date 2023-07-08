@@ -61,7 +61,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
                 assert self.is_negative(vtx, dist, get_weight)
                 yield self.cycle_list(vtx)
             else:
-                break; 
+                break
 
     def cycle_list(self, handle: Node) -> Cycle:
         vtx = handle
@@ -90,6 +90,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             if vtx == handle:
                 break
         return False
+
 
 Ratio = TypeVar("Ratio", Fraction, float)  # Comparable field
 
@@ -255,4 +256,3 @@ def test_timing_graph():
     dist = {vtx: 0 for vtx in gra}
     has_neg = do_case(gra, dist)
     assert not has_neg
-

@@ -15,7 +15,7 @@ Cycle = List[Edge]  # List of Edges
 
 class NegCycleFinder(Generic[Node, Edge, Domain]):
     """Negative Cycle Finder by Howard's method
-   
+
     Howard's method is a minimum cycle ratio (MCR) algorithm that uses a policy
     iteration algorithm to find the minimum cycle ratio of a directed graph. The
     algorithm maintains a set of candidate cycles and iteratively updates the
