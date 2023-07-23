@@ -34,7 +34,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
     def __init__(self, gra: Mapping[Node, Mapping[Node, Edge]]) -> None:
         """
         The function initializes a graph object with an adjacency list.
-        
+
         :param gra: The parameter `gra` is a mapping that represents an adjacency list. It is a
         dictionary-like object where the keys are nodes and the values are mappings of nodes to edges. Each
         edge represents a connection between two nodes in a directed graph
@@ -71,7 +71,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         """
         The `relax` function updates the `dist` and `pred` dictionaries based on the current distances and
         weights of edges in a graph.
-        
+
         :param dist: `dist` is a mutable mapping that represents the current distances from a source node to
         all other nodes in a graph. It is a mapping from nodes to their corresponding distances
         :type dist: MutableMapping[Node, Domain]
@@ -99,7 +99,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
     ) -> Generator[Cycle, None, None]:
         """
         The `howard` function finds negative cycles in a graph and yields a list of cycles.
-        
+
         :param dist: `dist` is a mutable mapping that maps each node in the graph to a domain value. The
         domain value represents the distance or cost from the source node to that particular node
         :type dist: MutableMapping[Node, Domain]
@@ -120,7 +120,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         """
         The `cycle_list` function returns a list of edges that form a cycle in a graph, starting from a
         given node.
-        
+
         :param handle: The `handle` parameter is a reference to a node in a graph. It represents the
         starting point of the cycle in the list
         :type handle: Node
@@ -145,7 +145,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         """
         The `is_negative` function checks if a cycle list is negative by comparing the distances between
         nodes and the weights of the edges.
-        
+
         :param handle: The `handle` parameter is a `Node` object that represents a vertex in a graph. It is
         used as a starting point to check for negative cycles in the graph
         :type handle: Node

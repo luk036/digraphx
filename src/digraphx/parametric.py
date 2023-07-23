@@ -14,7 +14,7 @@ class ParametricAPI(Generic[Node, Edge, Ratio]):
     def distance(self, ratio: Ratio, edge: Edge) -> Ratio:
         """
         The `distance` function calculates the distance between a given ratio and edge.
-        
+
         :param ratio: The `ratio` parameter is of type `Ratio`. It represents a ratio or proportion
         :type ratio: Ratio
         :param edge: The `edge` parameter represents an edge in a graph. It is of type `Edge`

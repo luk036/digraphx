@@ -11,7 +11,7 @@ GraphMut = MutableMapping[Node, MutableMapping[Node, MutableMapping[str, Domain]
 def set_default(gra: GraphMut, weight: str, value: Domain) -> None:
     """
     This function sets a default value for a specified weight in a graph.
-    
+
     :param gra: The parameter `gra` is of type `GraphMut`, which is likely a mutable graph data
     structure. It represents a graph where each node has a dictionary of neighbors and their
     corresponding edge attributes
@@ -38,7 +38,7 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
         """
         This function initializes an object with two parameters, `gra` and `K`, and assigns them to instance
         variables.
-        
+
         :param gra: A mapping of nodes to a mapping of nodes to a mapping of strings to domains. It
         represents a graph structure where each node is connected to other nodes through edges, and each
         edge has associated attributes represented by strings and domains
@@ -53,7 +53,7 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
     def distance(self, ratio: Ratio, edge: MutableMapping[str, Domain]) -> Ratio:
         """
         The function calculates the distance based on the ratio and edge information.
-        
+
         :param ratio: The ratio parameter is of type Ratio. It is used in the calculation of the return
         value
         :type ratio: Ratio
@@ -69,7 +69,7 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
     def zero_cancel(self, cycle: Cycle) -> Ratio:
         """
         The `zero_cancel` function calculates the ratio of the cost to time for a given cycle.
-        
+
         :param cycle: The `cycle` parameter is of type `Cycle`. It represents a cycle, which is a sequence
         of edges in a graph that starts and ends at the same vertex. Each edge in the cycle is a dictionary
         with keys "cost" and "time", representing the cost and time associated with that edge
@@ -108,7 +108,7 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
     def __init__(self, gra: Graph) -> None:
         """
         The function initializes an instance of a class with a graph object.
-        
+
         :param gra: The `gra` parameter is a mapping of nodes to a mapping of nodes to any type of value. It
         represents a graph where each node is associated with a set of neighboring nodes and their
         corresponding values
@@ -119,7 +119,7 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
     def run(self, dist: MutableMapping[Node, Domain], r0: Ratio) -> Tuple[Ratio, Cycle]:
         """
         This function takes a distance mapping and a ratio as input, and returns a ratio and a cycle.
-        
+
         :param dist: A mutable mapping that maps each node in the graph to a ratio value. This represents
         the initial distribution of ratios for each node
         :type dist: MutableMapping[Node, Domain]
