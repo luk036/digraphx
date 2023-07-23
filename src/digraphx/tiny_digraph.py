@@ -2,11 +2,15 @@ import networkx as nx
 from .lict import Lict
 
 
+# The DiGraphAdapter class is a subclass of nx.DiGraph that adds a method to return the adjacency list
+# as a dictionary.
 class DiGraphAdapter(nx.DiGraph):
     def items(self):
         return self.adjacency()
 
 
+# The `TinyDiGraph` class is a subclass of `DiGraphAdapter` that represents a directed graph with a
+# small number of nodes.
 class TinyDiGraph(DiGraphAdapter):
     num_nodes = 0
 

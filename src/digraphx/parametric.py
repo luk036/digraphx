@@ -7,17 +7,18 @@ from fractions import Fraction
 Ratio = TypeVar("Ratio", Fraction, float)  # Comparable field
 
 
+# The `ParametricAPI` class is a generic class with abstract methods for calculating distance and zero
+# cancellation.
 class ParametricAPI(Generic[Node, Edge, Ratio]):
     @abstractmethod
     def distance(self, ratio: Ratio, edge: Edge) -> Ratio:
-        """_summary_
-
-        Args:
-            ratio (Ratio): _description_
-            edge (Edge): _description_
-
-        Returns:
-            Ratio: _description_
+        """
+        The `distance` function calculates the distance between a given ratio and edge.
+        
+        :param ratio: The `ratio` parameter is of type `Ratio`. It represents a ratio or proportion
+        :type ratio: Ratio
+        :param edge: The `edge` parameter represents an edge in a graph. It is of type `Edge`
+        :type edge: Edge
         """
         pass
 

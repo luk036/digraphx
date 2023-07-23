@@ -13,6 +13,8 @@ Domain = TypeVar("Domain", int, Fraction, float)  # Comparable Ring
 Cycle = List[Edge]  # List of Edges
 
 
+# The `NegCycleFinder` class implements Howard's method, a minimum cycle ratio algorithm, to find
+# negative cycles in a directed graph.
 class NegCycleFinder(Generic[Node, Edge, Domain]):
     """Negative Cycle Finder by Howard's method
 
@@ -30,15 +32,20 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
     pred: Dict[Node, Tuple[Node, Edge]] = {}
 
     def __init__(self, gra: Mapping[Node, Mapping[Node, Edge]]) -> None:
-        """_summary_
-
-        Args:
-            gra (Mapping[Node, Mapping[Node, Edge]]): adjacency list
+        """
+        The function initializes a graph object with an adjacency list.
+        
+        :param gra: The parameter `gra` is a mapping that represents an adjacency list. It is a
+        dictionary-like object where the keys are nodes and the values are mappings of nodes to edges. Each
+        edge represents a connection between two nodes in a directed graph
+        :type gra: Mapping[Node, Mapping[Node, Edge]]
         """
         self.digraph = gra
 
     def find_cycle(self) -> Generator[Node, None, None]:
-        """Find a cycle on the policy graph
+        """
+        The `find_cycle` function is used to find a cycle in a policy graph and yields the start node of the
+        cycle.
 
         Yields:
             Generator[Node, None, None]: a start node of the cycle
@@ -61,14 +68,19 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         dist: MutableMapping[Node, Domain],
         get_weight: Callable[[Edge], Domain],
     ) -> bool:
-        """Perform a updating of dist and pred
-
-        Args:
-            dist (MutableMapping[Node, Domain]): _description_
-            get_weight (Callable[[Edge], Domain]): _description_
-
-        Returns:
-            bool: _description_
+        """
+        The `relax` function updates the `dist` and `pred` dictionaries based on the current distances and
+        weights of edges in a graph.
+        
+        :param dist: `dist` is a mutable mapping that represents the current distances from a source node to
+        all other nodes in a graph. It is a mapping from nodes to their corresponding distances
+        :type dist: MutableMapping[Node, Domain]
+        :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
+        input and returns a value of type `Domain`. This function is used to calculate the weight or cost
+        associated with an edge in the graph
+        :type get_weight: Callable[[Edge], Domain]
+        :return: a boolean value indicating whether any changes were made to the `dist` mapping and `pred`
+        dictionary.
         """
         changed = False
         for utx, nbrs in self.digraph.items():
@@ -85,14 +97,15 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         dist: MutableMapping[Node, Domain],
         get_weight: Callable[[Edge], Domain],
     ) -> Generator[Cycle, None, None]:
-        """_summary_
-
-        Args:
-            dist (MutableMapping[Node, Domain]): _description_
-            get_weight (Callable[[Edge], Domain]): _description_
-
-        Yields:
-            Generator[Cycle, None, None]: cycle list
+        """
+        The `howard` function finds negative cycles in a graph and yields a list of cycles.
+        
+        :param dist: `dist` is a mutable mapping that maps each node in the graph to a domain value. The
+        domain value represents the distance or cost from the source node to that particular node
+        :type dist: MutableMapping[Node, Domain]
+        :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
+        input and returns the weight of that edge
+        :type get_weight: Callable[[Edge], Domain]
         """
         self.pred = {}
         found = False
@@ -104,13 +117,14 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
                 yield self.cycle_list(vtx)
 
     def cycle_list(self, handle: Node) -> Cycle:
-        """Cycle list started from handle
-
-        Args:
-            handle (Node): _description_
-
-        Returns:
-            Cycle: _description_
+        """
+        The `cycle_list` function returns a list of edges that form a cycle in a graph, starting from a
+        given node.
+        
+        :param handle: The `handle` parameter is a reference to a node in a graph. It represents the
+        starting point of the cycle in the list
+        :type handle: Node
+        :return: a list called "cycle".
         """
         vtx = handle
         cycle = list()
@@ -128,15 +142,20 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         dist: MutableMapping[Node, Domain],
         get_weight: Callable[[Edge], Domain],
     ) -> bool:
-        """Check if the cycle list is negative
-
-        Args:
-            handle (Node): _description_
-            dist (MutableMapping[Node, Domain]): _description_
-            get_weight (Callable[[Edge], Domain]): _description_
-
-        Returns:
-            bool: _description_
+        """
+        The `is_negative` function checks if a cycle list is negative by comparing the distances between
+        nodes and the weights of the edges.
+        
+        :param handle: The `handle` parameter is a `Node` object that represents a vertex in a graph. It is
+        used as a starting point to check for negative cycles in the graph
+        :type handle: Node
+        :param dist: `dist` is a mutable mapping that maps each node to its corresponding domain value. The
+        domain value represents the distance from the starting node to the current node in a graph
+        :type dist: MutableMapping[Node, Domain]
+        :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
+        input and returns the weight of that edge
+        :type get_weight: Callable[[Edge], Domain]
+        :return: a boolean value.
         """
         vtx = handle
         # do while loop in C++

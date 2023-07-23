@@ -9,12 +9,19 @@ GraphMut = MutableMapping[Node, MutableMapping[Node, MutableMapping[str, Domain]
 
 
 def set_default(gra: GraphMut, weight: str, value: Domain) -> None:
-    """_summary_
-
-    Args:
-        gra (Graph): _description_
-        weight (str): _description_
-        value (Any): _description_
+    """
+    This function sets a default value for a specified weight in a graph.
+    
+    :param gra: The parameter `gra` is of type `GraphMut`, which is likely a mutable graph data
+    structure. It represents a graph where each node has a dictionary of neighbors and their
+    corresponding edge attributes
+    :type gra: GraphMut
+    :param weight: The `weight` parameter is a string that represents the weight attribute of the edges
+    in the graph
+    :type weight: str
+    :param value: The `value` parameter is the default value that will be set for the specified weight
+    attribute in the graph
+    :type value: Domain
     """
     for _, nbrs in gra.items():
         for _, e in nbrs.items():
@@ -22,45 +29,59 @@ def set_default(gra: GraphMut, weight: str, value: Domain) -> None:
                 e[weight] = value
 
 
+# The `CycleRatioAPI` class is a parametric API that calculates the ratio of a cycle based on the cost
+# and time of its edges.
 class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
     def __init__(
         self, gra: Mapping[Node, Mapping[Node, Mapping[str, Domain]]], K: type
     ) -> None:
-        """_summary_
-
-        Args:
-            gra (Mapping[Node, Mapping[Node, Mapping[str, Domain]]]): _description_
-            K (type): _description_
+        """
+        This function initializes an object with two parameters, `gra` and `K`, and assigns them to instance
+        variables.
+        
+        :param gra: A mapping of nodes to a mapping of nodes to a mapping of strings to domains. It
+        represents a graph structure where each node is connected to other nodes through edges, and each
+        edge has associated attributes represented by strings and domains
+        :type gra: Mapping[Node, Mapping[Node, Mapping[str, Domain]]]
+        :param K: The parameter `K` is a type. It is used to specify the type of the variable `K`. The type
+        can be any valid Python type, such as `int`, `str`, `list`, etc
+        :type K: type
         """
         self.gra: Mapping[Node, Mapping[Node, Mapping[str, Domain]]] = gra
         self.K = K
 
     def distance(self, ratio: Ratio, edge: MutableMapping[str, Domain]) -> Ratio:
-        """[summary]
-
-        Arguments:
-            ratio ([type]): [description]
-            e ([type]): [description]
-
-        Returns:
-            [type]: [description]
+        """
+        The function calculates the distance based on the ratio and edge information.
+        
+        :param ratio: The ratio parameter is of type Ratio. It is used in the calculation of the return
+        value
+        :type ratio: Ratio
+        :param edge: The `edge` parameter is a mutable mapping (dictionary-like object) that contains
+        information about a specific edge in a graph. It has two keys: "cost" and "time". The value
+        associated with the "cost" key represents the cost of traversing the edge, while the value
+        associated with
+        :type edge: MutableMapping[str, Domain]
+        :return: the result of the expression `self.K(edge["cost"]) - ratio * edge["time"]`.
         """
         return self.K(edge["cost"]) - ratio * edge["time"]
 
     def zero_cancel(self, cycle: Cycle) -> Ratio:
-        """Calculate the ratio of the cycle
-
-        Args:
-            cycle (Cycle): _description_
-
-        Returns:
-            Ratio: _description_
+        """
+        The `zero_cancel` function calculates the ratio of the cost to time for a given cycle.
+        
+        :param cycle: The `cycle` parameter is of type `Cycle`. It represents a cycle, which is a sequence
+        of edges in a graph that starts and ends at the same vertex. Each edge in the cycle is a dictionary
+        with keys "cost" and "time", representing the cost and time associated with that edge
+        :type cycle: Cycle
+        :return: a Ratio object.
         """
         total_cost = sum(edge["cost"] for edge in cycle)
         total_time = sum(edge["time"] for edge in cycle)
         return self.K(total_cost) / total_time
 
 
+# The `MinCycleRatioSolver` class is a solver for the minimum cycle ratio problem in directed graphs.
 class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
     """Minimum Cycle Ratio Solver
 
@@ -85,22 +106,26 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
     """
 
     def __init__(self, gra: Graph) -> None:
-        """_summary_
-
-        Args:
-            gra (Mapping[Node, Mapping[Node, Any]]): _description_
+        """
+        The function initializes an instance of a class with a graph object.
+        
+        :param gra: The `gra` parameter is a mapping of nodes to a mapping of nodes to any type of value. It
+        represents a graph where each node is associated with a set of neighboring nodes and their
+        corresponding values
+        :type gra: Graph
         """
         self.gra: Graph = gra
 
     def run(self, dist: MutableMapping[Node, Domain], r0: Ratio) -> Tuple[Ratio, Cycle]:
-        """_summary_
-
-        Args:
-            dist (MutableMapping[Node, Ratio]): _description_
-            r0 (Ratio): _description_
-
-        Returns:
-            Tuple[Ratio, Cycle]: _description_
+        """
+        This function takes a distance mapping and a ratio as input, and returns a ratio and a cycle.
+        
+        :param dist: A mutable mapping that maps each node in the graph to a ratio value. This represents
+        the initial distribution of ratios for each node
+        :type dist: MutableMapping[Node, Domain]
+        :param r0: The parameter `r0` is of type `Ratio` and represents the initial ratio value
+        :type r0: Ratio
+        :return: The function `run` returns a tuple containing the ratio and cycle.
         """
         omega = CycleRatioAPI(self.gra, type(r0))
         solver = MaxParametricSolver(self.gra, omega)
