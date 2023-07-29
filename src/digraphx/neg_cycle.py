@@ -49,6 +49,22 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
 
         Yields:
             Generator[Node, None, None]: a start node of the cycle
+
+        Examples:
+            >>> from digraphx.neg_cycle import NegCycleFinder
+            >>> from fractions import Fraction
+            >>> from collections import defaultdict
+            >>> g = defaultdict(dict)
+            >>> g[1][2] = Fraction(1, 2)
+            >>> g[2][3] = Fraction(1, 2)
+            >>> g[3][1] = Fraction(1, 2)
+            >>> g[1][3] = Fraction(1, 2)
+            >>> g[3][4] = Fraction(1, 2)
+            >>> g[4][5] = Fraction(1, 2)
+            >>> g[5][3] = Fraction(1, 2)
+            >>> finder = NegCycleFinder(g)
+            >>> for cycle in finder.find_cycle():
+            ...     print(cycle)
         """
         visited: Dict[Node, Node] = {}
         for vtx in filter(lambda vtx: vtx not in visited, self.digraph):

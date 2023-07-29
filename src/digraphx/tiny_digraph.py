@@ -24,6 +24,13 @@ class TinyDiGraph(DiGraphAdapter):
     adjlist_outer_dict_factory = cheat_adjlist_outer_dict
 
     def init_nodes(self, n: int):
+        """
+        The function initializes the number of nodes, a dictionary for nodes, and dictionaries for
+        adjacency and predecessor lists.
+        
+        :param n: The parameter `n` represents the number of nodes in the graph
+        :type n: int
+        """
         self.num_nodes = n
         self._node = self.cheat_node_dict()
         self._adj = self.cheat_adjlist_outer_dict()

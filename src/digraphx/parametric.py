@@ -54,11 +54,16 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
         gra: Mapping[Node, Mapping[Node, Edge]],
         omega: ParametricAPI[Node, Edge, Ratio],
     ) -> None:
-        """initialize
-
-        Args:
-            gra (Mapping[Node, Mapping[Node, Edge]]): _description_
-            omega (ParametricAPI): _description_
+        """
+        The `__init__` function initializes an object with a graph and an omega parameter.
+        
+        :param gra: gra is a mapping of nodes to a mapping of nodes to edges. It represents a graph
+        where each node is connected to other nodes through edges. The edges are represented by the
+        mapping of nodes to edges
+        :type gra: Mapping[Node, Mapping[Node, Edge]]
+        :param omega: The `omega` parameter is an instance of the `ParametricAPI` class. It represents
+        some kind of parametric API that takes three type parameters: `Node`, `Edge`, and `Ratio`
+        :type omega: ParametricAPI[Node, Edge, Ratio]
         """
         self.ncf = NegCycleFinder(gra)
         self.omega: ParametricAPI[Node, Edge, Ratio] = omega
@@ -66,14 +71,19 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
     def run(
         self, dist: MutableMapping[Node, Domain], ratio: Ratio
     ) -> Tuple[Ratio, Cycle]:
-        """run
-
-        Args:
-            ratio (Ratio): _description_
-            dist (MutableMapping[Node, Ratio]): _description_
-
-        Returns:
-            Tuple[Ratio, Cycle]: _description_
+        """
+        The `run` function takes in a distance mapping and a ratio, and iteratively finds the minimum
+        ratio and corresponding cycle until the minimum ratio is greater than or equal to the input
+        ratio.
+        
+        :param dist: The `dist` parameter is a mutable mapping where the keys are `Node` objects and the
+        values are `Domain` objects. It represents the distance between nodes in a graph
+        :type dist: MutableMapping[Node, Domain]
+        :param ratio: The `ratio` parameter is a value that represents a ratio or proportion. It is used
+        as a threshold or target value in the algorithm
+        :type ratio: Ratio
+        :return: The function `run` returns a tuple containing the updated ratio (`ratio`) and the cycle
+        (`cycle`).
         """
         D = type(next(iter(dist.values())))
 
