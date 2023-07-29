@@ -56,7 +56,7 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
     ) -> None:
         """
         The `__init__` function initializes an object with a graph and an omega parameter.
-        
+
         :param gra: gra is a mapping of nodes to a mapping of nodes to edges. It represents a graph
         where each node is connected to other nodes through edges. The edges are represented by the
         mapping of nodes to edges
@@ -75,7 +75,7 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
         The `run` function takes in a distance mapping and a ratio, and iteratively finds the minimum
         ratio and corresponding cycle until the minimum ratio is greater than or equal to the input
         ratio.
-        
+
         :param dist: The `dist` parameter is a mutable mapping where the keys are `Node` objects and the
         values are `Domain` objects. It represents the distance between nodes in a graph
         :type dist: MutableMapping[Node, Domain]

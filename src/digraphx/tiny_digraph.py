@@ -27,7 +27,7 @@ class TinyDiGraph(DiGraphAdapter):
         """
         The function initializes the number of nodes, a dictionary for nodes, and dictionaries for
         adjacency and predecessor lists.
-        
+
         :param n: The parameter `n` represents the number of nodes in the graph
         :type n: int
         """
