@@ -2,6 +2,7 @@
 
 Network Optimization Python Code
 
+
 ## Note
 
 > This is the main page of your project's [Sphinx] documentation. It is
@@ -11,6 +12,7 @@ Network Optimization Python Code
 >
 > Please check [Sphinx] and [MyST] for more information
 > about how to document your project and how to configure your preferences.
+
 
 ## Contents
 
@@ -27,11 +29,11 @@ Module Reference <api/modules>
 
 ## Indices and tables
 
-- {ref}`genindex`
-- {ref}`modindex`
-- {ref}`search`
+* {ref}`genindex`
+* {ref}`modindex`
+* {ref}`search`
 
-[sphinx]: http://www.sphinx-doc.org/
-[markdown]: https://daringfireball.net/projects/markdown/
-[restructuredtext]: http://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
-[myst]: https://myst-parser.readthedocs.io/en/latest/
+[Sphinx]: http://www.sphinx-doc.org/
+[Markdown]: https://daringfireball.net/projects/markdown/
+[reStructuredText]: http://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
+[MyST]: https://myst-parser.readthedocs.io/en/latest/
