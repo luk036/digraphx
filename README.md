@@ -16,7 +16,7 @@
 
 # digraphx
 
-> Network Optimization Python Code
+> Directed Graph X
 
 A longer description of your project goes here...
 
