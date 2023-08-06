@@ -16,7 +16,7 @@
 
 # digraphx
 
-> Directed Graph X
+> Directed Graph X in Python
 
 A longer description of your project goes here...
 
