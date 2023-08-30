@@ -194,4 +194,3 @@ public:
         return solver.run(dist, r0);
     }
 };
-

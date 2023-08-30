@@ -4,9 +4,6 @@ from __future__ import print_function
 from fractions import Fraction
 
 from digraphx.lict import Lict
-
-# from networkx.utils import generate_unique_node
-# from digraphx.tiny_digraph import DiGraphAdapter
 from digraphx.min_cycle_ratio import MinCycleRatioSolver, set_default
 
 from .test_neg_cycle import (
@@ -14,8 +11,6 @@ from .test_neg_cycle import (
     create_test_case_timing,
     create_tiny_graph,
 )
-
-# from pprint import pprint
 
 
 def test_cycle_ratio_raw():
@@ -38,7 +33,6 @@ def test_cycle_ratio():
     set_default(gra, "time", 1)
     set_default(gra, "cost", 1)
     gra[1][2]["cost"] = 5
-    # dist = list(0 for _ in gra)
     dist = {vtx: 0 for vtx in gra}
     solver = MinCycleRatioSolver(gra)
     ratio, cycle = solver.run(dist, Fraction(10000, 1))

@@ -1,6 +1,7 @@
 from fractions import Fraction
 from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar
-from .neg_cycle import Node, Edge, Domain, Cycle
+
+from .neg_cycle import Cycle, Domain, Edge, Node
 from .parametric import MaxParametricSolver, ParametricAPI
 
 Ratio = TypeVar("Ratio", Fraction, float)  # Comparable field
@@ -33,22 +34,22 @@ def set_default(gra: GraphMut, weight: str, value: Domain) -> None:
 # and time of its edges.
 class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
     def __init__(
-        self, gra: Mapping[Node, Mapping[Node, Mapping[str, Domain]]], K: type
+        self, gra: Mapping[Node, Mapping[Node, Mapping[str, Domain]]], result_type: type
     ) -> None:
         """
-        This function initializes an object with two parameters, `gra` and `K`, and assigns them to instance
+        This function initializes an object with two parameters, `gra` and `result_type`, and assigns them to instance
         variables.
 
         :param gra: A mapping of nodes to a mapping of nodes to a mapping of strings to domains. It
         represents a graph structure where each node is connected to other nodes through edges, and each
         edge has associated attributes represented by strings and domains
         :type gra: Mapping[Node, Mapping[Node, Mapping[str, Domain]]]
-        :param K: The parameter `K` is a type. It is used to specify the type of the variable `K`. The type
+        :param result_type: The parameter `result_type` is a type. It is used to specify the type of the variable `result_type`. The type
         can be any valid Python type, such as `int`, `str`, `list`, etc
-        :type K: type
+        :type result_type: type
         """
         self.gra: Mapping[Node, Mapping[Node, Mapping[str, Domain]]] = gra
-        self.K = K
+        self.result_type = result_type
 
     def distance(self, ratio: Ratio, edge: MutableMapping[str, Domain]) -> Ratio:
         """
@@ -62,9 +63,9 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
         associated with the "cost" key represents the cost of traversing the edge, while the value
         associated with
         :type edge: MutableMapping[str, Domain]
-        :return: the result of the expression `self.K(edge["cost"]) - ratio * edge["time"]`.
+        :return: the result of the expression `self.result_type(edge["cost"]) - ratio * edge["time"]`.
         """
-        return self.K(edge["cost"]) - ratio * edge["time"]
+        return self.result_type(edge["cost"]) - ratio * edge["time"]
 
     def zero_cancel(self, cycle: Cycle) -> Ratio:
         """
@@ -78,7 +79,7 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
         """
         total_cost = sum(edge["cost"] for edge in cycle)
         total_time = sum(edge["time"] for edge in cycle)
-        return self.K(total_cost) / total_time
+        return self.result_type(total_cost) / total_time
 
 
 # The `MinCycleRatioSolver` class is a solver for the minimum cycle ratio problem in directed graphs.

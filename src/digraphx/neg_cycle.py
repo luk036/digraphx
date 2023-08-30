@@ -3,9 +3,18 @@ Negative cycle detection for directed graphs.
 1. Based on Howard's policy graph algorithm
 2. Looking for more than one negative cycle
 """
-from typing import Dict, Callable, Generator, Tuple, List
-from typing import MutableMapping, Mapping, TypeVar, Generic
 from fractions import Fraction
+from typing import (
+    Callable,
+    Dict,
+    Generator,
+    Generic,
+    List,
+    Mapping,
+    MutableMapping,
+    Tuple,
+    TypeVar,
+)
 
 Node = TypeVar("Node")  # Hashable
 Edge = TypeVar("Edge")  # Hashable

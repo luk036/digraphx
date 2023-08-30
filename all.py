@@ -1,6 +1,17 @@
-from typing import Dict, Callable, Generator, Tuple, List
-from typing import MutableMapping, Mapping, TypeVar, Generic
 from fractions import Fraction
+from typing import (
+    Callable,
+    Dict,
+    Generator,
+    Generic,
+    List,
+    Mapping,
+    MutableMapping,
+    Tuple,
+    TypeVar,
+)
+
+from abc import abstractmethod
 import networkx as nx
 
 Node = TypeVar("Node")  # Hashable
@@ -237,18 +248,18 @@ def do_case(gra, dist):
         return edge.get("weight", 1)
 
     ncf = NegCycleFinder(gra)
-    hasNeg = False
+    has_neg = False
     for _ in ncf.howard(dist, get_weight):
-        hasNeg = True
+        has_neg = True
         break
-    return hasNeg
+    return has_neg
 
 
 def test_neg_cycle():
     gra = create_test_case1()
     dist = list(0 for _ in gra)
-    hasNeg = do_case(gra, dist)
-    assert hasNeg
+    has_neg = do_case(gra, dist)
+    assert has_neg
 
 
 def test_timing_graph():

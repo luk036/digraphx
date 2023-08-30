@@ -1,8 +1,8 @@
 from abc import abstractmethod
-from .neg_cycle import NegCycleFinder, Node, Edge, Domain, Cycle
-from typing import Tuple
-from typing import MutableMapping, Mapping, TypeVar, Generic
 from fractions import Fraction
+from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar
+
+from .neg_cycle import Cycle, Domain, Edge, NegCycleFinder, Node
 
 Ratio = TypeVar("Ratio", Fraction, float)  # Comparable field
 

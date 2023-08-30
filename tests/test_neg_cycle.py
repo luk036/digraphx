@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-# from networkx.utils import generate_unique_node
 import networkx as nx
 
 from digraphx.lict import Lict
-from digraphx.tiny_digraph import TinyDiGraph, DiGraphAdapter
 from digraphx.neg_cycle import NegCycleFinder
+from digraphx.tiny_digraph import DiGraphAdapter, TinyDiGraph
 
 
 def test_raw_graph_by_lict():
@@ -23,11 +22,11 @@ def test_raw_graph_by_lict():
 
     dist = Lict([0, 0, 0])
     finder = NegCycleFinder(gra)
-    hasNeg = False
+    has_neg = False
     for _ in finder.howard(dist, get_weight):
-        hasNeg = True
+        has_neg = True
         break
-    assert not hasNeg
+    assert not has_neg
 
 
 def test_raw_graph_by_dict():
@@ -42,11 +41,11 @@ def test_raw_graph_by_dict():
 
     dist = {vtx: 0 for vtx in gra}
     finder = NegCycleFinder(gra)
-    hasNeg = False
+    has_neg = False
     for _ in finder.howard(dist, get_weight):
-        hasNeg = True
+        has_neg = True
         break
-    assert not hasNeg
+    assert not has_neg
 
 
 def create_test_case1():
@@ -118,25 +117,18 @@ def do_case(gra, dist):
         return edge.get("weight", 1)
 
     ncf = NegCycleFinder(gra)
-    hasNeg = False
+    has_neg = False
     for _ in ncf.howard(dist, get_weight):
-        hasNeg = True
+        has_neg = True
         break
-    return hasNeg
+    return has_neg
 
 
 def test_neg_cycle():
     gra = create_test_case1()
     dist = list(0 for _ in gra)
-    hasNeg = do_case(gra, dist)
-    assert hasNeg
-
-
-# def test_no_neg_cycle():
-#     gra = nx.path_graph(5, create_using=nx.DiGraph())
-#     dist = list(0 for _ in gra)
-#     hasNeg = do_case(gra, dist)
-#     assert not hasNeg
+    has_neg = do_case(gra, dist)
+    assert has_neg
 
 
 def test_timing_graph():
@@ -149,5 +141,5 @@ def test_timing_graph():
 def test_tiny_graph():
     gra = create_tiny_graph()
     dist = Lict([0, 0, 0])
-    hasNeg = do_case(gra, dist)
-    assert not hasNeg
+    has_neg = do_case(gra, dist)
+    assert not has_neg
