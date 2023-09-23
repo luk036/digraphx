@@ -83,21 +83,19 @@ class Lict(MutableMapping[int, T]):
         """
         return iter(self.rng)
 
-    def __contains__(self, value) -> bool:
+    def __contains__(self, key) -> bool:
         """
         The `__contains__` function checks if a given value is present in the `rng` attribute of the object.
 
-        :param value: The `value` parameter represents the value that we want to check if it is present in
-        the `self.rng` attribute
-        :return: The method is returning a boolean value, indicating whether the given value is present in
-        the `self.rng` attribute.
+        :param key: The `key` parameter represents the value that we want to check if it is present in the `self.rng` attribute
+        :return: The method is returning a boolean value, indicating whether the given value is present in the `self.rng` attribute.
 
         Examples:
             >>> a = Lict([1, 4, 3, 6])
             >>> 2 in a
             True
         """
-        return value in self.rng
+        return key in self.rng
 
     def __len__(self) -> int:
         """
@@ -132,6 +130,15 @@ class Lict(MutableMapping[int, T]):
         """
         The function returns an enumeration of the items in the list.
         :return: The `items` method is returning an enumeration of the `lst` attribute.
+
+        Examples:
+            >>> a = Lict([1, 4, 3, 6])
+            >>> for i in a.items():
+            ...     print(i)
+            (0, 1)
+            (1, 4)
+            (2, 3)
+            (3, 6)
         """
         return enumerate(self.lst)
 
