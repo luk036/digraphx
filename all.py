@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from fractions import Fraction
 from typing import (
     Callable,
@@ -11,7 +12,6 @@ from typing import (
     TypeVar,
 )
 
-from abc import abstractmethod
 import networkx as nx
 
 Node = TypeVar("Node")  # Hashable

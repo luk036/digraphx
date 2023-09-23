@@ -24,13 +24,11 @@ class ParametricAPI(Generic[Node, Edge, Ratio]):
 
     @abstractmethod
     def zero_cancel(self, cycle: Cycle) -> Ratio:
-        """_summary_
-
-        Args:
-            Cycle (_type_): _description_
-
-        Returns:
-            Ratio: _description_
+        """
+        The `zero_cancel` function takes a `Cycle` object as input and returns a `Ratio` object.
+        
+        :param cycle: The `cycle` parameter is of type `Cycle`.
+        :type cycle: Cycle
         """
         pass
 
