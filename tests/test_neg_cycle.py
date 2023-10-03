@@ -17,13 +17,10 @@ def test_raw_graph_by_lict():
         ]
     )
 
-    def get_weight(edge):
-        return edge
-
     dist = Lict([0, 0, 0])
     finder = NegCycleFinder(gra)
     has_neg = False
-    for _ in finder.howard(dist, get_weight):
+    for _ in finder.howard(dist, lambda edge: edge):
         has_neg = True
         break
     assert not has_neg
@@ -36,13 +33,10 @@ def test_raw_graph_by_dict():
         "a2": {"a1": 1, "a0": 2},
     }
 
-    def get_weight(edge):
-        return edge
-
     dist = {vtx: 0 for vtx in gra}
     finder = NegCycleFinder(gra)
     has_neg = False
-    for _ in finder.howard(dist, get_weight):
+    for _ in finder.howard(dist, lambda edge: edge):
         has_neg = True
         break
     assert not has_neg

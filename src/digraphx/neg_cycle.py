@@ -60,18 +60,12 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             Generator[Node, None, None]: a start node of the cycle
 
         Examples:
-            >>> from digraphx.neg_cycle import NegCycleFinder
-            >>> from fractions import Fraction
-            >>> from collections import defaultdict
-            >>> g = defaultdict(dict)
-            >>> g[1][2] = Fraction(1, 2)
-            >>> g[2][3] = Fraction(1, 2)
-            >>> g[3][1] = Fraction(1, 2)
-            >>> g[1][3] = Fraction(1, 2)
-            >>> g[3][4] = Fraction(1, 2)
-            >>> g[4][5] = Fraction(1, 2)
-            >>> g[5][3] = Fraction(1, 2)
-            >>> finder = NegCycleFinder(g)
+            >>> gra = {
+            ...     "a0": {"a1": 7, "a2": 5},
+            ...     "a1": {"a0": 0, "a2": 3},
+            ...     "a2": {"a1": 1, "a0": 2},
+            ... }
+            >>> finder = NegCycleFinder(gra)
             >>> for cycle in finder.find_cycle():
             ...     print(cycle)
         """
@@ -131,6 +125,23 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
         input and returns the weight of that edge
         :type get_weight: Callable[[Edge], Domain]
+
+        Examples:
+        Examples:
+            >>> gra = {
+            ...     "a0": {"a1": 7, "a2": 5},
+            ...     "a1": {"a0": 0, "a2": 3},
+            ...     "a2": {"a1": 1, "a0": 2},
+            ... }
+            >>> dist = {vtx: 0 for vtx in gra}
+            >>> finder = NegCycleFinder(gra)
+            >>> has_neg = False
+            >>> for _ in finder.howard(dist, lambda edge: edge):
+            ...     has_neg = True
+            ...     break
+            ...
+            >>> has_neg
+            False
         """
         self.pred = {}
         found = False
