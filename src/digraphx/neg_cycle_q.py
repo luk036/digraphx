@@ -1,181 +1,299 @@
-# -*- coding: utf-8 -*-
 """
-Negative cycle detection for weighed graphs.
-1. Support Lazy evalution
+Negative cycle detection for directed graphs.
+1. Based on Howard's policy graph algorithm
+2. Looking for more than one negative cycle
 """
-from typing import Dict, Generator
+from fractions import Fraction
+from typing import (
+    Callable,
+    Dict,
+    Generator,
+    Generic,
+    List,
+    Mapping,
+    MutableMapping,
+    Tuple,
+    TypeVar,
+)
+
+Node = TypeVar("Node")  # Hashable
+Edge = TypeVar("Edge")  # Hashable
+Domain = TypeVar("Domain", int, Fraction, float)  # Comparable Ring
+Cycle = List[Edge]  # List of Edges
 
 
-# The `NegCycleFinder` class is used to find negative cycles in a graph.
-class NegCycleFinder:
-    pred: Dict = {}
-    succ: Dict = {}
+# The `NegCycleFinder` class implements Howard's method, a minimum cycle ratio algorithm, to find
+# negative cycles in a directed graph.
+class NegCycleFinder(Generic[Node, Edge, Domain]):
+    """Negative Cycle Finder by Howard's method
 
-    def __init__(self, gra) -> None:
+    Howard's method is a minimum cycle ratio (MCR) algorithm that uses a policy
+    iteration algorithm to find the minimum cycle ratio of a directed graph. The
+    algorithm maintains a set of candidate cycles and iteratively updates the
+    cycle with the minimum ratio until convergence. To detect negative cycles,
+    Howard's method uses a cycle detection algorithm that is based on the
+    Bellman-Ford relaxation algorithm. Specifically, the algorithm maintains a
+    predecessor graph of the original graph and performs cycle detection on this
+    graph using the Bellman-Ford relaxation algorithm. If a negative cycle is
+    detected, the algorithm terminates and returns the cycle.
+    """
+
+    pred: Dict[Node, Tuple[Node, Edge]] = {}
+    succ: Dict[Node, Tuple[Node, Edge]] = {}
+
+    def __init__(self, gra: Mapping[Node, Mapping[Node, Edge]]) -> None:
         """
-        The above function is the initialization method for a class, which takes a graph as an argument and
-        initializes various attributes and data structures.
-        
-        :param gra: The parameter `gra` is a graph object. It is used to represent a graph and store
-        information about the graph's nodes, edges, and weights. The `gra` object is used in the
-        initialization of the class and is stored as an instance variable (`self.gra`) for later use in
-        """
-        self.gra = gra
+        The function initializes a graph object with an adjacency list.
 
-    def find_cycle(self, point_to):
+        :param gra: The parameter `gra` is a mapping that represents an adjacency list. It is a
+        dictionary-like object where the keys are nodes and the values are mappings of nodes to edges. Each
+        edge represents a connection between two nodes in a directed graph
+        :type gra: Mapping[Node, Mapping[Node, Edge]]
         """
-        The `find_cycle` function finds a cycle on a policy graph.
-        
+        self.digraph = gra
+
+    def find_cycle(self, point_to) -> Generator[Node, None, None]:
+        """
+        The `find_cycle` function is used to find a cycle in a policy graph and yields the start node of the
+        cycle.
+
         :param point_to: The `point_to` parameter is a dictionary that represents the edges of a directed
         graph. Each key-value pair in the dictionary represents an edge from the key vertex to the value
         vertex
+
+        Yields:
+            Generator[Node, None, None]: a start node of the cycle
+
+        Examples:
+            >>> gra = {
+            ...     "a0": {"a1": 7, "a2": 5},
+            ...     "a1": {"a0": 0, "a2": 3},
+            ...     "a2": {"a1": 1, "a0": 2},
+            ... }
+            >>> finder = NegCycleFinder(gra)
+            >>> for cycle in finder.find_cycle(finder.pred):
+            ...     print(cycle)
         """
-        visited = {}
-        for vtx_v in filter(lambda vtx_v: vtx_v not in visited, self.gra):
-            vtx_u = vtx_v
+        visited: Dict[Node, Node] = {}
+        for vtx in filter(lambda vtx: vtx not in visited, self.digraph):
+            utx = vtx
             while True:
-                visited[vtx_u] = vtx_v
-                if vtx_u not in point_to:
+                visited[utx] = vtx
+                if utx not in point_to:
                     break
-                vtx_u = point_to[vtx_u]
-                if vtx_u in visited:
-                    if visited[vtx_u] == vtx_v:
-                        yield vtx_u
+                utx, _ = point_to[utx]
+                if utx in visited:
+                    if visited[utx] == vtx:
+                        yield utx
                     break
 
-    def relax_pred(self, dist, get_weight, update_ok) -> bool:
+    def relax_pred(
+        self,
+        dist: MutableMapping[Node, Domain],
+        get_weight: Callable[[Edge], Domain],
+        update_ok: Callable[[MutableMapping[Node, Domain], Domain], bool],
+    ) -> bool:
         """
-        The `relax_pred` function updates the `dist` and `pred` arrays based on the weights of edges in a
-        graph.
-        
-        :param dist: The `dist` parameter is a data structure that represents the distances from a source
-        vertex to all other vertices in a graph. It is typically implemented as an array or a dictionary,
-        where the keys are the vertices and the values are the corresponding distances
-        :param get_weight: The `get_weight` parameter is a function that takes an edge as input and returns
-        the weight of that edge
+        The `relax_pred` function updates the `dist` and `pred` dictionaries based on the current distances and
+        weights of edges in a graph.
+
+        :param dist: `dist` is a mutable mapping that represents the current distances from a source node to
+        all other nodes in a graph. It is a mapping from nodes to their corresponding distances
+        :type dist: MutableMapping[Node, Domain]
+        :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
+        input and returns a value of type `Domain`. This function is used to calculate the weight or cost
+        associated with an edge in the graph
+        :type get_weight: Callable[[Edge], Domain]
         :param update_ok: The `update_ok` parameter is a function that determines whether an update to the
         distance `dist[vtx_v]` is allowed. It takes two arguments: the current value of `dist[vtx_v]` and
         the new value `d`. It should return `True` if the update is
-        :return: a boolean value.
+        :return: a boolean value indicating whether any changes were made to the `dist` mapping and `pred`
+        dictionary.
         """
         changed = False
-        for e in self.gra.edges():
-            vtx_u, vtx_v = e
-            weight = get_weight(e)
-            d = dist[vtx_u] + weight
-            if dist[vtx_v] > d and update_ok(dist[vtx_v], d):
-                dist[vtx_v] = d
-                self.pred[vtx_v] = vtx_u
-                changed = True
+        for utx, nbrs in self.digraph.items():
+            for vtx, edge in nbrs.items():
+                distance = dist[utx] + get_weight(edge)
+                if dist[vtx] > distance and update_ok(dist[vtx], distance):
+                    dist[vtx] = distance
+                    self.pred[vtx] = (utx, edge)
+                    changed = True
         return changed
 
-    def relax_succ(self, dist, get_weight, update_ok) -> bool:
+    def relax_succ(
+        self,
+        dist: MutableMapping[Node, Domain],
+        get_weight: Callable[[Edge], Domain],
+        update_ok: Callable[[MutableMapping[Node, Domain], Domain], bool],
+    ) -> bool:
         """
-        The `relax_succ` function performs an update of the `dist` and `succ` variables.
-        
-        :param dist: The `dist` parameter is a variable that represents the distance between nodes in a
-        graph. It is typically a dictionary where the keys are nodes and the values are the distances from a
-        source node to each node in the graph
-        :param get_weight: A function that takes in two nodes and returns the weight of the edge between
-        them
-        :param update_ok: A boolean value indicating whether the update operation is allowed or not
+        The `relax_succ` function updates the `dist` and `succ` dictionaries based on the current distances and
+        weights of edges in a graph.
+
+        :param dist: `dist` is a mutable mapping that represents the current distances from a source node to
+        all other nodes in a graph. It is a mapping from nodes to their corresponding distances
+        :type dist: MutableMapping[Node, Domain]
+        :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
+        input and returns a value of type `Domain`. This function is used to calculate the weight or cost
+        associated with an edge in the graph
+        :type get_weight: Callable[[Edge], Domain]
+        :param update_ok: The `update_ok` parameter is a function that determines whether an update to the
+        distance `dist[vtx_v]` is allowed. It takes two arguments: the current value of `dist[vtx_v]` and
+        the new value `d`. It should return `True` if the update is
+        :return: a boolean value indicating whether any changes were made to the `dist` mapping and `pred`
+        dictionary.
         """
         changed = False
-        for e in self.gra.edges():
-            vtx_u, vtx_v = e
-            weight = get_weight(e)
-            d = dist[vtx_v] - weight
-            if dist[vtx_u] < d and update_ok(dist[vtx_u], d):
-                dist[vtx_u] = d
-                self.succ[vtx_u] = vtx_v
-                changed = True
+        for utx, nbrs in self.digraph.items():
+            for vtx, edge in nbrs.items():
+                distance = dist[vtx] - get_weight(edge)
+                if dist[utx] < distance and update_ok(dist[utx], distance):
+                    dist[utx] = distance
+                    self.succ[utx] = (vtx, edge)
+                    changed = True
         return changed
 
-    def find_neg_cycle_pred(self, dist, get_weight, update_ok) -> Generator:
+    def howard_pred(
+        self,
+        dist: MutableMapping[Node, Domain],
+        get_weight: Callable[[Edge], Domain],
+        update_ok: Callable[[MutableMapping[Node, Domain], Domain], bool],
+    ) -> Generator[Cycle, None, None]:
         """
-        The function `find_neg_cycle_pred` performs an updating of `dist` and `pred` and yields a list of
-        edges representing a negative cycle.
-        
-        :param dist: The `dist` parameter is either a list or a dictionary. It represents the distances from
-        a source vertex to all other vertices in the graph. If it is a list, the indices of the list
-        correspond to the vertices, and the values represent the distances. If it is a dictionary, the keys
-        :param get_weight: The `get_weight` parameter is a callable function that takes in an edge and
-        returns its weight
+        The `howard_pred` function finds negative cycles in a graph and yields a list of cycles.
+
+        :param dist: `dist` is a mutable mapping that maps each node in the graph to a domain value. The
+        domain value represents the distance or cost from the source node to that particular node
+        :type dist: MutableMapping[Node, Domain]
+        :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
+        input and returns the weight of that edge
+        :type get_weight: Callable[[Edge], Domain]
         :param update_ok: The `update_ok` parameter is a callable function that determines whether an update
         to the distance value of a vertex is allowed. It takes in three arguments: the current distance
         value of the vertex, the weight of the edge being considered for update, and the current distance
         value of the vertex at the other
+
+        Examples:
+            >>> gra = {
+            ...     "a0": {"a1": 7, "a2": 5},
+            ...     "a1": {"a0": 0, "a2": 3},
+            ...     "a2": {"a1": 1, "a0": 2},
+            ... }
+            >>> dist = {vtx: 0 for vtx in gra}
+            >>> def update_ok(dist, v) : return True
+            >>> finder = NegCycleFinder(gra)
+            >>> has_neg = False
+            >>> for _ in finder.howard_pred(dist, lambda edge: edge, update_ok):
+            ...     has_neg = True
+            ...     break
+            ...
+            >>> has_neg
+            False
         """
         self.pred = {}
         found = False
         while not found and self.relax_pred(dist, get_weight, update_ok):
-            for vtx_v in self.find_cycle(self.pred):
+            for vtx in self.find_cycle(self.pred):
+                # Will zero cycle be found???
+                assert self.is_negative(vtx, dist, get_weight)
                 found = True
-                yield self.cycle_list(vtx_v, self.pred)
+                yield self.cycle_list(vtx, self.pred)
 
-    def find_neg_cycle_succ(self, dist, get_weight, update_ok) -> Generator:
+    def howard_succ(
+        self,
+        dist: MutableMapping[Node, Domain],
+        get_weight: Callable[[Edge], Domain],
+        update_ok: Callable[[MutableMapping[Node, Domain], Domain], bool],
+    ) -> Generator[Cycle, None, None]:
         """
-        The function `find_neg_cycle_succ` performs an updating of `dist` and `succ` and yields a list of
-        edges representing a negative cycle.
-        
-        :param dist: The `dist` parameter is either a list or a dictionary. It represents the distances from
-        a source vertex to all other vertices in the graph. If it is a list, the indices of the list
-        correspond to the vertices in the graph. If it is a dictionary, the keys represent the vertices and
-        :param get_weight: get_weight is a callable function that takes in an edge and returns the weight of
-        that edge
+        The `howard_succ` function finds negative cycles in a graph and yields a list of cycles.
+
+        :param dist: `dist` is a mutable mapping that maps each node in the graph to a domain value. The
+        domain value represents the distance or cost from the source node to that particular node
+        :type dist: MutableMapping[Node, Domain]
+        :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
+        input and returns the weight of that edge
+        :type get_weight: Callable[[Edge], Domain]
         :param update_ok: The `update_ok` parameter is a callable function that determines whether an update
         to the distance value of a vertex is allowed. It takes in three arguments: the current distance
         value of the vertex, the weight of the edge being considered for update, and the current distance
         value of the vertex at the other
+
+        Examples:
+            >>> gra = {
+            ...     "a0": {"a1": 7, "a2": 5},
+            ...     "a1": {"a0": 0, "a2": 3},
+            ...     "a2": {"a1": 1, "a0": 2},
+            ... }
+            >>> def update_ok(dist, v) : return True
+            >>> dist = {vtx: 0 for vtx in gra}
+            >>> finder = NegCycleFinder(gra)
+            >>> has_neg = False
+            >>> for _ in finder.howard_succ(dist, lambda edge: edge, update_ok):
+            ...     has_neg = True
+            ...     break
+            ...
+            >>> has_neg
+            False
         """
         self.succ = {}
         found = False
         while not found and self.relax_succ(dist, get_weight, update_ok):
-            for vtx_v in self.find_cycle(self.succ):
+            for vtx in self.find_cycle(self.succ):
+                # Will zero cycle be found???
+                # assert self.is_negative(vtx, dist, get_weight)
                 found = True
-                yield self.cycle_list(vtx_v, self.succ)
+                yield self.cycle_list(vtx, self.succ)
 
-    def cycle_list(self, handle, point_to) -> list:
+    def cycle_list(self, handle: Node, point_to) -> Cycle:
         """
-        The `cycle_list` function takes a starting node and a dictionary mapping nodes to their next node,
-        and returns a list of edges representing a cycle in the graph.
-        
-        :param handle: The `handle` parameter represents the starting node of the cycle in the graph. It is
-        the node from which the cycle traversal begins
+        The `cycle_list` function returns a list of edges that form a cycle in a graph, starting from a
+        given node.
+
+        :param handle: The `handle` parameter is a reference to a node in a graph. It represents the
+        starting point of the cycle in the list
+        :type handle: Node
         :param point_to: point_to is a dictionary that maps each graph node to the node it points to
         :return: a list of edges, which represents a cycle in a graph.
         """
-        vtx_v = handle
+        vtx = handle
         cycle = list()
         while True:
-            vtx_u = point_to[vtx_v]
-            cycle += [(vtx_u, vtx_v)]
-            vtx_v = vtx_u
-            if vtx_v == handle:
+            utx, edge = point_to[vtx]
+            cycle.append(edge)
+            vtx = utx
+            if vtx == handle:
                 break
         return cycle
 
-    def is_negative(self, handle, dist, get_weight) -> bool:
+    def is_negative(
+        self,
+        handle: Node,
+        dist: MutableMapping[Node, Domain],
+        get_weight: Callable[[Edge], Domain],
+    ) -> bool:
         """
-        The `is_negative` function checks if a cycle in a graph is negative by iterating through the cycle
-        and comparing the distances between nodes.
-        
-        :param handle: The `handle` parameter is a graph node that represents the starting point of the
-        cycle list
-        :param dist: The `dist` parameter is a list that represents the distance from the starting node to
-        each node in the graph. Each element in the list corresponds to a node in the graph, and the value
-        represents the distance from the starting node to that node
-        :param get_weight: The `get_weight` parameter is a callable function that takes in a tuple `(vtx_u,
-        vtx_v)` as input and returns the weight of the edge between vertices `vtx_u` and `vtx_v`
+        The `is_negative` function checks if a cycle list is negative by comparing the distances between
+        nodes and the weights of the edges.
+
+        :param handle: The `handle` parameter is a `Node` object that represents a vertex in a graph. It is
+        used as a starting point to check for negative cycles in the graph
+        :type handle: Node
+        :param dist: `dist` is a mutable mapping that maps each node to its corresponding domain value. The
+        domain value represents the distance from the starting node to the current node in a graph
+        :type dist: MutableMapping[Node, Domain]
+        :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
+        input and returns the weight of that edge
+        :type get_weight: Callable[[Edge], Domain]
         :return: a boolean value.
         """
-        vtx_v = handle
+        vtx = handle
+        # do while loop in C++
         while True:
-            vtx_u = self.pred[vtx_v]
-            wt = get_weight((vtx_u, vtx_v))
-            if dist[vtx_v] > dist[vtx_u] + wt:
+            utx, edge = self.pred[vtx]
+            if dist[vtx] > dist[utx] + get_weight(edge):
                 return True
-            vtx_v = vtx_u
-            if vtx_v == handle:
+            vtx = utx
+            if vtx == handle:
                 break
         return False
