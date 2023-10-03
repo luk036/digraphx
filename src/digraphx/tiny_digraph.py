@@ -1,6 +1,6 @@
 import networkx as nx
 
-from .lict import Lict
+from mywheel.lict import Lict
 
 
 # The DiGraphAdapter class is a subclass of nx.DiGraph that adds a method to return the adjacency list

@@ -20,6 +20,9 @@
 
 A longer description of your project goes here...
 
+## Dependencies
+
+- [luk036/mywheel](https://github.com/luk036/mywheel)
 
 <!-- pyscaffold-notes -->
 

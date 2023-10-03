@@ -3,7 +3,7 @@ from __future__ import print_function
 
 from fractions import Fraction
 
-from digraphx.lict import Lict
+from mywheel.lict import Lict
 from digraphx.min_cycle_ratio import MinCycleRatioSolver, set_default
 
 from .test_neg_cycle import (
