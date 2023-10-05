@@ -76,10 +76,12 @@ jobs:
       - name: Retrieve pre-built distribution files
         uses: actions/download-artifact@v3
         with: {name: python-distribution-files, path: dist/}
+      - name: Install dependencies
+        run: |
+          pip install git+https://github.com/luk036/mywheel.git
       - name: Run tests
         run: >-
           pipx run --python '${{ steps.setup-python.outputs.python-path }}'
-          pipx install git+https://github.com/luk036/mywheel.git
           tox --installpkg '${{ needs.prepare.outputs.wheel-distribution }}'
           -- -rFEx --durations 10 --color yes  # pytest args
   #     - name: Generate coverage report
