@@ -26,7 +26,7 @@ class MinParametricAPI(Generic[Node, Edge, Ratio]):
     def zero_cancel(self, cycle: Cycle) -> Ratio:
         """
         The `zero_cancel` function takes a `Cycle` object as input and returns a `Ratio` object.
-        
+
         :param cycle: The `cycle` parameter is of type `Cycle`.
         :type cycle: Cycle
         """
@@ -46,7 +46,7 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
     involves finding the optimal solution to a network flow problem as a function
     of one single parameter.
     """
-    
+
     def __init__(
         self,
         gra: Mapping[Node, Mapping[Node, Edge]],
