@@ -1,94 +1,115 @@
-"""
-Generalized Howard algorithm Solve minimum parametric network problems
+from abc import abstractmethod
+from fractions import Fraction
+from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar
 
-"""
+from .neg_cycle import Cycle, Domain, Edge, NegCycleFinder, Node
 
-from .neg_cycle import NegCycleFinder
+Ratio = TypeVar("Ratio", Fraction, float)  # Comparable field
 
 
-def min_parametric(gra, ratio, cost, zero_cancel, dist, update_ok, pick_one_only=False):
-    """
-    The `min_parametric` function solves a minimum parametric problem by finding the smallest value of a
-    parameter that satisfies a set of constraints in a directed graph:
+# The `ParametricAPI` class is a generic class with abstract methods for calculating distance and zero
+# cancellation.
+class MinParametricAPI(Generic[Node, Edge, Ratio]):
+    @abstractmethod
+    def distance(self, ratio: Ratio, edge: Edge) -> Ratio:
+        """
+        The `distance` function calculates the distance between a given ratio and edge.
+
+        :param ratio: The `ratio` parameter is of type `Ratio`. It represents a ratio or proportion
+        :type ratio: Ratio
+        :param edge: The `edge` parameter represents an edge in a graph. It is of type `Edge`
+        :type edge: Edge
+        """
+        pass
+
+    @abstractmethod
+    def zero_cancel(self, cycle: Cycle) -> Ratio:
+        """
+        The `zero_cancel` function takes a `Cycle` object as input and returns a `Ratio` object.
+        
+        :param cycle: The `cycle` parameter is of type `Cycle`.
+        :type cycle: Cycle
+        """
+        pass
+
+
+class MinParametricSolver(Generic[Node, Edge, Ratio]):
+    """Minimum Parametric Solver
+
+    This class solves the following parametric network problem:
 
         min  r
-        s.t. dist[v] - dist[v] ≤ cost(u, v, r)
-             for all (u, v) in gra
+        s.t. dist[v] - dist[u] <= distrance(e, r)
+             forall e(u, v) in G(V, E)
 
-    :param gra: The parameter `gra` represents a directed graph
-    :param ratio: The parameter to be minimized. It is initially set to a small number and will be
-    updated during the optimization process
-    :param cost: The `cost` parameter is a function that takes in three arguments: `ratio`, `edge`, and
-    `r`. It represents the cost of traversing an edge in the graph. The `ratio` parameter is the current
-    value of the ratio being minimized, `edge` is the edge being considered
-    :param zero_cancel: The `zero_cancel` parameter is a function that takes a cycle `c_i` and returns a
-    modified cycle `c_i'` such that `cost(u, v, zero_cancel(c_i')) = 0` if and only if `cost(u, v, c_i)
-    = 0
-    :param dist: The `dist` parameter represents the distances between vertices in the directed graph
-    `gra`. It is used in the constraint of the minimum parametric problem to ensure that the difference
-    between the distances of two vertices is less than or equal to the cost of the corresponding edge
-    :param update_ok: The `update_ok` parameter is a function that determines whether an update to the
-    distance value is allowed or not. It takes two arguments: the current distance value and the new
-    distance value. If the function returns `True`, the update is allowed. If it returns `False`, the
-    update is not
-    :param pick_one_only: A boolean parameter that determines whether to pick only one cycle with the
-    maximum ratio or to consider all cycles with the maximum ratio. If set to True, only one cycle will
-    be picked. If set to False, all cycles with the maximum ratio will be considered, defaults to False
-    (optional)
-    :return: The function `min_parametric` returns three values: `ratio`, `cycle`, and `dist`.
+    A parametric network problem refers to a type of optimization problem that
+    involves finding the optimal solution to a network flow problem as a function
+    of one single parameter.
     """
+    
+    def __init__(
+        self,
+        gra: Mapping[Node, Mapping[Node, Edge]],
+        omega: ParametricAPI[Node, Edge, Ratio],
+    ) -> None:
+        """
+        The `__init__` function initializes an object with a graph and an omega parameter.
 
-    def get_weight(edge):
-        return cost(ratio, edge)
+        :param gra: gra is a mapping of nodes to a mapping of nodes to edges. It represents a graph
+        where each node is connected to other nodes through edges. The edges are represented by the
+        mapping of nodes to edges
+        :type gra: Mapping[Node, Mapping[Node, Edge]]
+        :param omega: The `omega` parameter is an instance of the `ParametricAPI` class. It represents
+        some kind of parametric API that takes three type parameters: `Node`, `Edge`, and `Ratio`
+        :type omega: ParametricAPI[Node, Edge, Ratio]
+        """
+        self.ncf = NegCycleFinder(gra)
+        self.omega: ParametricAPI[Node, Edge, Ratio] = omega
 
-    omega = NegCycleFinder(gra)
-    r_max = ratio
-    cycle = None
-    reverse = True
+    def run(
+        self, dist: MutableMapping[Node, Domain], ratio: Ratio
+        update_ok, pick_one_only=False
+    ) -> Tuple[Ratio, Cycle]:
+        """
+        The `run` function takes in a distance mapping and a ratio, and iteratively finds the minimum
+        ratio and corresponding cycle until the minimum ratio is greater than or equal to the input
+        ratio.
 
-    while True:
-        if reverse:
-            cycles = omega.find_neg_cycle_succ(dist, get_weight, update_ok)
-        else:
-            cycles = omega.find_neg_cycle_pred(dist, get_weight, update_ok)
+        :param dist: The `dist` parameter is a mutable mapping where the keys are `Node` objects and the
+        values are `Domain` objects. It represents the distance between nodes in a graph
+        :type dist: MutableMapping[Node, Domain]
+        :param ratio: The `ratio` parameter is a value that represents a ratio or proportion. It is used
+        as a threshold or target value in the algorithm
+        :type ratio: Ratio
+        :return: The function `run` returns a tuple containing the updated ratio (`ratio`) and the cycle
+        (`cycle`).
+        """
+        D = type(next(iter(dist.values())))
 
-        for c_i in cycles:
-            r_i = zero_cancel(c_i)
-            if r_max < r_i:
-                r_max = r_i
-                c_max = c_i
-                if pick_one_only:
-                    break
-        if r_max <= ratio:
-            break
+        def get_weight(e: Edge) -> Domain:
+            return D(self.omega.distance(ratio, e))
 
-        cycle = c_max
-        ratio = r_max
-        reverse = not reverse
-    return ratio, cycle
+        r_max = ratio
+        c_max = []
+        cycle = []
+        reverse: bool = True
 
+        while True:
+            if reverse:
+                cycles = omega.howard_succ(dist, get_weight, update_ok)
+            else:
+                cycles = omega.howard_pred(dist, get_weight, update_ok)
+            for c_i in cycles:
+                r_i = zero_cancel(c_i)
+                if r_max < r_i:
+                    r_max = r_i
+                    c_max = c_i
+                    if pick_one_only:
+                        break
+            if r_max <= ratio:
+                break
 
-# if __name__ == "__main__":
-#     from __future__ import print_function
-#     from pprint import pprint
-#     import networkx as nx
-#     from neg_cycle import *
-#     from networkx.utils import generate_unique_node
-
-#     gra = create_test_case1()
-#     gra[1][2]['cost'] = 5
-#     r, c, dist = max_cycle_ratio(gra)
-#     assert c != None
-#     print(r)
-#     print(c)
-#     print(dist.items())
-
-#     gra = nx.cycle_graph(5, create_using=nx.DiGraph())
-#     gra[1][2]['cost'] = -6.
-#     newnode = generate_unique_node()
-#     gra.add_edges_from([(newnode, n) for n in gra])
-#     r, c, dist = max_cycle_ratio(gra)
-#     assert c != None
-#     print(r)
-#     print(c)
-#     print(dist.items())
+            cycle = c_max
+            ratio = r_max
+            reverse = not reverse
+        return ratio, cycle
