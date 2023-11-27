@@ -16,12 +16,15 @@ def set_default(gra: GraphMut, weight: str, value: Domain) -> None:
     :param gra: The parameter `gra` is of type `GraphMut`, which is likely a mutable graph data
     structure. It represents a graph where each node has a dictionary of neighbors and their
     corresponding edge attributes
+
     :type gra: GraphMut
-    :param weight: The `weight` parameter is a string that represents the weight attribute of the edges
-    in the graph
+
+    :param weight: The `weight` parameter is a string that represents the weight attribute of the edges in the graph
+
     :type weight: str
-    :param value: The `value` parameter is the default value that will be set for the specified weight
-    attribute in the graph
+
+    :param value: The `value` parameter is the default value that will be set for the specified weight attribute in the graph
+
     :type value: Domain
     """
     for _, nbrs in gra.items():
@@ -43,9 +46,12 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
         :param gra: A mapping of nodes to a mapping of nodes to a mapping of strings to domains. It
         represents a graph structure where each node is connected to other nodes through edges, and each
         edge has associated attributes represented by strings and domains
+
         :type gra: Mapping[Node, Mapping[Node, Mapping[str, Domain]]]
+
         :param result_type: The parameter `result_type` is a type. It is used to specify the type of the variable `result_type`. The type
         can be any valid Python type, such as `int`, `str`, `list`, etc
+
         :type result_type: type
         """
         self.gra: Mapping[Node, Mapping[Node, Mapping[str, Domain]]] = gra
@@ -55,14 +61,17 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
         """
         The function calculates the distance based on the ratio and edge information.
 
-        :param ratio: The ratio parameter is of type Ratio. It is used in the calculation of the return
-        value
+        :param ratio: The ratio parameter is of type Ratio. It is used in the calculation of the return value
+
         :type ratio: Ratio
+
         :param edge: The `edge` parameter is a mutable mapping (dictionary-like object) that contains
         information about a specific edge in a graph. It has two keys: "cost" and "time". The value
         associated with the "cost" key represents the cost of traversing the edge, while the value
         associated with
+
         :type edge: MutableMapping[str, Domain]
+
         :return: the result of the expression `self.result_type(edge["cost"]) - ratio * edge["time"]`.
         """
         return self.result_type(edge["cost"]) - ratio * edge["time"]
@@ -74,7 +83,9 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
         :param cycle: The `cycle` parameter is of type `Cycle`. It represents a cycle, which is a sequence
         of edges in a graph that starts and ends at the same vertex. Each edge in the cycle is a dictionary
         with keys "cost" and "time", representing the cost and time associated with that edge
+
         :type cycle: Cycle
+
         :return: a Ratio object.
         """
         total_cost = sum(edge["cost"] for edge in cycle)
@@ -113,6 +124,7 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
         :param gra: The `gra` parameter is a mapping of nodes to a mapping of nodes to any type of value. It
         represents a graph where each node is associated with a set of neighboring nodes and their
         corresponding values
+
         :type gra: Graph
         """
         self.gra: Graph = gra
@@ -123,9 +135,13 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
 
         :param dist: A mutable mapping that maps each node in the graph to a ratio value. This represents
         the initial distribution of ratios for each node
+
         :type dist: MutableMapping[Node, Domain]
+
         :param r0: The parameter `r0` is of type `Ratio` and represents the initial ratio value
+
         :type r0: Ratio
+
         :return: The function `run` returns a tuple containing the ratio and cycle.
         """
         omega = CycleRatioAPI(self.gra, type(r0))

@@ -122,6 +122,7 @@ def do_case_pred(gra, dist):
     Returns:
         [type]: [description]
     """
+
     def update_ok(dist, v):
         return True
 
@@ -145,6 +146,7 @@ def do_case_succ(gra, dist):
     Returns:
         [type]: [description]
     """
+
     def update_ok(dist, v):
         return True
 
