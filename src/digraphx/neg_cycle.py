@@ -72,15 +72,14 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         visited: Dict[Node, Node] = {}
         for vtx in filter(lambda vtx: vtx not in visited, self.digraph):
             utx = vtx
-            while True:
-                visited[utx] = vtx
-                if utx not in self.pred:
-                    break
+            visited[utx] = vtx
+            while utx in self.pred:
                 utx, _ = self.pred[utx]
                 if utx in visited:
                     if visited[utx] == vtx:
                         yield utx
                     break
+                visited[utx] = vtx
 
     def relax(
         self,
