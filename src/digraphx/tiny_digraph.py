@@ -1,5 +1,4 @@
 import networkx as nx
-
 from mywheel.lict import Lict
 
 

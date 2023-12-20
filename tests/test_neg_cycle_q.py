@@ -2,8 +2,8 @@
 from __future__ import print_function
 
 import networkx as nx
-
 from mywheel.lict import Lict
+
 from digraphx.neg_cycle_q import NegCycleFinder
 from digraphx.tiny_digraph import DiGraphAdapter, TinyDiGraph
 

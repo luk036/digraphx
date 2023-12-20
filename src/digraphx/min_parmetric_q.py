@@ -2,12 +2,12 @@ from abc import abstractmethod
 from fractions import Fraction
 from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar
 
-from .neg_cycle import Cycle, Domain, Edge, NegCycleFinder, Node
+from .neg_cycle_q import Cycle, Domain, Edge, NegCycleFinder, Node
 
 Ratio = TypeVar("Ratio", Fraction, float)  # Comparable field
 
 
-# The `ParametricAPI` class is a generic class with abstract methods for calculating distance and zero
+# The `MinParametricAPI` class is a generic class with abstract methods for calculating distance and zero
 # cancellation.
 class MinParametricAPI(Generic[Node, Edge, Ratio]):
     @abstractmethod
@@ -50,7 +50,7 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
     def __init__(
         self,
         gra: Mapping[Node, Mapping[Node, Edge]],
-        omega: ParametricAPI[Node, Edge, Ratio],
+        omega: MinParametricAPI[Node, Edge, Ratio],
     ) -> None:
         """
         The `__init__` function initializes an object with a graph and an omega parameter.
@@ -67,7 +67,7 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
         :type omega: ParametricAPI[Node, Edge, Ratio]
         """
         self.ncf = NegCycleFinder(gra)
-        self.omega: ParametricAPI[Node, Edge, Ratio] = omega
+        self.omega: MinParametricAPI[Node, Edge, Ratio] = omega
 
     def run(
         self,
@@ -109,11 +109,11 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
 
         while True:
             if reverse:
-                cycles = omega.howard_succ(dist, get_weight, update_ok)
+                cycles = self.ncf.howard_succ(dist, get_weight, update_ok)
             else:
-                cycles = omega.howard_pred(dist, get_weight, update_ok)
+                cycles = self.ncf.howard_pred(dist, get_weight, update_ok)
             for c_i in cycles:
-                r_i = zero_cancel(c_i)
+                r_i = self.omega.zero_cancel(c_i)
                 if r_max < r_i:
                     r_max = r_i
                     c_max = c_i
