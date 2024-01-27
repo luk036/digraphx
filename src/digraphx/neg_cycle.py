@@ -1,7 +1,16 @@
 """
-Negative cycle detection for directed graphs.
-1. Based on Howard's policy graph algorithm
-2. Looking for more than one negative cycle
+ This code defines a `NegCycleFinder` class, which is used to find negative cycles in a given directed graph. The `NegCycleFinder` class has the following methods:
+
+1. `__init__(self, digraph: MutableMapping[Node, List[Edge]])`: The constructor initializes an instance of the `NegCycleFinder` class with the given directed graph.
+2. `relax(self, dist: MutableMapping[Node, Domain], get_weight: Callable[[Edge], Domain]) -> bool`: This method performs one iteration of Bellman-Ford algorithm to relax all edges in the graph and update the shortest distances to their neighbors. It returns a boolean value indicating if any changes were made during this iteration.
+3. `howard(self, dist: MutableMapping[Node, Domain], get_weight: Callable[[Edge], Domain]) -> Generator[Cycle, None, None]`: This method finds negative cycles in the graph using the Howard's algorithm and returns a generator that yields a list of edges for each cycle.
+4. `cycle_list(self, handle: Node) -> Cycle`: This method returns a list of edges that form a cycle in the graph, starting from a given node.
+5. `is_negative(self, handle: Node, dist: MutableMapping[Node, Domain], get_weight: Callable[[Edge], Domain]) -> bool`: This method checks if a cycle is negative by comparing the distances between nodes and the weights of the edges.
+
+Here's a brief explanation of the algorithms used in this code:
+
+1. Bellman-Ford Algorithm: It is a shortest path algorithm that can find single source shortest paths in a graph with negative edge weights. It runs in O(|V|*|E|) time complexity.
+2. Howard's Policy Graph Algorithm: It is used to find cycles in a directed graph and is based on the Bellman-Ford Algorithm. It runs in O(|V|*|E| + |V|*|E|^2) time complexity in the worst case.
 """
 from fractions import Fraction
 from typing import (
