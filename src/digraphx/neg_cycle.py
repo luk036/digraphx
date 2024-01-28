@@ -12,6 +12,7 @@ Here's a brief explanation of the algorithms used in this code:
 1. Bellman-Ford Algorithm: It is a shortest path algorithm that can find single source shortest paths in a graph with negative edge weights. It runs in O(|V|*|E|) time complexity.
 2. Howard's Policy Graph Algorithm: It is used to find cycles in a directed graph and is based on the Bellman-Ford Algorithm. It runs in O(|V|*|E| + |V|*|E|^2) time complexity in the worst case.
 """
+
 from fractions import Fraction
 from typing import (
     Callable,
@@ -49,17 +50,17 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
 
     pred: Dict[Node, Tuple[Node, Edge]] = {}
 
-    def __init__(self, gra: Mapping[Node, Mapping[Node, Edge]]) -> None:
+    def __init__(self, digraph: Mapping[Node, Mapping[Node, Edge]]) -> None:
         """
         The function initializes a graph object with an adjacency list.
 
-        :param gra: The parameter `gra` is a mapping that represents an adjacency list. It is a
+        :param digraph: The parameter `digraph` is a mapping that represents an adjacency list. It is a
         dictionary-like object where the keys are nodes and the values are mappings of nodes to edges. Each
         edge represents a connection between two nodes in a directed graph
 
-        :type gra: Mapping[Node, Mapping[Node, Edge]]
+        :type digraph: Mapping[Node, Mapping[Node, Edge]]
         """
-        self.digraph = gra
+        self.digraph = digraph
 
     def find_cycle(self) -> Generator[Node, None, None]:
         """
@@ -69,12 +70,12 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             Generator[Node, None, None]: a start node of the cycle
 
         Examples:
-            >>> gra = {
+            >>> digraph = {
             ...     "a0": {"a1": 7, "a2": 5},
             ...     "a1": {"a0": 0, "a2": 3},
             ...     "a2": {"a1": 1, "a0": 2},
             ... }
-            >>> finder = NegCycleFinder(gra)
+            >>> finder = NegCycleFinder(digraph)
             >>> for cycle in finder.find_cycle():
             ...     print(cycle)
         """
@@ -113,8 +114,8 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         :return: a boolean value indicating whether any changes were made to the `dist` mapping and `pred` dictionary.
         """
         changed = False
-        for utx, nbrs in self.digraph.items():
-            for vtx, edge in nbrs.items():
+        for utx, neighbors in self.digraph.items():
+            for vtx, edge in neighbors.items():
                 distance = dist[utx] + get_weight(edge)
                 if dist[vtx] > distance:
                     dist[vtx] = distance
@@ -141,13 +142,13 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         :type get_weight: Callable[[Edge], Domain]
 
         Examples:
-            >>> gra = {
+            >>> digraph = {
             ...     "a0": {"a1": 7, "a2": 5},
             ...     "a1": {"a0": 0, "a2": 3},
             ...     "a2": {"a1": 1, "a0": 2},
             ... }
-            >>> dist = {vtx: 0 for vtx in gra}
-            >>> finder = NegCycleFinder(gra)
+            >>> dist = {vtx: 0 for vtx in digraph}
+            >>> finder = NegCycleFinder(digraph)
             >>> has_neg = False
             >>> for _ in finder.howard(dist, lambda edge: edge):
             ...     has_neg = True

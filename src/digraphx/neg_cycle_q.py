@@ -3,6 +3,7 @@ Negative cycle detection for directed graphs.
 1. Based on Howard's policy graph algorithm
 2. Looking for more than one negative cycle
 """
+
 from fractions import Fraction
 from typing import (
     Callable,
@@ -116,8 +117,8 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         :return: a boolean value indicating whether any changes were made to the `dist` mapping and `pred` dictionary.
         """
         changed = False
-        for utx, nbrs in self.digraph.items():
-            for vtx, edge in nbrs.items():
+        for utx, neighbors in self.digraph.items():
+            for vtx, edge in neighbors.items():
                 distance = dist[utx] + get_weight(edge)
                 if dist[vtx] > distance and update_ok(dist[vtx], distance):
                     dist[vtx] = distance
@@ -153,8 +154,8 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         :return: a boolean value indicating whether any changes were made to the `dist` mapping and `pred` dictionary.
         """
         changed = False
-        for utx, nbrs in self.digraph.items():
-            for vtx, edge in nbrs.items():
+        for utx, neighbors in self.digraph.items():
+            for vtx, edge in neighbors.items():
                 distance = dist[vtx] - get_weight(edge)
                 if dist[utx] < distance and update_ok(dist[utx], distance):
                     dist[utx] = distance

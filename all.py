@@ -51,8 +51,8 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         get_weight: Callable[[Edge], Domain],
     ) -> bool:
         changed = False
-        for utx, nbrs in self.digraph.items():
-            for vtx, edge in nbrs.items():
+        for utx, neighbors in self.digraph.items():
+            for vtx, edge in neighbors.items():
                 distance = dist[utx] + get_weight(edge)
                 if dist[vtx] > distance:
                     dist[vtx] = distance
@@ -152,8 +152,8 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
 
 
 def set_default(gra: DiGraphAdapter, weight: str, value: Domain) -> None:
-    for _, nbrs in gra.items():
-        for _, e in nbrs.items():
+    for _, neighbors in gra.items():
+        for _, e in neighbors.items():
             if e.get(weight, None) is None:
                 e[weight] = value
 

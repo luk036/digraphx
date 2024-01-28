@@ -27,8 +27,8 @@ def set_default(gra: GraphMut, weight: str, value: Domain) -> None:
 
     :type value: Domain
     """
-    for _, nbrs in gra.items():
-        for _, e in nbrs.items():
+    for _, neighbors in gra.items():
+        for _, e in neighbors.items():
             if e.get(weight, None) is None:
                 e[weight] = value
 
