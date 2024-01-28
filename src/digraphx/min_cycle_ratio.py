@@ -9,15 +9,15 @@ Graph = Mapping[Node, Mapping[Node, Mapping[str, Domain]]]
 GraphMut = MutableMapping[Node, MutableMapping[Node, MutableMapping[str, Domain]]]
 
 
-def set_default(gra: GraphMut, weight: str, value: Domain) -> None:
+def set_default(digraph: GraphMut, weight: str, value: Domain) -> None:
     """
     This function sets a default value for a specified weight in a graph.
 
-    :param gra: The parameter `gra` is of type `GraphMut`, which is likely a mutable graph data
+    :param digraph: The parameter `digraph` is of type `GraphMut`, which is likely a mutable graph data
     structure. It represents a graph where each node has a dictionary of neighbors and their
     corresponding edge attributes
 
-    :type gra: GraphMut
+    :type digraph: GraphMut
 
     :param weight: The `weight` parameter is a string that represents the weight attribute of the edges in the graph
 
@@ -27,7 +27,7 @@ def set_default(gra: GraphMut, weight: str, value: Domain) -> None:
 
     :type value: Domain
     """
-    for _, neighbors in gra.items():
+    for _, neighbors in digraph.items():
         for _, e in neighbors.items():
             if e.get(weight, None) is None:
                 e[weight] = value
@@ -37,24 +37,26 @@ def set_default(gra: GraphMut, weight: str, value: Domain) -> None:
 # and time of its edges.
 class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
     def __init__(
-        self, gra: Mapping[Node, Mapping[Node, Mapping[str, Domain]]], result_type: type
+        self,
+        digraph: Mapping[Node, Mapping[Node, Mapping[str, Domain]]],
+        result_type: type,
     ) -> None:
         """
-        This function initializes an object with two parameters, `gra` and `result_type`, and assigns them to instance
+        This function initializes an object with two parameters, `digraph` and `result_type`, and assigns them to instance
         variables.
 
-        :param gra: A mapping of nodes to a mapping of nodes to a mapping of strings to domains. It
+        :param digraph: A mapping of nodes to a mapping of nodes to a mapping of strings to domains. It
         represents a graph structure where each node is connected to other nodes through edges, and each
         edge has associated attributes represented by strings and domains
 
-        :type gra: Mapping[Node, Mapping[Node, Mapping[str, Domain]]]
+        :type digraph: Mapping[Node, Mapping[Node, Mapping[str, Domain]]]
 
         :param result_type: The parameter `result_type` is a type. It is used to specify the type of the variable `result_type`. The type
         can be any valid Python type, such as `int`, `str`, `list`, etc
 
         :type result_type: type
         """
-        self.gra: Mapping[Node, Mapping[Node, Mapping[str, Domain]]] = gra
+        self.digraph: Mapping[Node, Mapping[Node, Mapping[str, Domain]]] = digraph
         self.result_type = result_type
 
     def distance(self, ratio: Ratio, edge: MutableMapping[str, Domain]) -> Ratio:
@@ -117,17 +119,17 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
     problem are therefore of great practical importance.
     """
 
-    def __init__(self, gra: Graph) -> None:
+    def __init__(self, digraph: Graph) -> None:
         """
         The function initializes an instance of a class with a graph object.
 
-        :param gra: The `gra` parameter is a mapping of nodes to a mapping of nodes to any type of value. It
+        :param digraph: The `digraph` parameter is a mapping of nodes to a mapping of nodes to any type of value. It
         represents a graph where each node is associated with a set of neighboring nodes and their
         corresponding values
 
-        :type gra: Graph
+        :type digraph: Graph
         """
-        self.gra: Graph = gra
+        self.digraph: Graph = digraph
 
     def run(self, dist: MutableMapping[Node, Domain], r0: Ratio) -> Tuple[Ratio, Cycle]:
         """
@@ -144,7 +146,7 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
 
         :return: The function `run` returns a tuple containing the ratio and cycle.
         """
-        omega = CycleRatioAPI(self.gra, type(r0))
-        solver = MaxParametricSolver(self.gra, omega)
+        omega = CycleRatioAPI(self.digraph, type(r0))
+        solver = MaxParametricSolver(self.digraph, omega)
         ratio, cycle = solver.run(dist, r0)
         return ratio, cycle

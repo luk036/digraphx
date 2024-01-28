@@ -42,17 +42,17 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
     pred: Dict[Node, Tuple[Node, Edge]] = {}
     succ: Dict[Node, Tuple[Node, Edge]] = {}
 
-    def __init__(self, gra: Mapping[Node, Mapping[Node, Edge]]) -> None:
+    def __init__(self, digraph: Mapping[Node, Mapping[Node, Edge]]) -> None:
         """
         The function initializes a graph object with an adjacency list.
 
-        :param gra: The parameter `gra` is a mapping that represents an adjacency list. It is a
+        :param digraph: The parameter `digraph` is a mapping that represents an adjacency list. It is a
         dictionary-like object where the keys are nodes and the values are mappings of nodes to edges. Each
         edge represents a connection between two nodes in a directed graph
 
-        :type gra: Mapping[Node, Mapping[Node, Edge]]
+        :type digraph: Mapping[Node, Mapping[Node, Edge]]
         """
-        self.digraph = gra
+        self.digraph = digraph
 
     def find_cycle(self, point_to) -> Generator[Node, None, None]:
         """
@@ -67,12 +67,12 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             Generator[Node, None, None]: a start node of the cycle
 
         Examples:
-            >>> gra = {
+            >>> digraph = {
             ...     "a0": {"a1": 7, "a2": 5},
             ...     "a1": {"a0": 0, "a2": 3},
             ...     "a2": {"a1": 1, "a0": 2},
             ... }
-            >>> finder = NegCycleFinder(gra)
+            >>> finder = NegCycleFinder(digraph)
             >>> for cycle in finder.find_cycle(finder.pred):
             ...     print(cycle)
         """
@@ -188,14 +188,14 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         value of the vertex at the other
 
         Examples:
-            >>> gra = {
+            >>> digraph = {
             ...     "a0": {"a1": 7, "a2": 5},
             ...     "a1": {"a0": 0, "a2": 3},
             ...     "a2": {"a1": 1, "a0": 2},
             ... }
-            >>> dist = {vtx: 0 for vtx in gra}
+            >>> dist = {vtx: 0 for vtx in digraph}
             >>> def update_ok(dist, v) : return True
-            >>> finder = NegCycleFinder(gra)
+            >>> finder = NegCycleFinder(digraph)
             >>> has_neg = False
             >>> for _ in finder.howard_pred(dist, lambda edge: edge, update_ok):
             ...     has_neg = True
@@ -238,14 +238,14 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         value of the vertex at the other
 
         Examples:
-            >>> gra = {
+            >>> digraph = {
             ...     "a0": {"a1": 7, "a2": 5},
             ...     "a1": {"a0": 0, "a2": 3},
             ...     "a2": {"a1": 1, "a0": 2},
             ... }
             >>> def update_ok(dist, v) : return True
-            >>> dist = {vtx: 0 for vtx in gra}
-            >>> finder = NegCycleFinder(gra)
+            >>> dist = {vtx: 0 for vtx in digraph}
+            >>> finder = NegCycleFinder(digraph)
             >>> has_neg = False
             >>> for _ in finder.howard_succ(dist, lambda edge: edge, update_ok):
             ...     has_neg = True

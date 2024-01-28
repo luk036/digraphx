@@ -49,24 +49,24 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
 
     def __init__(
         self,
-        gra: Mapping[Node, Mapping[Node, Edge]],
+        digraph: Mapping[Node, Mapping[Node, Edge]],
         omega: MinParametricAPI[Node, Edge, Ratio],
     ) -> None:
         """
         The `__init__` function initializes an object with a graph and an omega parameter.
 
-        :param gra: gra is a mapping of nodes to a mapping of nodes to edges. It represents a graph
+        :param digraph: digraph is a mapping of nodes to a mapping of nodes to edges. It represents a graph
         where each node is connected to other nodes through edges. The edges are represented by the
         mapping of nodes to edges
 
-        :type gra: Mapping[Node, Mapping[Node, Edge]]
+        :type digraph: Mapping[Node, Mapping[Node, Edge]]
 
         :param omega: The `omega` parameter is an instance of the `ParametricAPI` class. It represents
         some kind of parametric API that takes three type parameters: `Node`, `Edge`, and `Ratio`
 
         :type omega: ParametricAPI[Node, Edge, Ratio]
         """
-        self.ncf = NegCycleFinder(gra)
+        self.ncf = NegCycleFinder(digraph)
         self.omega: MinParametricAPI[Node, Edge, Ratio] = omega
 
     def run(

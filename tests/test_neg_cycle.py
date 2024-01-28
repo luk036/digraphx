@@ -9,7 +9,7 @@ from digraphx.tiny_digraph import DiGraphAdapter, TinyDiGraph
 
 
 def test_raw_graph_by_lict():
-    gra = Lict(
+    digraph = Lict(
         [
             {1: 7, 2: 5},
             {0: 0, 2: 3},
@@ -18,7 +18,7 @@ def test_raw_graph_by_lict():
     )
 
     dist = Lict([0, 0, 0])
-    finder = NegCycleFinder(gra)
+    finder = NegCycleFinder(digraph)
     has_neg = False
     for _ in finder.howard(dist, lambda edge: edge):
         has_neg = True
@@ -27,14 +27,14 @@ def test_raw_graph_by_lict():
 
 
 def test_raw_graph_by_dict():
-    gra = {
+    digraph = {
         "a0": {"a1": 7, "a2": 5},
         "a1": {"a0": 0, "a2": 3},
         "a2": {"a1": 1, "a0": 2},
     }
 
-    dist = {vtx: 0 for vtx in gra}
-    finder = NegCycleFinder(gra)
+    dist = {vtx: 0 for vtx in digraph}
+    finder = NegCycleFinder(digraph)
     has_neg = False
     for _ in finder.howard(dist, lambda edge: edge):
         has_neg = True
@@ -48,10 +48,10 @@ def create_test_case1():
     Returns:
         [type]: [description]
     """
-    gra = nx.cycle_graph(5, create_using=DiGraphAdapter())
-    gra[1][2]["weight"] = -5
-    gra.add_edges_from([(5, n) for n in gra])
-    return gra
+    digraph = nx.cycle_graph(5, create_using=DiGraphAdapter())
+    digraph[1][2]["weight"] = -5
+    digraph.add_edges_from([(5, n) for n in digraph])
+    return digraph
 
 
 def create_test_case_timing():
@@ -60,10 +60,10 @@ def create_test_case_timing():
     Returns:
         [type]: [description]
     """
-    gra = DiGraphAdapter()
+    digraph = DiGraphAdapter()
     nodelist = ["a1", "a2", "a3"]
-    gra.add_nodes_from(nodelist)
-    gra.add_edges_from(
+    digraph.add_nodes_from(nodelist)
+    digraph.add_edges_from(
         [
             ("a1", "a2", {"weight": 7}),
             ("a2", "a1", {"weight": 0}),
@@ -73,7 +73,7 @@ def create_test_case_timing():
             ("a1", "a3", {"weight": 5}),
         ]
     )
-    return gra
+    return digraph
 
 
 def create_tiny_graph():
@@ -82,9 +82,9 @@ def create_tiny_graph():
     Returns:
         [type]: [description]
     """
-    gra = TinyDiGraph()
-    gra.init_nodes(3)
-    gra.add_edges_from(
+    digraph = TinyDiGraph()
+    digraph.init_nodes(3)
+    digraph.add_edges_from(
         [
             (0, 1, {"weight": 7}),
             (1, 0, {"weight": 0}),
@@ -94,14 +94,14 @@ def create_tiny_graph():
             (0, 2, {"weight": 5}),
         ]
     )
-    return gra
+    return digraph
 
 
-def do_case(gra, dist):
+def do_case(digraph, dist):
     """[summary]
 
     Arguments:
-        gra ([type]): [description]
+        digraph ([type]): [description]
 
     Returns:
         [type]: [description]
@@ -110,7 +110,7 @@ def do_case(gra, dist):
     def get_weight(edge):
         return edge.get("weight", 1)
 
-    ncf = NegCycleFinder(gra)
+    ncf = NegCycleFinder(digraph)
     has_neg = False
     for _ in ncf.howard(dist, get_weight):
         has_neg = True
@@ -119,21 +119,21 @@ def do_case(gra, dist):
 
 
 def test_neg_cycle():
-    gra = create_test_case1()
-    dist = list(0 for _ in gra)
-    has_neg = do_case(gra, dist)
+    digraph = create_test_case1()
+    dist = list(0 for _ in digraph)
+    has_neg = do_case(digraph, dist)
     assert has_neg
 
 
 def test_timing_graph():
-    gra = create_test_case_timing()
-    dist = {vtx: 0 for vtx in gra}
-    has_neg = do_case(gra, dist)
+    digraph = create_test_case_timing()
+    dist = {vtx: 0 for vtx in digraph}
+    has_neg = do_case(digraph, dist)
     assert not has_neg
 
 
 def test_tiny_graph():
-    gra = create_tiny_graph()
+    digraph = create_tiny_graph()
     dist = Lict([0, 0, 0])
-    has_neg = do_case(gra, dist)
+    has_neg = do_case(digraph, dist)
     assert not has_neg

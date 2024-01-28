@@ -28,8 +28,8 @@ class DiGraphAdapter(nx.DiGraph):
 class NegCycleFinder(Generic[Node, Edge, Domain]):
     pred: Dict[Node, Tuple[Node, Edge]] = {}
 
-    def __init__(self, gra: DiGraphAdapter) -> None:
-        self.digraph = gra
+    def __init__(self, digraph: DiGraphAdapter) -> None:
+        self.digraph = digraph
 
     def find_cycle(self) -> Generator[Node, None, None]:
         visited: Dict[Node, Node] = {}
@@ -119,10 +119,10 @@ class ParametricAPI(Generic[Node, Edge, Ratio]):
 class MaxParametricSolver(Generic[Node, Edge, Ratio]):
     def __init__(
         self,
-        gra: DiGraphAdapter,
+        digraph: DiGraphAdapter,
         omega: ParametricAPI[Node, Edge, Ratio],
     ) -> None:
-        self.ncf = NegCycleFinder(gra)
+        self.ncf = NegCycleFinder(digraph)
         self.omega: ParametricAPI[Node, Edge, Ratio] = omega
 
     def run(
@@ -151,8 +151,8 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
         return ratio, cycle
 
 
-def set_default(gra: DiGraphAdapter, weight: str, value: Domain) -> None:
-    for _, neighbors in gra.items():
+def set_default(digraph: DiGraphAdapter, weight: str, value: Domain) -> None:
+    for _, neighbors in digraph.items():
         for _, e in neighbors.items():
             if e.get(weight, None) is None:
                 e[weight] = value
@@ -160,9 +160,9 @@ def set_default(gra: DiGraphAdapter, weight: str, value: Domain) -> None:
 
 class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
     def __init__(
-        self, gra: Mapping[Node, Mapping[Node, Mapping[str, Domain]]], K: type
+        self, digraph: Mapping[Node, Mapping[Node, Mapping[str, Domain]]], K: type
     ) -> None:
-        self.gra: Mapping[Node, Mapping[Node, Mapping[str, Domain]]] = gra
+        self.digraph: Mapping[Node, Mapping[Node, Mapping[str, Domain]]] = digraph
         self.K = K
 
     def distance(self, ratio: Ratio, edge: MutableMapping[str, Domain]) -> Ratio:
@@ -175,28 +175,28 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
 
 
 class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
-    def __init__(self, gra: DiGraphAdapter) -> None:
-        self.gra: DiGraphAdapter = gra
+    def __init__(self, digraph: DiGraphAdapter) -> None:
+        self.digraph: DiGraphAdapter = digraph
 
     def run(self, dist: MutableMapping[Node, Domain], r0: Ratio) -> Tuple[Ratio, Cycle]:
-        omega = CycleRatioAPI(self.gra, type(r0))
-        solver = MaxParametricSolver(self.gra, omega)
+        omega = CycleRatioAPI(self.digraph, type(r0))
+        solver = MaxParametricSolver(self.digraph, omega)
         ratio, cycle = solver.run(dist, r0)
         return ratio, cycle
 
 
 def create_test_case1():
-    gra = nx.cycle_graph(5, create_using=DiGraphAdapter())
-    gra[1][2]["weight"] = -5
-    gra.add_edges_from([(5, n) for n in gra])
-    return gra
+    digraph = nx.cycle_graph(5, create_using=DiGraphAdapter())
+    digraph[1][2]["weight"] = -5
+    digraph.add_edges_from([(5, n) for n in digraph])
+    return digraph
 
 
 def create_test_case_timing():
-    gra = DiGraphAdapter()
+    digraph = DiGraphAdapter()
     nodelist = ["a1", "a2", "a3"]
-    gra.add_nodes_from(nodelist)
-    gra.add_edges_from(
+    digraph.add_nodes_from(nodelist)
+    digraph.add_edges_from(
         [
             ("a1", "a2", {"weight": 7}),
             ("a2", "a1", {"weight": 0}),
@@ -206,17 +206,17 @@ def create_test_case_timing():
             ("a1", "a3", {"weight": 5}),
         ]
     )
-    return gra
+    return digraph
 
 
 def test_cycle_ratio():
-    gra = create_test_case1()
-    set_default(gra, "time", 1)
-    set_default(gra, "cost", 1)
-    gra[1][2]["cost"] = 5
-    # dist = list(0 for _ in gra)
-    dist = {vtx: 0 for vtx in gra}
-    solver = MinCycleRatioSolver(gra)
+    digraph = create_test_case1()
+    set_default(digraph, "time", 1)
+    set_default(digraph, "cost", 1)
+    digraph[1][2]["cost"] = 5
+    # dist = list(0 for _ in digraph)
+    dist = {vtx: 0 for vtx in digraph}
+    solver = MinCycleRatioSolver(digraph)
     ratio, cycle = solver.run(dist, Fraction(10000, 1))
     print(ratio)
     print(cycle)
@@ -225,17 +225,17 @@ def test_cycle_ratio():
 
 
 def test_cycle_ratio_timing():
-    gra = create_test_case_timing()
-    set_default(gra, "time", 1)
-    gra["a1"]["a2"]["cost"] = 7
-    gra["a2"]["a1"]["cost"] = -1
-    gra["a2"]["a3"]["cost"] = 3
-    gra["a3"]["a2"]["cost"] = 0
-    gra["a3"]["a1"]["cost"] = 2
-    gra["a1"]["a3"]["cost"] = 4
+    digraph = create_test_case_timing()
+    set_default(digraph, "time", 1)
+    digraph["a1"]["a2"]["cost"] = 7
+    digraph["a2"]["a1"]["cost"] = -1
+    digraph["a2"]["a3"]["cost"] = 3
+    digraph["a3"]["a2"]["cost"] = 0
+    digraph["a3"]["a1"]["cost"] = 2
+    digraph["a1"]["a3"]["cost"] = 4
     # make sure no parallel edges in above!!!
-    dist = {vtx: Fraction(0, 1) for vtx in gra}
-    solver = MinCycleRatioSolver(gra)
+    dist = {vtx: Fraction(0, 1) for vtx in digraph}
+    solver = MinCycleRatioSolver(digraph)
     ratio, cycle = solver.run(dist, Fraction(10000, 1))
     print(ratio)
     print(cycle)
@@ -243,11 +243,11 @@ def test_cycle_ratio_timing():
     assert ratio == Fraction(1, 1)
 
 
-def do_case(gra, dist):
+def do_case(digraph, dist):
     def get_weight(edge):
         return edge.get("weight", 1)
 
-    ncf = NegCycleFinder(gra)
+    ncf = NegCycleFinder(digraph)
     has_neg = False
     for _ in ncf.howard(dist, get_weight):
         has_neg = True
@@ -256,14 +256,14 @@ def do_case(gra, dist):
 
 
 def test_neg_cycle():
-    gra = create_test_case1()
-    dist = list(0 for _ in gra)
-    has_neg = do_case(gra, dist)
+    digraph = create_test_case1()
+    dist = list(0 for _ in digraph)
+    has_neg = do_case(digraph, dist)
     assert has_neg
 
 
 def test_timing_graph():
-    gra = create_test_case_timing()
-    dist = {vtx: 0 for vtx in gra}
-    has_neg = do_case(gra, dist)
+    digraph = create_test_case_timing()
+    dist = {vtx: 0 for vtx in digraph}
+    has_neg = do_case(digraph, dist)
     assert not has_neg

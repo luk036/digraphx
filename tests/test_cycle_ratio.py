@@ -15,13 +15,13 @@ from .test_neg_cycle import (
 
 
 def test_cycle_ratio_raw():
-    gra = {
+    digraph = {
         "a0": {"a1": {"cost": 7, "time": 1}, "a2": {"cost": 5, "time": 1}},
         "a1": {"a0": {"cost": 0, "time": 1}, "a2": {"cost": 3, "time": 1}},
         "a2": {"a1": {"cost": 1, "time": 1}, "a0": {"cost": 2, "time": 1}},
     }
-    dist = {vtx: 0 for vtx in gra}
-    solver = MinCycleRatioSolver(gra)
+    dist = {vtx: 0 for vtx in digraph}
+    solver = MinCycleRatioSolver(digraph)
     ratio, cycle = solver.run(dist, Fraction(10000, 1))
     print(ratio)
     print(cycle)
@@ -30,12 +30,12 @@ def test_cycle_ratio_raw():
 
 
 def test_cycle_ratio():
-    gra = create_test_case1()
-    set_default(gra, "time", 1)
-    set_default(gra, "cost", 1)
-    gra[1][2]["cost"] = 5
-    dist = {vtx: 0 for vtx in gra}
-    solver = MinCycleRatioSolver(gra)
+    digraph = create_test_case1()
+    set_default(digraph, "time", 1)
+    set_default(digraph, "cost", 1)
+    digraph[1][2]["cost"] = 5
+    dist = {vtx: 0 for vtx in digraph}
+    solver = MinCycleRatioSolver(digraph)
     ratio, cycle = solver.run(dist, Fraction(10000, 1))
     print(ratio)
     print(cycle)
@@ -44,17 +44,17 @@ def test_cycle_ratio():
 
 
 def test_cycle_ratio_timing():
-    gra = create_test_case_timing()
-    set_default(gra, "time", 1)
-    gra["a1"]["a2"]["cost"] = 7
-    gra["a2"]["a1"]["cost"] = -1
-    gra["a2"]["a3"]["cost"] = 3
-    gra["a3"]["a2"]["cost"] = 0
-    gra["a3"]["a1"]["cost"] = 2
-    gra["a1"]["a3"]["cost"] = 4
+    digraph = create_test_case_timing()
+    set_default(digraph, "time", 1)
+    digraph["a1"]["a2"]["cost"] = 7
+    digraph["a2"]["a1"]["cost"] = -1
+    digraph["a2"]["a3"]["cost"] = 3
+    digraph["a3"]["a2"]["cost"] = 0
+    digraph["a3"]["a1"]["cost"] = 2
+    digraph["a1"]["a3"]["cost"] = 4
     # make sure no parallel edges in above!!!
-    dist = {vtx: Fraction(0, 1) for vtx in gra}
-    solver = MinCycleRatioSolver(gra)
+    dist = {vtx: Fraction(0, 1) for vtx in digraph}
+    solver = MinCycleRatioSolver(digraph)
     ratio, cycle = solver.run(dist, Fraction(10000, 1))
     print(ratio)
     print(cycle)
@@ -63,17 +63,17 @@ def test_cycle_ratio_timing():
 
 
 def test_cycle_ratio_tiny_graph():
-    gra = create_tiny_graph()
-    set_default(gra, "time", 1)
-    gra[0][1]["cost"] = 7
-    gra[1][0]["cost"] = -1
-    gra[1][2]["cost"] = 3
-    gra[2][1]["cost"] = 0
-    gra[2][0]["cost"] = 2
-    gra[0][2]["cost"] = 4
+    digraph = create_tiny_graph()
+    set_default(digraph, "time", 1)
+    digraph[0][1]["cost"] = 7
+    digraph[1][0]["cost"] = -1
+    digraph[1][2]["cost"] = 3
+    digraph[2][1]["cost"] = 0
+    digraph[2][0]["cost"] = 2
+    digraph[0][2]["cost"] = 4
     # make sure no parallel edges in above!!!
     dist = Lict([0 for _ in range(3)])
-    solver = MinCycleRatioSolver(gra)
+    solver = MinCycleRatioSolver(digraph)
     ratio, cycle = solver.run(dist, Fraction(10000, 1))
     print(ratio)
     print(cycle)
