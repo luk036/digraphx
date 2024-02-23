@@ -4,7 +4,7 @@ from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar
 from .neg_cycle import Cycle, Domain, Edge, Node
 from .parametric import MaxParametricSolver, ParametricAPI
 
-Ratio = TypeVar("Ratio", Fraction, float)  # Comparable field
+Ratio = TypeVar("Ratio", Fraction, float)
 Graph = Mapping[Node, Mapping[Node, Mapping[str, Domain]]]
 GraphMut = MutableMapping[Node, MutableMapping[Node, MutableMapping[str, Domain]]]
 
@@ -14,8 +14,8 @@ def set_default(digraph: GraphMut, weight: str, value: Domain) -> None:
     This function sets a default value for a specified weight in a graph.
 
     :param digraph: The parameter `digraph` is of type `GraphMut`, which is likely a mutable graph data
-    structure. It represents a graph where each node has a dictionary of neighbors and their
-    corresponding edge attributes
+        structure. It represents a graph where each node has a dictionary of neighbors and their
+        corresponding edge attributes
 
     :type digraph: GraphMut
 
@@ -46,13 +46,13 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
         variables.
 
         :param digraph: A mapping of nodes to a mapping of nodes to a mapping of strings to domains. It
-        represents a graph structure where each node is connected to other nodes through edges, and each
-        edge has associated attributes represented by strings and domains
+            represents a graph structure where each node is connected to other nodes through edges, and each
+            edge has associated attributes represented by strings and domains
 
         :type digraph: Mapping[Node, Mapping[Node, Mapping[str, Domain]]]
 
         :param result_type: The parameter `result_type` is a type. It is used to specify the type of the variable `result_type`. The type
-        can be any valid Python type, such as `int`, `str`, `list`, etc
+            can be any valid Python type, such as `int`, `str`, `list`, etc
 
         :type result_type: type
         """
@@ -68,9 +68,9 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
         :type ratio: Ratio
 
         :param edge: The `edge` parameter is a mutable mapping (dictionary-like object) that contains
-        information about a specific edge in a graph. It has two keys: "cost" and "time". The value
-        associated with the "cost" key represents the cost of traversing the edge, while the value
-        associated with
+            information about a specific edge in a graph. It has two keys: "cost" and "time". The value
+            associated with the "cost" key represents the cost of traversing the edge, while the value
+            associated with
 
         :type edge: MutableMapping[str, Domain]
 
@@ -83,8 +83,8 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
         The `zero_cancel` function calculates the ratio of the cost to time for a given cycle.
 
         :param cycle: The `cycle` parameter is of type `Cycle`. It represents a cycle, which is a sequence
-        of edges in a graph that starts and ends at the same vertex. Each edge in the cycle is a dictionary
-        with keys "cost" and "time", representing the cost and time associated with that edge
+            of edges in a graph that starts and ends at the same vertex. Each edge in the cycle is a dictionary
+            with keys "cost" and "time", representing the cost and time associated with that edge
 
         :type cycle: Cycle
 
@@ -124,8 +124,8 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
         The function initializes an instance of a class with a graph object.
 
         :param digraph: The `digraph` parameter is a mapping of nodes to a mapping of nodes to any type of value. It
-        represents a graph where each node is associated with a set of neighboring nodes and their
-        corresponding values
+            represents a graph where each node is associated with a set of neighboring nodes and their
+            corresponding values
 
         :type digraph: Graph
         """
@@ -136,7 +136,7 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
         This function takes a distance mapping and a ratio as input, and returns a ratio and a cycle.
 
         :param dist: A mutable mapping that maps each node in the graph to a ratio value. This represents
-        the initial distribution of ratios for each node
+            the initial distribution of ratios for each node
 
         :type dist: MutableMapping[Node, Domain]
 

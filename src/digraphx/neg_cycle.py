@@ -1,5 +1,5 @@
 """
- This code defines a `NegCycleFinder` class, which is used to find negative cycles in a given directed graph. The `NegCycleFinder` class has the following methods:
+This code defines a `NegCycleFinder` class, which is used to find negative cycles in a given directed graph. The `NegCycleFinder` class has the following methods:
 
 1. `__init__(self, digraph: MutableMapping[Node, List[Edge]])`: The constructor initializes an instance of the `NegCycleFinder` class with the given directed graph.
 2. `relax(self, dist: MutableMapping[Node, Domain], get_weight: Callable[[Edge], Domain]) -> bool`: This method performs one iteration of Bellman-Ford algorithm to relax all edges in the graph and update the shortest distances to their neighbors. It returns a boolean value indicating if any changes were made during this iteration.
@@ -9,8 +9,8 @@
 
 Here's a brief explanation of the algorithms used in this code:
 
-1. Bellman-Ford Algorithm: It is a shortest path algorithm that can find single source shortest paths in a graph with negative edge weights. It runs in O(|V|*|E|) time complexity.
-2. Howard's Policy Graph Algorithm: It is used to find cycles in a directed graph and is based on the Bellman-Ford Algorithm. It runs in O(|V|*|E| + |V|*|E|^2) time complexity in the worst case.
+1. Bellman-Ford Algorithm: It is a shortest path algorithm that can find single source shortest paths in a graph with negative edge weights. It runs in O(V*E) time complexity.
+2. Howard's Policy Graph Algorithm: It is used to find cycles in a directed graph and is based on the Bellman-Ford Algorithm. It runs in O(V*E + V*E^2) time complexity in the worst case.
 """
 
 from fractions import Fraction
@@ -55,8 +55,8 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         The function initializes a graph object with an adjacency list.
 
         :param digraph: The parameter `digraph` is a mapping that represents an adjacency list. It is a
-        dictionary-like object where the keys are nodes and the values are mappings of nodes to edges. Each
-        edge represents a connection between two nodes in a directed graph
+            dictionary-like object where the keys are nodes and the values are mappings of nodes to edges. Each
+            edge represents a connection between two nodes in a directed graph
 
         :type digraph: Mapping[Node, Mapping[Node, Edge]]
         """
@@ -101,13 +101,13 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         weights of edges in a graph.
 
         :param dist: `dist` is a mutable mapping that represents the current distances from a source node to
-        all other nodes in a graph. It is a mapping from nodes to their corresponding distances
+            all other nodes in a graph. It is a mapping from nodes to their corresponding distances
 
         :type dist: MutableMapping[Node, Domain]
 
         :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
-        input and returns a value of type `Domain`. This function is used to calculate the weight or cost
-        associated with an edge in the graph
+            input and returns a value of type `Domain`. This function is used to calculate the weight or cost
+            associated with an edge in the graph
 
         :type get_weight: Callable[[Edge], Domain]
 
@@ -132,12 +132,12 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         The `howard` function finds negative cycles in a graph and yields a list of cycles.
 
         :param dist: `dist` is a mutable mapping that maps each node in the graph to a domain value. The
-        domain value represents the distance or cost from the source node to that particular node
+            domain value represents the distance or cost from the source node to that particular node
 
         :type dist: MutableMapping[Node, Domain]
 
         :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
-        input and returns the weight of that edge
+            input and returns the weight of that edge
 
         :type get_weight: Callable[[Edge], Domain]
 
@@ -171,7 +171,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         The `cycle_list` function returns a list of edges that form a cycle in a graph, starting from a given node.
 
         :param handle: The `handle` parameter is a reference to a node in a graph. It represents the
-        starting point of the cycle in the list
+            starting point of the cycle in the list
 
         :type handle: Node
 
@@ -198,17 +198,17 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         nodes and the weights of the edges.
 
         :param handle: The `handle` parameter is a `Node` object that represents a vertex in a graph. It is
-        used as a starting point to check for negative cycles in the graph
+            used as a starting point to check for negative cycles in the graph
 
         :type handle: Node
 
         :param dist: `dist` is a mutable mapping that maps each node to its corresponding domain value. The
-        domain value represents the distance from the starting node to the current node in a graph
+            domain value represents the distance from the starting node to the current node in a graph
 
         :type dist: MutableMapping[Node, Domain]
 
         :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
-        input and returns the weight of that edge
+            input and returns the weight of that edge
 
         :type get_weight: Callable[[Edge], Domain]
 

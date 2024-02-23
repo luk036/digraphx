@@ -4,11 +4,9 @@ from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar
 
 from .neg_cycle_q import Cycle, Domain, Edge, NegCycleFinder, Node
 
-Ratio = TypeVar("Ratio", Fraction, float)  # Comparable field
+Ratio = TypeVar("Ratio", Fraction, float)
 
 
-# The `MinParametricAPI` class is a generic class with abstract methods for calculating distance and zero
-# cancellation.
 class MinParametricAPI(Generic[Node, Edge, Ratio]):
     @abstractmethod
     def distance(self, ratio: Ratio, edge: Edge) -> Ratio:
@@ -56,13 +54,13 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
         The `__init__` function initializes an object with a graph and an omega parameter.
 
         :param digraph: digraph is a mapping of nodes to a mapping of nodes to edges. It represents a graph
-        where each node is connected to other nodes through edges. The edges are represented by the
-        mapping of nodes to edges
+            where each node is connected to other nodes through edges. The edges are represented by the
+            mapping of nodes to edges
 
         :type digraph: Mapping[Node, Mapping[Node, Edge]]
 
         :param omega: The `omega` parameter is an instance of the `ParametricAPI` class. It represents
-        some kind of parametric API that takes three type parameters: `Node`, `Edge`, and `Ratio`
+            some kind of parametric API that takes three type parameters: `Node`, `Edge`, and `Ratio`
 
         :type omega: ParametricAPI[Node, Edge, Ratio]
         """
@@ -82,18 +80,18 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
         ratio.
 
         :param dist: The `dist` parameter is a mutable mapping where the keys are `Node` objects and the
-        values are `Domain` objects. It represents the distance between nodes in a graph
+            values are `Domain` objects. It represents the distance between nodes in a graph
 
         :type dist: MutableMapping[Node, Domain]
 
         :param ratio: The `ratio` parameter is a value that represents a ratio or proportion. It is used
-        as a threshold or target value in the algorithm
+            as a threshold or target value in the algorithm
 
         :type ratio: Ratio
 
         :param update_ok: The `update_ok` parameter is a function that determines whether an update to the
-        distance `dist[vtx_v]` is allowed. It takes two arguments: the current value of `dist[vtx_v]` and
-        the new value `d`. It should return `True` if the update is
+            distance `dist[vtx_v]` is allowed. It takes two arguments: the current value of `dist[vtx_v]` and
+            the new value `d`. It should return `True` if the update is
 
         :return: The function `run` returns a tuple containing the updated ratio (`ratio`) and the cycle (`cycle`).
         """

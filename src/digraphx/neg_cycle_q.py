@@ -1,5 +1,6 @@
 """
 Negative cycle detection for directed graphs.
+
 1. Based on Howard's policy graph algorithm
 2. Looking for more than one negative cycle
 """
@@ -47,8 +48,8 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         The function initializes a graph object with an adjacency list.
 
         :param digraph: The parameter `digraph` is a mapping that represents an adjacency list. It is a
-        dictionary-like object where the keys are nodes and the values are mappings of nodes to edges. Each
-        edge represents a connection between two nodes in a directed graph
+            dictionary-like object where the keys are nodes and the values are mappings of nodes to edges. Each
+            edge represents a connection between two nodes in a directed graph
 
         :type digraph: Mapping[Node, Mapping[Node, Edge]]
         """
@@ -60,8 +61,8 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         cycle.
 
         :param point_to: The `point_to` parameter is a dictionary that represents the edges of a directed
-        graph. Each key-value pair in the dictionary represents an edge from the key vertex to the value
-        vertex
+            graph. Each key-value pair in the dictionary represents an edge from the key vertex to the value
+            vertex
 
         Yields:
             Generator[Node, None, None]: a start node of the cycle
@@ -100,19 +101,19 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         weights of edges in a graph.
 
         :param dist: `dist` is a mutable mapping that represents the current distances from a source node to
-        all other nodes in a graph. It is a mapping from nodes to their corresponding distances
+            all other nodes in a graph. It is a mapping from nodes to their corresponding distances
 
         :type dist: MutableMapping[Node, Domain]
 
         :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
-        input and returns a value of type `Domain`. This function is used to calculate the weight or cost
-        associated with an edge in the graph
+            input and returns a value of type `Domain`. This function is used to calculate the weight or cost
+            associated with an edge in the graph
 
         :type get_weight: Callable[[Edge], Domain]
 
         :param update_ok: The `update_ok` parameter is a function that determines whether an update to the
-        distance `dist[vtx_v]` is allowed. It takes two arguments: the current value of `dist[vtx_v]` and
-        the new value `d`. It should return `True` if the update is
+            distance `dist[vtx_v]` is allowed. It takes two arguments: the current value of `dist[vtx_v]` and
+            the new value `d`. It should return `True` if the update is
 
         :return: a boolean value indicating whether any changes were made to the `dist` mapping and `pred` dictionary.
         """
@@ -137,19 +138,19 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         weights of edges in a graph.
 
         :param dist: `dist` is a mutable mapping that represents the current distances from a source node to
-        all other nodes in a graph. It is a mapping from nodes to their corresponding distances
+            all other nodes in a graph. It is a mapping from nodes to their corresponding distances
 
         :type dist: MutableMapping[Node, Domain]
 
         :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
-        input and returns a value of type `Domain`. This function is used to calculate the weight or cost
-        associated with an edge in the graph
+            input and returns a value of type `Domain`. This function is used to calculate the weight or cost
+            associated with an edge in the graph
 
         :type get_weight: Callable[[Edge], Domain]
 
         :param update_ok: The `update_ok` parameter is a function that determines whether an update to the
-        distance `dist[vtx_v]` is allowed. It takes two arguments: the current value of `dist[vtx_v]` and
-        the new value `d`. It should return `True` if the update is
+            distance `dist[vtx_v]` is allowed. It takes two arguments: the current value of `dist[vtx_v]` and
+            the new value `d`. It should return `True` if the update is
 
         :return: a boolean value indicating whether any changes were made to the `dist` mapping and `pred` dictionary.
         """
@@ -173,19 +174,19 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         The `howard_pred` function finds negative cycles in a graph and yields a list of cycles.
 
         :param dist: `dist` is a mutable mapping that maps each node in the graph to a domain value. The
-        domain value represents the distance or cost from the source node to that particular node
+            domain value represents the distance or cost from the source node to that particular node
 
         :type dist: MutableMapping[Node, Domain]
 
         :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
-        input and returns the weight of that edge
+            input and returns the weight of that edge
 
         :type get_weight: Callable[[Edge], Domain]
 
         :param update_ok: The `update_ok` parameter is a callable function that determines whether an update
-        to the distance value of a vertex is allowed. It takes in three arguments: the current distance
-        value of the vertex, the weight of the edge being considered for update, and the current distance
-        value of the vertex at the other
+            to the distance value of a vertex is allowed. It takes in three arguments: the current distance
+            value of the vertex, the weight of the edge being considered for update, and the current distance
+            value of the vertex at the other
 
         Examples:
             >>> digraph = {
@@ -223,19 +224,19 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         The `howard_succ` function finds negative cycles in a graph and yields a list of cycles.
 
         :param dist: `dist` is a mutable mapping that maps each node in the graph to a domain value. The
-        domain value represents the distance or cost from the source node to that particular node
+            domain value represents the distance or cost from the source node to that particular node
 
         :type dist: MutableMapping[Node, Domain]
 
         :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
-        input and returns the weight of that edge
+            input and returns the weight of that edge
 
         :type get_weight: Callable[[Edge], Domain]
 
         :param update_ok: The `update_ok` parameter is a callable function that determines whether an update
-        to the distance value of a vertex is allowed. It takes in three arguments: the current distance
-        value of the vertex, the weight of the edge being considered for update, and the current distance
-        value of the vertex at the other
+            to the distance value of a vertex is allowed. It takes in three arguments: the current distance
+            value of the vertex, the weight of the edge being considered for update, and the current distance
+            value of the vertex at the other
 
         Examples:
             >>> digraph = {
@@ -269,7 +270,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         given node.
 
         :param handle: The `handle` parameter is a reference to a node in a graph. It represents the
-        starting point of the cycle in the list
+            starting point of the cycle in the list
 
         :type handle: Node
 
@@ -298,17 +299,17 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         nodes and the weights of the edges.
 
         :param handle: The `handle` parameter is a `Node` object that represents a vertex in a graph. It is
-        used as a starting point to check for negative cycles in the graph
+            used as a starting point to check for negative cycles in the graph
 
         :type handle: Node
 
         :param dist: `dist` is a mutable mapping that maps each node to its corresponding domain value. The
-        domain value represents the distance from the starting node to the current node in a graph
+            domain value represents the distance from the starting node to the current node in a graph
 
         :type dist: MutableMapping[Node, Domain]
 
         :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
-        input and returns the weight of that edge
+            input and returns the weight of that edge
 
         :type get_weight: Callable[[Edge], Domain]
 
