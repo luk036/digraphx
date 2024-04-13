@@ -18,7 +18,6 @@ class ParametricAPI(Generic[Node, Edge, Ratio]):
         :param edge: The `edge` parameter represents an edge in a graph. It is of type `Edge`
         :type edge: Edge
         """
-        pass
 
     @abstractmethod
     def zero_cancel(self, cycle: Cycle) -> Ratio:
@@ -28,7 +27,6 @@ class ParametricAPI(Generic[Node, Edge, Ratio]):
         :param cycle: The `cycle` parameter is of type `Cycle`.
         :type cycle: Cycle
         """
-        pass
 
 
 class MaxParametricSolver(Generic[Node, Edge, Ratio]):

@@ -123,49 +123,6 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
                     changed = True
         return changed
 
-    def howard(
-        self,
-        dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Edge], Domain],
-    ) -> Generator[Cycle, None, None]:
-        """
-        The `howard` function finds negative cycles in a graph and yields a list of cycles.
-
-        :param dist: `dist` is a mutable mapping that maps each node in the graph to a domain value. The
-            domain value represents the distance or cost from the source node to that particular node
-
-        :type dist: MutableMapping[Node, Domain]
-
-        :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
-            input and returns the weight of that edge
-
-        :type get_weight: Callable[[Edge], Domain]
-
-        Examples:
-            >>> digraph = {
-            ...     "a0": {"a1": 7, "a2": 5},
-            ...     "a1": {"a0": 0, "a2": 3},
-            ...     "a2": {"a1": 1, "a0": 2},
-            ... }
-            >>> dist = {vtx: 0 for vtx in digraph}
-            >>> finder = NegCycleFinder(digraph)
-            >>> has_neg = False
-            >>> for _ in finder.howard(dist, lambda edge: edge):
-            ...     has_neg = True
-            ...     break
-            ...
-            >>> has_neg
-            False
-        """
-        self.pred = {}
-        found = False
-        while not found and self.relax(dist, get_weight):
-            for vtx in self.find_cycle():
-                # Will zero cycle be found???
-                assert self.is_negative(vtx, dist, get_weight)
-                found = True
-                yield self.cycle_list(vtx)
-
     def cycle_list(self, handle: Node) -> Cycle:
         """
         The `cycle_list` function returns a list of edges that form a cycle in a graph, starting from a given node.
@@ -224,3 +181,46 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             if vtx == handle:
                 break
         return False
+
+    def howard(
+        self,
+        dist: MutableMapping[Node, Domain],
+        get_weight: Callable[[Edge], Domain],
+    ) -> Generator[Cycle, None, None]:
+        """
+        The `howard` function finds negative cycles in a graph and yields a list of cycles.
+
+        :param dist: `dist` is a mutable mapping that maps each node in the graph to a domain value. The
+            domain value represents the distance or cost from the source node to that particular node
+
+        :type dist: MutableMapping[Node, Domain]
+
+        :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
+            input and returns the weight of that edge
+
+        :type get_weight: Callable[[Edge], Domain]
+
+        Examples:
+            >>> digraph = {
+            ...     "a0": {"a1": 7, "a2": 5},
+            ...     "a1": {"a0": 0, "a2": 3},
+            ...     "a2": {"a1": 1, "a0": 2},
+            ... }
+            >>> dist = {vtx: 0 for vtx in digraph}
+            >>> finder = NegCycleFinder(digraph)
+            >>> has_neg = False
+            >>> for _ in finder.howard(dist, lambda edge: edge):
+            ...     has_neg = True
+            ...     break
+            ...
+            >>> has_neg
+            False
+        """
+        self.pred = {}
+        found = False
+        while not found and self.relax(dist, get_weight):
+            for vtx in self.find_cycle():
+                # Will zero cycle be found???
+                assert self.is_negative(vtx, dist, get_weight)
+                found = True
+                yield self.cycle_list(vtx)
