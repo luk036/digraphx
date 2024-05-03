@@ -62,7 +62,8 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
 
         :type omega: ParametricAPI[Node, Edge, Ratio]
         """
-        self.ncf = NegCycleFinder(digraph)
+        # self.ncf = NegCycleFinder(digraph)
+        self.digraph = digraph
         self.omega: ParametricAPI[Node, Edge, Ratio] = omega
 
     def run(
@@ -94,8 +95,10 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
         c_min = []
         cycle = []
 
+        ncf: NegCycleFinder[Node, Edge, Domain] = NegCycleFinder(self.digraph)
+
         while True:
-            for ci in self.ncf.howard(dist, get_weight):
+            for ci in ncf.howard(dist, get_weight):
                 ri = self.omega.zero_cancel(ci)
                 if r_min > ri:
                     r_min = ri

@@ -1,9 +1,10 @@
 from abc import abstractmethod
 from fractions import Fraction
-from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar
+from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar, Callable
 
-from .neg_cycle_q import Cycle, Domain, Edge, NegCycleFinder, Node
+from .neg_cycle_q import Cycle, Edge, NegCycleFinder, Node
 
+Domain = TypeVar("Domain", int, Fraction, float)  # Comparable Ring
 Ratio = TypeVar("Ratio", Fraction, float)
 
 
@@ -64,14 +65,15 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
 
         :type omega: ParametricAPI[Node, Edge, Ratio]
         """
-        self.ncf = NegCycleFinder(digraph)
+        # self.ncf = NegCycleFinder(digraph)
+        self.digraph = digraph
         self.omega: MinParametricAPI[Node, Edge, Ratio] = omega
 
     def run(
         self,
         dist: MutableMapping[Node, Domain],
         ratio: Ratio,
-        update_ok,
+        update_ok: Callable[[Domain, Domain], bool],
         pick_one_only=False,
     ) -> Tuple[Ratio, Cycle]:
         """
@@ -105,11 +107,13 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
         cycle = []
         reverse: bool = True
 
+        ncf: NegCycleFinder[Node, Edge, Domain] = NegCycleFinder(self.digraph)
+
         while True:
             if reverse:
-                cycles = self.ncf.howard_succ(dist, get_weight, update_ok)
+                cycles = ncf.howard_succ(dist, get_weight, update_ok)
             else:
-                cycles = self.ncf.howard_pred(dist, get_weight, update_ok)
+                cycles = ncf.howard_pred(dist, get_weight, update_ok)
             for c_i in cycles:
                 r_i = self.omega.zero_cancel(c_i)
                 if r_max < r_i:

@@ -94,7 +94,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         self,
         dist: MutableMapping[Node, Domain],
         get_weight: Callable[[Edge], Domain],
-        update_ok: Callable[[MutableMapping[Node, Domain], Domain], bool],
+        update_ok: Callable[[Domain, Domain], bool],
     ) -> bool:
         """
         The `relax_pred` function updates the `dist` and `pred` dictionaries based on the current distances and
@@ -131,7 +131,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         self,
         dist: MutableMapping[Node, Domain],
         get_weight: Callable[[Edge], Domain],
-        update_ok: Callable[[MutableMapping[Node, Domain], Domain], bool],
+        update_ok: Callable[[Domain, Domain], bool],
     ) -> bool:
         """
         The `relax_succ` function updates the `dist` and `succ` dictionaries based on the current distances and
@@ -168,7 +168,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         self,
         dist: MutableMapping[Node, Domain],
         get_weight: Callable[[Edge], Domain],
-        update_ok: Callable[[MutableMapping[Node, Domain], Domain], bool],
+        update_ok: Callable[[Domain, Domain], bool],
     ) -> Generator[Cycle, None, None]:
         """
         The `howard_pred` function finds negative cycles in a graph and yields a list of cycles.
@@ -218,7 +218,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         self,
         dist: MutableMapping[Node, Domain],
         get_weight: Callable[[Edge], Domain],
-        update_ok: Callable[[MutableMapping[Node, Domain], Domain], bool],
+        update_ok: Callable[[Domain, Domain], bool],
     ) -> Generator[Cycle, None, None]:
         """
         The `howard_succ` function finds negative cycles in a graph and yields a list of cycles.

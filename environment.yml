@@ -1,4 +1,4 @@
-name: primal-dual-approx-py
+name: digraphx
 channels:
   - conda-forge
 dependencies:

@@ -14,7 +14,7 @@
 [![Documentation Status](https://readthedocs.org/projects/digraphx/badge/?version=latest)](https://digraphx.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/luk036/digraphx/branch/main/graph/badge.svg?token=U7PKg0lceH)](https://codecov.io/gh/luk036/digraphx)
 
-# digraphx
+# 🔀 digraphx
 
 > Directed Graph X in Python
 
