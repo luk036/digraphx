@@ -34,9 +34,9 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
 
     This class solves the following parametric network problem:
 
-        max  r
-        s.t. dist[v] - dist[u] <= distrance(e, r)
-             forall e(u, v) in G(V, E)
+    |    max  r
+    |    s.t. dist[v] - dist[u] <= distrance(e, r)
+    |         forall e(u, v) in G(V, E)
 
     A parametric network problem refers to a type of optimization problem that
     involves finding the optimal solution to a network flow problem as a function

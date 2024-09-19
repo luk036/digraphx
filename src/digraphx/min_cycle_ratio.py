@@ -101,9 +101,9 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
 
     This class solves the following parametric network problem:
 
-        max  r
-        s.t. dist[v] - dist[u] <= cost(u, v) - ratio * time(u, v)
-             for all (u, v) in E
+    |    max  r
+    |    s.t. dist[v] - dist[u] <= cost(u, v) - ratio * time(u, v)
+    |         for all (u, v) in E
 
     The minimum cycle ratio (MCR) problem is a fundamental problem in the
     analysis of directed graphs. Given a directed graph, the MCR problem seeks to
