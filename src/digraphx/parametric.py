@@ -1,3 +1,27 @@
+"""
+Parametric Network Solver
+
+This code defines a system for solving parametric network problems, which are a type of optimization problem in graph theory. The main purpose of this code is to find the maximum ratio that satisfies certain conditions in a graph, where the distances between nodes depend on this ratio.
+
+The code takes two main inputs: a graph (represented as a mapping of nodes and edges) and an object that defines how to calculate distances based on the ratio. It produces two outputs: the maximum ratio that satisfies the conditions and a cycle in the graph that corresponds to this ratio.
+
+The code achieves its purpose through an iterative algorithm implemented in the run method of the MaxParametricSolver class. This method starts with an initial ratio and repeatedly finds cycles in the graph that could potentially improve this ratio. It uses a negative cycle finder (NCF) to detect these cycles efficiently.
+
+The algorithm works as follows:
+
+1. It starts with an initial ratio and distance estimates for each node.
+2. It uses the NCF to find cycles in the graph where the total distance is negative.
+3. For each negative cycle found, it calculates a new ratio that would make the cycle's total distance zero.
+4. If this new ratio is smaller than the current best ratio, it updates the best ratio and remembers this cycle.
+5. It repeats steps 2-4 until no better ratio can be found.
+
+The main data transformation happening here is the continuous updating of the ratio based on the cycles found in the graph. The algorithm is essentially searching for the highest ratio that doesn't allow any negative cycles in the graph, when distances are calculated using this ratio.
+
+This code is designed to be flexible, using generic types for nodes, edges, and ratios. This allows it to work with different types of graphs and different ways of calculating distances. The ParametricAPI class defines an interface for how distances should be calculated and how to find the ratio that makes a cycle's total distance zero.
+
+Overall, this code provides a framework for solving a specific type of optimization problem on graphs, where the goal is to maximize a ratio while maintaining certain constraints on the distances between nodes in the graph.
+"""
+
 from abc import abstractmethod
 from fractions import Fraction
 from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar

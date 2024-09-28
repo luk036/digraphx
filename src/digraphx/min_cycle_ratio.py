@@ -1,3 +1,25 @@
+"""
+Minimum Cycle Ratio Solver
+
+This code implements a Minimum Cycle Ratio (MCR) Solver for directed graphs. The purpose of this code is to find the cycle in a graph that has the smallest ratio of total edge weights to the number of edges in the cycle. This is useful in analyzing various systems like digital circuits and communication networks.
+
+The main input for this solver is a directed graph, represented as a mapping of nodes to their neighboring nodes and associated edge attributes. The graph is expected to have "cost" and "time" attributes for each edge.
+
+The primary output of this solver is a tuple containing two elements: the minimum cycle ratio (a number) and the cycle itself (a sequence of edges that form the cycle with the minimum ratio).
+
+To achieve its purpose, the code uses a parametric approach. It defines a CycleRatioAPI class that calculates distances between nodes based on a given ratio and edge information. This class also computes the ratio for a given cycle.
+
+The main solver, MinCycleRatioSolver, uses the CycleRatioAPI in combination with a MaxParametricSolver (which is not fully shown in this code snippet) to iteratively find the minimum cycle ratio. It starts with an initial ratio and distance mapping for each node, and then refines these values until it finds the optimal solution.
+
+The algorithm works by repeatedly adjusting the ratio and recalculating distances between nodes. It looks for cycles where the sum of distances around the cycle is negative, which indicates a cycle with a lower ratio than the current best. This process continues until no such cycle can be found, at which point the minimum cycle ratio has been determined.
+
+An important aspect of the code is how it handles different types of numbers. It uses generic types and can work with both fractions and floating-point numbers, allowing for flexibility in how precise the calculations need to be.
+
+The code also includes utility functions like set_default, which ensures that all edges in the graph have a specified weight attribute, setting a default value if it's missing. This helps in preparing the graph data for the main algorithm.
+
+Overall, this code provides a flexible and powerful tool for analyzing directed graphs, particularly useful in scenarios where understanding the most "efficient" or "tightest" cycles in a system is important.
+"""
+
 from fractions import Fraction
 from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar
 

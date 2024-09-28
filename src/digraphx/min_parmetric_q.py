@@ -1,3 +1,23 @@
+"""
+Min Parametric Solver
+
+This code defines a system for solving a specific type of network optimization problem called a "minimum parametric problem." The purpose of this code is to find the smallest possible value for a parameter (called a ratio) that satisfies certain conditions in a graph-like structure.
+
+The code takes as input a graph (represented as a mapping of nodes and edges), an initial set of distances between nodes, and a starting ratio. It then works to find the smallest ratio that meets the problem's constraints.
+
+The main output of this code is a tuple containing two things: the final (minimum) ratio found, and a cycle in the graph that corresponds to this ratio.
+
+To achieve its purpose, the code uses an algorithm that repeatedly searches for cycles in the graph that could potentially lower the ratio. It does this by using a "negative cycle finder" (NCF) which looks for cycles where the sum of the distances (adjusted by the current ratio) is negative. If such a cycle is found, it means the ratio can be lowered further.
+
+The main logic flow involves a loop that alternates between searching for cycles and updating the ratio. Each time a cycle is found that allows for a lower ratio, the ratio is updated. This process continues until no more improvements can be made - at this point, the minimum ratio has been found.
+
+An important part of the algorithm is the ability to switch between searching for cycles in the forward direction (successor nodes) and the backward direction (predecessor nodes). This helps to explore the graph more thoroughly and find the best possible solution.
+
+The code is designed to be flexible, allowing for different types of numbers (integers, fractions, or floating-point numbers) to be used for distances and ratios. It also includes an abstract base class (MinParametricAPI) that defines the interface for calculating distances and handling cycles, allowing for different implementations of these operations.
+
+Overall, this code provides a framework for solving complex network optimization problems, particularly those where a single parameter needs to be minimized while satisfying constraints across the entire network.
+"""
+
 from abc import abstractmethod
 from fractions import Fraction
 from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar, Callable
