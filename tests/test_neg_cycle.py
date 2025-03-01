@@ -2,14 +2,14 @@
 from __future__ import print_function
 
 import networkx as nx
-from mywheel.lict import Lict
+from mywheel.map_adapter import MapAdapter
 
 from digraphx.neg_cycle import NegCycleFinder
 from digraphx.tiny_digraph import DiGraphAdapter, TinyDiGraph
 
 
 def test_raw_graph_by_lict():
-    digraph = Lict(
+    digraph = MapAdapter(
         [
             {1: 7, 2: 5},
             {0: 0, 2: 3},
@@ -17,7 +17,7 @@ def test_raw_graph_by_lict():
         ]
     )
 
-    dist = Lict([0, 0, 0])
+    dist = MapAdapter([0, 0, 0])
     finder = NegCycleFinder(digraph)
     has_neg = False
     for _ in finder.howard(dist, lambda edge: edge):
@@ -134,6 +134,6 @@ def test_timing_graph():
 
 def test_tiny_graph():
     digraph = create_tiny_graph()
-    dist = Lict([0, 0, 0])
+    dist = MapAdapter([0, 0, 0])
     has_neg = do_case(digraph, dist)
     assert not has_neg

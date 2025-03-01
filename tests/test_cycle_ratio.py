@@ -3,7 +3,7 @@ from __future__ import print_function
 
 from fractions import Fraction
 
-from mywheel.lict import Lict
+from mywheel.map_adapter import MapAdapter
 
 from digraphx.min_cycle_ratio import MinCycleRatioSolver, set_default
 
@@ -72,7 +72,7 @@ def test_cycle_ratio_tiny_graph():
     digraph[2][0]["cost"] = 2
     digraph[0][2]["cost"] = 4
     # make sure no parallel edges in above!!!
-    dist = Lict([0 for _ in range(3)])
+    dist = MapAdapter([0 for _ in range(3)])
     solver = MinCycleRatioSolver(digraph)
     ratio, cycle = solver.run(dist, Fraction(10000, 1))
     print(ratio)
