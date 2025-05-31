@@ -26,7 +26,9 @@ from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar
 from .neg_cycle import Cycle, Domain, Edge, Node
 from .parametric import MaxParametricSolver, ParametricAPI
 
+# Define type variables for generic programming
 Ratio = TypeVar("Ratio", Fraction, float)
+# Define graph types for type hints
 Graph = Mapping[Node, Mapping[Node, Mapping[str, Domain]]]
 GraphMut = MutableMapping[Node, MutableMapping[Node, MutableMapping[str, Domain]]]
 
@@ -34,6 +36,8 @@ GraphMut = MutableMapping[Node, MutableMapping[Node, MutableMapping[str, Domain]
 def set_default(digraph: GraphMut, weight: str, value: Domain) -> None:
     """
     This function sets a default value for a specified weight in a graph.
+    It iterates through all edges in the graph and sets the specified weight to the given value
+    if it's not already present in the edge attributes.
 
     :param digraph: The parameter `digraph` is of type `GraphMut`, which is likely a mutable graph data
         structure. It represents a graph where each node has a dictionary of neighbors and their
@@ -55,27 +59,24 @@ def set_default(digraph: GraphMut, weight: str, value: Domain) -> None:
                 e[weight] = value
 
 
-# The `CycleRatioAPI` class is a parametric API that calculates the ratio of a cycle based on the cost
-# and time of its edges.
 class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
+    """
+    This class implements the parametric API for cycle ratio calculations.
+    It provides methods to compute distances based on a given ratio and to calculate
+    the actual ratio for a given cycle.
+    """
     def __init__(
         self,
         digraph: Mapping[Node, Mapping[Node, Mapping[str, Domain]]],
         result_type: type,
     ) -> None:
         """
-        This function initializes an object with two parameters, `digraph` and `result_type`, and assigns them to instance
-        variables.
-
-        :param digraph: A mapping of nodes to a mapping of nodes to a mapping of strings to domains. It
-            represents a graph structure where each node is connected to other nodes through edges, and each
-            edge has associated attributes represented by strings and domains
-
+        Initialize the CycleRatioAPI with a graph and result type.
+        
+        :param digraph: The graph structure where nodes map to neighbors and edge attributes
         :type digraph: Mapping[Node, Mapping[Node, Mapping[str, Domain]]]
-
-        :param result_type: The parameter `result_type` is a type. It is used to specify the type of the variable `result_type`. The type
-            can be any valid Python type, such as `int`, `str`, `list`, etc
-
+        
+        :param result_type: The type to use for calculations (Fraction or float)
         :type result_type: type
         """
         self.digraph: Mapping[Node, Mapping[Node, Mapping[str, Domain]]] = digraph
@@ -83,41 +84,36 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
 
     def distance(self, ratio: Ratio, edge: MutableMapping[str, Domain]) -> Ratio:
         """
-        The function calculates the distance based on the ratio and edge information.
-
-        :param ratio: The ratio parameter is of type Ratio. It is used in the calculation of the return value
-
+        Calculate the parametric distance for an edge given the current ratio.
+        The distance formula is: cost - ratio * time
+        
+        :param ratio: The current ratio value being tested
         :type ratio: Ratio
-
-        :param edge: The `edge` parameter is a mutable mapping (dictionary-like object) that contains
-            information about a specific edge in a graph. It has two keys: "cost" and "time". The value
-            associated with the "cost" key represents the cost of traversing the edge, while the value
-            associated with
-
+        
+        :param edge: The edge with 'cost' and 'time' attributes
         :type edge: MutableMapping[str, Domain]
-
-        :return: the result of the expression `self.result_type(edge["cost"]) - ratio * edge["time"]`.
+        
+        :return: The calculated distance value
+        :rtype: Ratio
         """
         return self.result_type(edge["cost"]) - ratio * edge["time"]
 
     def zero_cancel(self, cycle: Cycle) -> Ratio:
         """
-        The `zero_cancel` function calculates the ratio of the cost to time for a given cycle.
-
-        :param cycle: The `cycle` parameter is of type `Cycle`. It represents a cycle, which is a sequence
-            of edges in a graph that starts and ends at the same vertex. Each edge in the cycle is a dictionary
-            with keys "cost" and "time", representing the cost and time associated with that edge
-
+        Calculate the actual ratio for a given cycle by summing all costs and times.
+        The ratio is computed as: total_cost / total_time
+        
+        :param cycle: A sequence of edges forming a cycle
         :type cycle: Cycle
-
-        :return: a Ratio object.
+        
+        :return: The calculated cycle ratio
+        :rtype: Ratio
         """
         total_cost = sum(edge["cost"] for edge in cycle)
         total_time = sum(edge["time"] for edge in cycle)
         return self.result_type(total_cost) / total_time
 
 
-# The `MinCycleRatioSolver` class is a solver for the minimum cycle ratio problem in directed graphs.
 class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
     """Minimum Cycle Ratio Solver
 
@@ -143,30 +139,30 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
 
     def __init__(self, digraph: Graph) -> None:
         """
-        The function initializes an instance of a class with a graph object.
-
-        :param digraph: The `digraph` parameter is a mapping of nodes to a mapping of nodes to any type of value. It
-            represents a graph where each node is associated with a set of neighboring nodes and their
-            corresponding values
-
+        Initialize the solver with the graph to analyze.
+        
+        :param digraph: The graph structure where nodes map to neighbors and edge attributes
         :type digraph: Graph
         """
         self.digraph: Graph = digraph
 
     def run(self, dist: MutableMapping[Node, Domain], r0: Ratio) -> Tuple[Ratio, Cycle]:
         """
-        This function takes a distance mapping and a ratio as input, and returns a ratio and a cycle.
-
-        :param dist: A mutable mapping that maps each node in the graph to a ratio value. This represents
-            the initial distribution of ratios for each node
-
+        Run the minimum cycle ratio solver algorithm.
+        
+        The algorithm works by:
+        1. Creating a CycleRatioAPI instance with the graph and ratio type
+        2. Using a MaxParametricSolver to find the optimal ratio
+        3. Returning both the optimal ratio and the corresponding cycle
+        
+        :param dist: Initial distance labels for nodes
         :type dist: MutableMapping[Node, Domain]
-
-        :param r0: The parameter `r0` is of type `Ratio` and represents the initial ratio value
-
+        
+        :param r0: Initial ratio value to start the search
         :type r0: Ratio
-
-        :return: The function `run` returns a tuple containing the ratio and cycle.
+        
+        :return: A tuple containing the optimal ratio and the cycle that achieves it
+        :rtype: Tuple[Ratio, Cycle]
         """
         omega = CycleRatioAPI(self.digraph, type(r0))
         solver = MaxParametricSolver(self.digraph, omega)

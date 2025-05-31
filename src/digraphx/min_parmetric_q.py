@@ -5,7 +5,7 @@ This code defines a system for solving a specific type of network optimization p
 
 The code takes as input a graph (represented as a mapping of nodes and edges), an initial set of distances between nodes, and a starting ratio. It then works to find the smallest ratio that meets the problem's constraints.
 
-The main output of this code is a tuple containing two things: the final (minimum) ratio found, and a cycle in the graph that corresponds to this ratio.
+The main output of the code is a tuple containing two things: the final (minimum) ratio found, and a cycle in the graph that corresponds to this ratio.
 
 To achieve its purpose, the code uses an algorithm that repeatedly searches for cycles in the graph that could potentially lower the ratio. It does this by using a "negative cycle finder" (NCF) which looks for cycles where the sum of the distances (adjusted by the current ratio) is negative. If such a cycle is found, it means the ratio can be lowered further.
 
@@ -24,6 +24,7 @@ from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar, Callable
 
 from .neg_cycle_q import Cycle, Edge, NegCycleFinder, Node
 
+# Define type variables for domain (numeric types) and ratio (fraction or float)
 Domain = TypeVar("Domain", int, Fraction, float)  # Comparable Ring
 Ratio = TypeVar("Ratio", Fraction, float)
 
@@ -33,11 +34,15 @@ class MinParametricAPI(Generic[Node, Edge, Ratio]):
     def distance(self, ratio: Ratio, edge: Edge) -> Ratio:
         """
         The `distance` function calculates the distance between a given ratio and edge.
+        This is an abstract method that must be implemented by concrete subclasses.
 
         :param ratio: The `ratio` parameter is of type `Ratio`. It represents a ratio or proportion
+                      that affects the distance calculation.
         :type ratio: Ratio
         :param edge: The `edge` parameter represents an edge in a graph. It is of type `Edge`
         :type edge: Edge
+        :return: The calculated distance based on the given ratio and edge
+        :rtype: Ratio
         """
         pass
 
@@ -45,9 +50,13 @@ class MinParametricAPI(Generic[Node, Edge, Ratio]):
     def zero_cancel(self, cycle: Cycle) -> Ratio:
         """
         The `zero_cancel` function takes a `Cycle` object as input and returns a `Ratio` object.
+        This calculates the ratio that would make the cycle's total distance sum to zero.
 
-        :param cycle: The `cycle` parameter is of type `Cycle`.
+        :param cycle: The `cycle` parameter is of type `Cycle`. It represents a cycle in the graph
+                      that needs to be evaluated.
         :type cycle: Cycle
+        :return: The ratio that would make the cycle's total distance zero
+        :rtype: Ratio
         """
         pass
 
@@ -72,18 +81,16 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
         omega: MinParametricAPI[Node, Edge, Ratio],
     ) -> None:
         """
-        The `__init__` function initializes an object with a graph and an omega parameter.
+        The `__init__` function initializes the solver with a graph and parametric API.
 
-        :param digraph: digraph is a mapping of nodes to a mapping of nodes to edges. It represents a graph
-            where each node is connected to other nodes through edges. The edges are represented by the
-            mapping of nodes to edges
-
+        :param digraph: A mapping representing a directed graph where each node maps to its
+                       neighbors and the edges connecting them. This defines the network structure
+                       that the solver will work with.
         :type digraph: Mapping[Node, Mapping[Node, Edge]]
-
-        :param omega: The `omega` parameter is an instance of the `ParametricAPI` class. It represents
-            some kind of parametric API that takes three type parameters: `Node`, `Edge`, and `Ratio`
-
-        :type omega: ParametricAPI[Node, Edge, Ratio]
+        :param omega: An instance of MinParametricAPI that provides the necessary methods
+                     for distance calculation and cycle analysis. This parameterizes the
+                     solver's behavior.
+        :type omega: MinParametricAPI[Node, Edge, Ratio]
         """
         # self.ncf = NegCycleFinder(digraph)
         self.digraph = digraph
@@ -97,54 +104,63 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
         pick_one_only=False,
     ) -> Tuple[Ratio, Cycle]:
         """
-        The `run` function takes in a distance mapping and a ratio, and iteratively finds the minimum
-        ratio and corresponding cycle until the minimum ratio is greater than or equal to the input
-        ratio.
+        The `run` function executes the parametric solver algorithm to find the minimum ratio.
 
-        :param dist: The `dist` parameter is a mutable mapping where the keys are `Node` objects and the
-            values are `Domain` objects. It represents the distance between nodes in a graph
-
+        :param dist: A mutable mapping of node distances that will be updated during the algorithm.
+                    Represents the current distance estimates between nodes.
         :type dist: MutableMapping[Node, Domain]
-
-        :param ratio: The `ratio` parameter is a value that represents a ratio or proportion. It is used
-            as a threshold or target value in the algorithm
-
+        :param ratio: The initial ratio value to start the optimization from.
         :type ratio: Ratio
-
-        :param update_ok: The `update_ok` parameter is a function that determines whether an update to the
-            distance `dist[vtx_v]` is allowed. It takes two arguments: the current value of `dist[vtx_v]` and
-            the new value `d`. It should return `True` if the update is
-
-        :return: The function `run` returns a tuple containing the updated ratio (`ratio`) and the cycle (`cycle`).
+        :param update_ok: A callback function that determines whether a distance update is acceptable.
+                         Takes current and new distance values, returns True if update should proceed.
+        :type update_ok: Callable[[Domain, Domain], bool]
+        :param pick_one_only: If True, stops after finding the first improving cycle. Defaults to False.
+        :type pick_one_only: bool
+        :return: A tuple containing:
+                 - The minimum ratio found (ratio)
+                 - The cycle that corresponds to this ratio (cycle)
+        :rtype: Tuple[Ratio, Cycle]
         """
+        # Determine the numeric type used in distance calculations
         D = type(next(iter(dist.values())))
 
+        # Helper function to calculate edge weights based on current ratio
         def get_weight(e: Edge) -> Domain:
             return D(self.omega.distance(ratio, e))
 
+        # Initialize tracking variables for minimum ratio and corresponding cycle
         r_max = ratio
         c_max = []
         cycle = []
-        reverse: bool = True
+        reverse: bool = True  # Flag to alternate search direction
 
+        # Initialize the negative cycle finder with our graph
         ncf: NegCycleFinder[Node, Edge, Domain] = NegCycleFinder(self.digraph)
 
+        # Main optimization loop
         while True:
+            # Search for cycles in either forward or reverse direction
             if reverse:
                 cycles = ncf.howard_succ(dist, get_weight, update_ok)
             else:
                 cycles = ncf.howard_pred(dist, get_weight, update_ok)
+            
+            # Evaluate all found cycles
             for c_i in cycles:
                 r_i = self.omega.zero_cancel(c_i)
                 if r_max < r_i:
                     r_max = r_i
                     c_max = c_i
-                    if pick_one_only:
+                    if pick_one_only:  # Early exit if we only need one improvement
                         break
+            
+            # Termination condition: no better ratio found
             if r_max <= ratio:
                 break
 
+            # Update state for next iteration
             cycle = c_max
             ratio = r_max
-            reverse = not reverse
+            reverse = not reverse  # Alternate search direction
+        
         return ratio, cycle

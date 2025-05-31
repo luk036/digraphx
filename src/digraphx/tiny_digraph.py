@@ -31,49 +31,80 @@ from mywheel.map_adapter import MapAdapter
 
 class DiGraphAdapter(nx.DiGraph):
     def items(self):
+        """Returns an iterator over (node, adjacency dict) pairs for all nodes.
+        
+        This method overrides the default items() method to use adjacency() instead,
+        providing a consistent interface for iterating through the graph's nodes
+        and their connections.
+        """
         return self.adjacency()
 
 
 class TinyDiGraph(DiGraphAdapter):
-    num_nodes = 0
+    """A lightweight directed graph implementation optimized for performance and memory efficiency.
+    
+    This class extends DiGraphAdapter to provide custom storage mechanisms using MapAdapter,
+    which is particularly efficient for graphs with a known, fixed number of nodes.
+    """
+    num_nodes = 0  # Class variable to store the total number of nodes in the graph
 
     def cheat_node_dict(self):
+        """Creates a MapAdapter instance to store node attributes.
+        
+        Returns:
+            MapAdapter: A list-based dictionary where each node's attributes are stored
+                       in a separate dictionary at the node's index position.
+        """
         return MapAdapter([dict() for _ in range(self.num_nodes)])
 
     def cheat_adjlist_outer_dict(self):
+        """Creates a MapAdapter instance to store adjacency lists.
+        
+        Returns:
+            MapAdapter: A list-based dictionary where each node's outgoing edges are stored
+                       in a separate dictionary at the node's index position.
+        """
         return MapAdapter([dict() for _ in range(self.num_nodes)])
 
+    # Use the custom methods as factories for node and edge storage
     node_dict_factory = cheat_node_dict
     adjlist_outer_dict_factory = cheat_adjlist_outer_dict
 
     def init_nodes(self, n: int):
-        """
-        The function initializes the number of nodes, a dictionary for nodes, and dictionaries for
-        adjacency and predecessor lists.
-
-        :param n: The parameter `n` represents the number of nodes in the graph
-        :type n: int
+        """Initializes the graph with a specified number of nodes.
+        
+        Sets up the internal data structures for node storage, adjacency lists (successors),
+        and predecessor lists. This method must be called before adding any edges.
+        
+        Args:
+            n (int): The number of nodes to initialize in the graph. Nodes will be
+                     indexed from 0 to n-1.
         """
         self.num_nodes = n
-        self._node = self.cheat_node_dict()
-        self._adj = self.cheat_adjlist_outer_dict()
-        self._pred = self.cheat_adjlist_outer_dict()
+        self._node = self.cheat_node_dict()      # Stores node attributes
+        self._adj = self.cheat_adjlist_outer_dict()  # Stores outgoing edges (successors)
+        self._pred = self.cheat_adjlist_outer_dict()  # Stores incoming edges (predecessors)
 
 
 if __name__ == "__main__":
+    # Example usage of TinyDiGraph
     gr = TinyDiGraph()
-    gr.init_nodes(1000)
-    gr.add_edge(2, 1)
-    print(gr.number_of_nodes())
-    print(gr.number_of_edges())
-
+    gr.init_nodes(1000)  # Initialize graph with 1000 nodes
+    gr.add_edge(2, 1)    # Add an edge from node 2 to node 1
+    
+    # Print basic graph properties
+    print(gr.number_of_nodes())  # Expected output: 1000
+    print(gr.number_of_edges())  # Expected output: 1
+    
+    # Iterate through all edges in the graph
     for utx in gr:
         for vtx in gr.neighbors(utx):
-            print(f"{utx}, {vtx}")
-
-    a = MapAdapter([0] * 8)
+            print(f"{utx}, {vtx}")  # Will print "2, 1"
+    
+    # Demonstration of MapAdapter functionality
+    a = MapAdapter([0] * 8)  # Create a MapAdapter with 8 zero-initialized elements
     for i in a:
-        a[i] = i * i
+        a[i] = i * i  # Square each element's index and store it
     for i, vtx in a.items():
-        print(f"{i}: {vtx}")
-    print(3 in a)
+        print(f"{i}: {vtx}")  # Print index: value pairs
+    print(3 in a)  # Check if index 3 exists (should return True)

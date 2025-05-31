@@ -33,14 +33,16 @@ from typing import (
     TypeVar,
 )
 
+# Type variables for generic graph implementation:
+# Node must be hashable (used as dictionary keys)
+# Edge can be any type (but typically hashable)
+# Domain must support comparison and arithmetic operations (int, Fraction, float)
 Node = TypeVar("Node")  # Hashable
 Edge = TypeVar("Edge")  # Hashable
 Domain = TypeVar("Domain", int, Fraction, float)  # Comparable Ring
 Cycle = List[Edge]  # List of Edges
 
 
-# The `NegCycleFinder` class implements Howard's method, a minimum cycle ratio algorithm, to find
-# negative cycles in a directed graph.
 class NegCycleFinder(Generic[Node, Edge, Domain]):
     """Negative Cycle Finder by Howard's method
 
@@ -53,34 +55,43 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
     predecessor graph of the original graph and performs cycle detection on this
     graph using the Bellman-Ford relaxation algorithm. If a negative cycle is
     detected, the algorithm terminates and returns the cycle.
+
+    The class implements both predecessor and successor versions of Howard's algorithm,
+    providing flexibility in how negative cycles are detected and processed.
     """
 
+    # Predecessor dictionary: maps each node to (predecessor_node, connecting_edge)
     pred: Dict[Node, Tuple[Node, Edge]] = {}
+    
+    # Successor dictionary: maps each node to (successor_node, connecting_edge)
     succ: Dict[Node, Tuple[Node, Edge]] = {}
 
     def __init__(self, digraph: Mapping[Node, Mapping[Node, Edge]]) -> None:
-        """
-        The function initializes a graph object with an adjacency list.
-
-        :param digraph: The parameter `digraph` is a mapping that represents an adjacency list. It is a
-            dictionary-like object where the keys are nodes and the values are mappings of nodes to edges. Each
-            edge represents a connection between two nodes in a directed graph
-
-        :type digraph: Mapping[Node, Mapping[Node, Edge]]
+        """Initialize the negative cycle finder with a directed graph.
+        
+        Args:
+            digraph: A directed graph represented as a nested mapping:
+                - Outer keys: source nodes
+                - Inner mappings: {target_node: edge} pairs
+                Example: {u: {v: edge_uv, w: edge_uw}, v: {u: edge_vu}}
         """
         self.digraph = digraph
 
     def find_cycle(self, point_to) -> Generator[Node, None, None]:
-        """
-        The `find_cycle` function is used to find a cycle in a policy graph and yields the start node of the
-        cycle.
-
-        :param point_to: The `point_to` parameter is a dictionary that represents the edges of a directed
-            graph. Each key-value pair in the dictionary represents an edge from the key vertex to the value
-            vertex
-
+        """Detect cycles in the current predecessor/successor graph using depth-first search.
+        
+        Args:
+            point_to: Either self.pred or self.succ dictionary defining the graph edges
+            
         Yields:
-            Generator[Node, None, None]: a start node of the cycle
+            Generator[Node, None, None]: Each node that starts a cycle in the graph
+            
+        Algorithm:
+            1. Uses a coloring approach (white/gray/black) for cycle detection
+            2. White nodes are unvisited
+            3. Gray nodes are currently being visited in DFS stack
+            4. Black nodes are fully processed
+            5. A cycle is detected when we encounter a gray node during DFS
 
         Examples:
             >>> digraph = {
@@ -92,18 +103,18 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             >>> for cycle in finder.find_cycle(finder.pred):
             ...     print(cycle)
         """
-        visited: Dict[Node, Node] = {}
+        visited: Dict[Node, Node] = {}  # Maps nodes to their DFS root
         for vtx in filter(lambda vtx: vtx not in visited, self.digraph):
             utx = vtx
             while True:
-                visited[utx] = vtx
+                visited[utx] = vtx  # Mark as visited with current DFS root
                 if utx not in point_to:
-                    break
-                utx, _ = point_to[utx]
+                    break  # Reached a leaf node
+                utx, _ = point_to[utx]  # Move to predecessor/successor
                 if utx in visited:
-                    if visited[utx] == vtx:
+                    if visited[utx] == vtx:  # Found cycle back to current root
                         yield utx
-                    break
+                    break  # Cycle or different DFS tree
 
     def relax_pred(
         self,
@@ -111,26 +122,19 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         get_weight: Callable[[Edge], Domain],
         update_ok: Callable[[Domain, Domain], bool],
     ) -> bool:
-        """
-        The `relax_pred` function updates the `dist` and `pred` dictionaries based on the current distances and
-        weights of edges in a graph.
-
-        :param dist: `dist` is a mutable mapping that represents the current distances from a source node to
-            all other nodes in a graph. It is a mapping from nodes to their corresponding distances
-
-        :type dist: MutableMapping[Node, Domain]
-
-        :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
-            input and returns a value of type `Domain`. This function is used to calculate the weight or cost
-            associated with an edge in the graph
-
-        :type get_weight: Callable[[Edge], Domain]
-
-        :param update_ok: The `update_ok` parameter is a function that determines whether an update to the
-            distance `dist[vtx_v]` is allowed. It takes two arguments: the current value of `dist[vtx_v]` and
-            the new value `d`. It should return `True` if the update is
-
-        :return: a boolean value indicating whether any changes were made to the `dist` mapping and `pred` dictionary.
+        """Perform predecessor relaxation step (Bellman-Ford style).
+        
+        Args:
+            dist: Current distance estimates for each node
+            get_weight: Function to get weight of an edge
+            update_ok: Function to determine if distance update should be applied
+            
+        Returns:
+            bool: True if any distances were updated, False otherwise
+            
+        Note:
+            Updates distances based on predecessor edges (u -> v)
+            Implements the relaxation: if dist[v] > dist[u] + weight(u,v), update dist[v]
         """
         changed = False
         for utx, neighbors in self.digraph.items():
@@ -138,7 +142,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
                 distance = dist[utx] + get_weight(edge)
                 if dist[vtx] > distance and update_ok(dist[vtx], distance):
                     dist[vtx] = distance
-                    self.pred[vtx] = (utx, edge)
+                    self.pred[vtx] = (utx, edge)  # Update predecessor
                     changed = True
         return changed
 
@@ -148,26 +152,19 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         get_weight: Callable[[Edge], Domain],
         update_ok: Callable[[Domain, Domain], bool],
     ) -> bool:
-        """
-        The `relax_succ` function updates the `dist` and `succ` dictionaries based on the current distances and
-        weights of edges in a graph.
-
-        :param dist: `dist` is a mutable mapping that represents the current distances from a source node to
-            all other nodes in a graph. It is a mapping from nodes to their corresponding distances
-
-        :type dist: MutableMapping[Node, Domain]
-
-        :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
-            input and returns a value of type `Domain`. This function is used to calculate the weight or cost
-            associated with an edge in the graph
-
-        :type get_weight: Callable[[Edge], Domain]
-
-        :param update_ok: The `update_ok` parameter is a function that determines whether an update to the
-            distance `dist[vtx_v]` is allowed. It takes two arguments: the current value of `dist[vtx_v]` and
-            the new value `d`. It should return `True` if the update is
-
-        :return: a boolean value indicating whether any changes were made to the `dist` mapping and `pred` dictionary.
+        """Perform successor relaxation step (reverse Bellman-Ford style).
+        
+        Args:
+            dist: Current distance estimates for each node
+            get_weight: Function to get weight of an edge
+            update_ok: Function to determine if distance update should be applied
+            
+        Returns:
+            bool: True if any distances were updated, False otherwise
+            
+        Note:
+            Updates distances based on successor edges (u -> v)
+            Implements the relaxation: if dist[u] < dist[v] - weight(u,v), update dist[u]
         """
         changed = False
         for utx, neighbors in self.digraph.items():
@@ -175,7 +172,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
                 distance = dist[vtx] - get_weight(edge)
                 if dist[utx] < distance and update_ok(dist[utx], distance):
                     dist[utx] = distance
-                    self.succ[utx] = (vtx, edge)
+                    self.succ[utx] = (vtx, edge)  # Update successor
                     changed = True
         return changed
 
@@ -185,23 +182,21 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         get_weight: Callable[[Edge], Domain],
         update_ok: Callable[[Domain, Domain], bool],
     ) -> Generator[Cycle, None, None]:
-        """
-        The `howard_pred` function finds negative cycles in a graph and yields a list of cycles.
-
-        :param dist: `dist` is a mutable mapping that maps each node in the graph to a domain value. The
-            domain value represents the distance or cost from the source node to that particular node
-
-        :type dist: MutableMapping[Node, Domain]
-
-        :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
-            input and returns the weight of that edge
-
-        :type get_weight: Callable[[Edge], Domain]
-
-        :param update_ok: The `update_ok` parameter is a callable function that determines whether an update
-            to the distance value of a vertex is allowed. It takes in three arguments: the current distance
-            value of the vertex, the weight of the edge being considered for update, and the current distance
-            value of the vertex at the other
+        """Find negative cycles using predecessor-based Howard's algorithm.
+        
+        Args:
+            dist: Initial distance estimates (often zero-initialized)
+            get_weight: Function to get weight of an edge
+            update_ok: Function to determine if distance updates are allowed
+            
+        Yields:
+            Generator[Cycle, None, None]: Each negative cycle found as a list of edges
+            
+        Algorithm:
+            1. Repeatedly relax edges using predecessor updates
+            2. After each relaxation, check for cycles in predecessor graph
+            3. If cycle found, verify if it's negative
+            4. Yield each negative cycle found
 
         Examples:
             >>> digraph = {
@@ -220,11 +215,11 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             >>> has_neg
             False
         """
-        self.pred = {}
+        self.pred = {}  # Reset predecessor graph
         found = False
         while not found and self.relax_pred(dist, get_weight, update_ok):
             for vtx in self.find_cycle(self.pred):
-                # Will zero cycle be found???
+                # Safety check - verify the cycle is indeed negative
                 assert self.is_negative(vtx, dist, get_weight)
                 found = True
                 yield self.cycle_list(vtx, self.pred)
@@ -235,23 +230,19 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         get_weight: Callable[[Edge], Domain],
         update_ok: Callable[[Domain, Domain], bool],
     ) -> Generator[Cycle, None, None]:
-        """
-        The `howard_succ` function finds negative cycles in a graph and yields a list of cycles.
-
-        :param dist: `dist` is a mutable mapping that maps each node in the graph to a domain value. The
-            domain value represents the distance or cost from the source node to that particular node
-
-        :type dist: MutableMapping[Node, Domain]
-
-        :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
-            input and returns the weight of that edge
-
-        :type get_weight: Callable[[Edge], Domain]
-
-        :param update_ok: The `update_ok` parameter is a callable function that determines whether an update
-            to the distance value of a vertex is allowed. It takes in three arguments: the current distance
-            value of the vertex, the weight of the edge being considered for update, and the current distance
-            value of the vertex at the other
+        """Find negative cycles using successor-based Howard's algorithm.
+        
+        Args:
+            dist: Initial distance estimates (often zero-initialized)
+            get_weight: Function to get weight of an edge
+            update_ok: Function to determine if distance updates are allowed
+            
+        Yields:
+            Generator[Cycle, None, None]: Each negative cycle found as a list of edges
+            
+        Note:
+            Similar to howard_pred but uses successor updates instead of predecessor
+            Currently skips the negative cycle verification (commented assert)
 
         Examples:
             >>> digraph = {
@@ -270,36 +261,35 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             >>> has_neg
             False
         """
-        self.succ = {}
+        self.succ = {}  # Reset successor graph
         found = False
         while not found and self.relax_succ(dist, get_weight, update_ok):
             for vtx in self.find_cycle(self.succ):
-                # Will zero cycle be found???
+                # Note: Negative verification currently disabled
                 # assert self.is_negative(vtx, dist, get_weight)
                 found = True
                 yield self.cycle_list(vtx, self.succ)
 
     def cycle_list(self, handle: Node, point_to) -> Cycle:
-        """
-        The `cycle_list` function returns a list of edges that form a cycle in a graph, starting from a
-        given node.
-
-        :param handle: The `handle` parameter is a reference to a node in a graph. It represents the
-            starting point of the cycle in the list
-
-        :type handle: Node
-
-        :param point_to: point_to is a dictionary that maps each graph node to the node it points to
-
-        :return: a list of edges, which represents a cycle in a graph.
+        """Reconstruct the cycle starting from the given node.
+        
+        Args:
+            handle: Starting node of the cycle
+            point_to: Either self.pred or self.succ dictionary defining the edges
+            
+        Returns:
+            Cycle: List of edges forming the cycle in order
+            
+        Note:
+            Follows the predecessor/successor links until returning to starting node
         """
         vtx = handle
         cycle = list()
         while True:
-            utx, edge = point_to[vtx]
-            cycle.append(edge)
-            vtx = utx
-            if vtx == handle:
+            utx, edge = point_to[vtx]  # Get next node and connecting edge
+            cycle.append(edge)  # Add edge to cycle
+            vtx = utx  # Move to next node
+            if vtx == handle:  # Completed the cycle
                 break
         return cycle
 
@@ -309,34 +299,28 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         dist: MutableMapping[Node, Domain],
         get_weight: Callable[[Edge], Domain],
     ) -> bool:
-        """
-        The `is_negative` function checks if a cycle list is negative by comparing the distances between
-        nodes and the weights of the edges.
-
-        :param handle: The `handle` parameter is a `Node` object that represents a vertex in a graph. It is
-            used as a starting point to check for negative cycles in the graph
-
-        :type handle: Node
-
-        :param dist: `dist` is a mutable mapping that maps each node to its corresponding domain value. The
-            domain value represents the distance from the starting node to the current node in a graph
-
-        :type dist: MutableMapping[Node, Domain]
-
-        :param get_weight: The `get_weight` parameter is a callable function that takes an `Edge` object as
-            input and returns the weight of that edge
-
-        :type get_weight: Callable[[Edge], Domain]
-
-        :return: a boolean value.
+        """Verify if the cycle starting at handle is negative.
+        
+        Args:
+            handle: Starting node of the cycle
+            dist: Current distance estimates
+            get_weight: Function to get weight of an edge
+            
+        Returns:
+            bool: True if the cycle is negative, False otherwise
+            
+        Note:
+            A cycle is negative if the sum of its edge weights is negative
+            This is detected by finding at least one edge that violates the
+            triangle inequality: dist[v] > dist[u] + weight(u,v)
         """
         vtx = handle
-        # do while loop in C++
+        # C-style do-while loop
         while True:
             utx, edge = self.pred[vtx]
             if dist[vtx] > dist[utx] + get_weight(edge):
-                return True
+                return True  # Found negative cycle
             vtx = utx
-            if vtx == handle:
+            if vtx == handle:  # Completed full cycle
                 break
         return False

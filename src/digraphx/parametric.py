@@ -28,6 +28,7 @@ from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar
 
 from .neg_cycle import Cycle, Domain, Edge, NegCycleFinder, Node
 
+# Define a type variable Ratio that can be either Fraction or float
 Ratio = TypeVar("Ratio", Fraction, float)
 
 
@@ -41,15 +42,20 @@ class ParametricAPI(Generic[Node, Edge, Ratio]):
         :type ratio: Ratio
         :param edge: The `edge` parameter represents an edge in a graph. It is of type `Edge`
         :type edge: Edge
+        :return: Returns the calculated distance as a Ratio type
+        :rtype: Ratio
         """
 
     @abstractmethod
     def zero_cancel(self, cycle: Cycle) -> Ratio:
         """
         The `zero_cancel` function takes a `Cycle` object as input and returns a `Ratio` object.
+        This function calculates the ratio that would make the total distance of the cycle zero.
 
-        :param cycle: The `cycle` parameter is of type `Cycle`.
+        :param cycle: The `cycle` parameter is of type `Cycle`. It represents a cycle in the graph
         :type cycle: Cycle
+        :return: Returns the calculated ratio that makes the cycle's total distance zero
+        :rtype: Ratio
         """
 
 
@@ -77,12 +83,13 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
 
         :param digraph: digraph is a mapping of nodes to a mapping of nodes to edges. It represents a graph
             where each node is connected to other nodes through edges. The edges are represented by the
-            mapping of nodes to edges
+            mapping of nodes to edges. The graph structure is used for finding cycles and calculating distances.
 
         :type digraph: Mapping[Node, Mapping[Node, Edge]]
 
         :param omega: The `omega` parameter is an instance of the `ParametricAPI` class. It represents
-            some kind of parametric API that takes three type parameters: `Node`, `Edge`, and `Ratio`
+            some kind of parametric API that takes three type parameters: `Node`, `Edge`, and `Ratio`.
+            This object provides methods for distance calculation and cycle analysis.
 
         :type omega: ParametricAPI[Node, Edge, Ratio]
         """
@@ -99,37 +106,54 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
         ratio.
 
         :param dist: The `dist` parameter is a mutable mapping where the keys are `Node` objects and the
-            values are `Domain` objects. It represents the distance between nodes in a graph
+            values are `Domain` objects. It represents the distance between nodes in a graph. This distance
+            mapping is updated during the algorithm's execution.
 
         :type dist: MutableMapping[Node, Domain]
 
         :param ratio: The `ratio` parameter is a value that represents a ratio or proportion. It is used
-            as a threshold or target value in the algorithm
+            as a threshold or target value in the algorithm. The algorithm will try to find the maximum
+            possible ratio that satisfies the constraints.
 
         :type ratio: Ratio
 
-        :return: The function `run` returns a tuple containing the updated ratio (`ratio`) and the cycle (`cycle`).
+        :return: The function `run` returns a tuple containing two elements:
+            1. The updated ratio (`ratio`) which is the maximum ratio found that satisfies the constraints
+            2. The cycle (`cycle`) that corresponds to this ratio
+
+        :rtype: Tuple[Ratio, Cycle]
         """
+        # Determine the type of domain values from the first element in dist
         D = type(next(iter(dist.values())))
 
+        # Define a weight function that calculates distance based on current ratio
         def get_weight(e: Edge) -> Domain:
             return D(self.omega.distance(ratio, e))
 
+        # Initialize minimum ratio and cycle
         r_min = ratio
         c_min = []
         cycle = []
 
+        # Create a negative cycle finder instance with the graph
         ncf: NegCycleFinder[Node, Edge, Domain] = NegCycleFinder(self.digraph)
 
+        # Main algorithm loop
         while True:
+            # Find all negative cycles in the graph
             for ci in ncf.howard(dist, get_weight):
+                # Calculate the ratio that would make this cycle's total distance zero
                 ri = self.omega.zero_cancel(ci)
+                # Update minimum ratio if a smaller one is found
                 if r_min > ri:
                     r_min = ri
                     c_min = ci
+            
+            # Termination condition: no better ratio found
             if r_min >= ratio:
                 break
 
+            # Update cycle and ratio for next iteration
             cycle = c_min
             ratio = r_min
         return ratio, cycle
