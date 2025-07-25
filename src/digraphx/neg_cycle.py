@@ -32,7 +32,9 @@ from typing import (
 # Type variables for generic graph components
 Node = TypeVar("Node")  # Hashable node type (must implement __hash__)
 Edge = TypeVar("Edge")  # Hashable edge type (must implement __hash__)
-Domain = TypeVar("Domain", int, Fraction, float)  # Numeric type for weights (must support comparison and arithmetic)
+Domain = TypeVar(
+    "Domain", int, Fraction, float
+)  # Numeric type for weights (must support comparison and arithmetic)
 Cycle = List[Edge]  # Alias for a list of edges forming a cycle
 
 
@@ -67,7 +69,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
 
     def __init__(self, digraph: Mapping[Node, Mapping[Node, Edge]]) -> None:
         """Initialize the negative cycle finder with a directed graph.
-        
+
         Args:
             digraph: A mapping representing a directed graph where:
                 - Keys are source nodes
@@ -78,10 +80,10 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
 
     def find_cycle(self) -> Generator[Node, None, None]:
         """Find cycles in the current predecessor graph using depth-first search.
-        
+
         Yields:
             Generator[Node, None, None]: Each node that starts a cycle in the predecessor graph
-            
+
         Note:
             Uses a coloring algorithm (white/gray/black) to detect cycles:
             - White: unvisited nodes
@@ -116,14 +118,14 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         get_weight: Callable[[Edge], Domain],
     ) -> bool:
         """Perform one relaxation pass of the Bellman-Ford algorithm.
-        
+
         Args:
             dist: Current shortest distance estimates for each node
             get_weight: Function to get weight/cost of an edge
-            
+
         Returns:
             bool: True if any distance was updated, False otherwise
-            
+
         Note:
             Updates both distance estimates (dist) and predecessor information (pred)
             for all edges in the graph following the Bellman-Ford relaxation rule:
@@ -141,13 +143,13 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
 
     def cycle_list(self, handle: Node) -> Cycle:
         """Reconstruct the cycle starting from the given node.
-        
+
         Args:
             handle: The starting node of the cycle (must be part of a cycle)
-            
+
         Returns:
             Cycle: List of edges forming the cycle in order
-            
+
         Note:
             Follows predecessor links until returning to the starting node
         """
@@ -168,15 +170,15 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         get_weight: Callable[[Edge], Domain],
     ) -> bool:
         """Check if the cycle starting at 'handle' is negative.
-        
+
         Args:
             handle: Starting node of the cycle to check
             dist: Current distance estimates
             get_weight: Function to get edge weights
-            
+
         Returns:
             bool: True if the cycle is negative, False otherwise
-            
+
         Note:
             A cycle is negative if the sum of its edge weights is negative.
             This is checked by verifying that for at least one edge (u,v) in the cycle,
@@ -199,14 +201,14 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         get_weight: Callable[[Edge], Domain],
     ) -> Generator[Cycle, None, None]:
         """Main algorithm to find negative cycles using Howard's method.
-        
+
         Args:
             dist: Initial distance estimates (often initialized to zero)
             get_weight: Function to get edge weights
-            
+
         Yields:
             Generator[Cycle, None, None]: Each found negative cycle as a list of edges
-            
+
         Note:
             1. Repeatedly relaxes edges until no more improvements can be made
             2. Checks for cycles in the predecessor graph

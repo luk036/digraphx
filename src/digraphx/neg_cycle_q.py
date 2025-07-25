@@ -62,13 +62,13 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
 
     # Predecessor dictionary: maps each node to (predecessor_node, connecting_edge)
     pred: Dict[Node, Tuple[Node, Edge]] = {}
-    
+
     # Successor dictionary: maps each node to (successor_node, connecting_edge)
     succ: Dict[Node, Tuple[Node, Edge]] = {}
 
     def __init__(self, digraph: Mapping[Node, Mapping[Node, Edge]]) -> None:
         """Initialize the negative cycle finder with a directed graph.
-        
+
         Args:
             digraph: A directed graph represented as a nested mapping:
                 - Outer keys: source nodes
@@ -79,13 +79,13 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
 
     def find_cycle(self, point_to) -> Generator[Node, None, None]:
         """Detect cycles in the current predecessor/successor graph using depth-first search.
-        
+
         Args:
             point_to: Either self.pred or self.succ dictionary defining the graph edges
-            
+
         Yields:
             Generator[Node, None, None]: Each node that starts a cycle in the graph
-            
+
         Algorithm:
             1. Uses a coloring approach (white/gray/black) for cycle detection
             2. White nodes are unvisited
@@ -123,15 +123,15 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         update_ok: Callable[[Domain, Domain], bool],
     ) -> bool:
         """Perform predecessor relaxation step (Bellman-Ford style).
-        
+
         Args:
             dist: Current distance estimates for each node
             get_weight: Function to get weight of an edge
             update_ok: Function to determine if distance update should be applied
-            
+
         Returns:
             bool: True if any distances were updated, False otherwise
-            
+
         Note:
             Updates distances based on predecessor edges (u -> v)
             Implements the relaxation: if dist[v] > dist[u] + weight(u,v), update dist[v]
@@ -153,15 +153,15 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         update_ok: Callable[[Domain, Domain], bool],
     ) -> bool:
         """Perform successor relaxation step (reverse Bellman-Ford style).
-        
+
         Args:
             dist: Current distance estimates for each node
             get_weight: Function to get weight of an edge
             update_ok: Function to determine if distance update should be applied
-            
+
         Returns:
             bool: True if any distances were updated, False otherwise
-            
+
         Note:
             Updates distances based on successor edges (u -> v)
             Implements the relaxation: if dist[u] < dist[v] - weight(u,v), update dist[u]
@@ -183,15 +183,15 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         update_ok: Callable[[Domain, Domain], bool],
     ) -> Generator[Cycle, None, None]:
         """Find negative cycles using predecessor-based Howard's algorithm.
-        
+
         Args:
             dist: Initial distance estimates (often zero-initialized)
             get_weight: Function to get weight of an edge
             update_ok: Function to determine if distance updates are allowed
-            
+
         Yields:
             Generator[Cycle, None, None]: Each negative cycle found as a list of edges
-            
+
         Algorithm:
             1. Repeatedly relax edges using predecessor updates
             2. After each relaxation, check for cycles in predecessor graph
@@ -231,15 +231,15 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         update_ok: Callable[[Domain, Domain], bool],
     ) -> Generator[Cycle, None, None]:
         """Find negative cycles using successor-based Howard's algorithm.
-        
+
         Args:
             dist: Initial distance estimates (often zero-initialized)
             get_weight: Function to get weight of an edge
             update_ok: Function to determine if distance updates are allowed
-            
+
         Yields:
             Generator[Cycle, None, None]: Each negative cycle found as a list of edges
-            
+
         Note:
             Similar to howard_pred but uses successor updates instead of predecessor
             Currently skips the negative cycle verification (commented assert)
@@ -272,14 +272,14 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
 
     def cycle_list(self, handle: Node, point_to) -> Cycle:
         """Reconstruct the cycle starting from the given node.
-        
+
         Args:
             handle: Starting node of the cycle
             point_to: Either self.pred or self.succ dictionary defining the edges
-            
+
         Returns:
             Cycle: List of edges forming the cycle in order
-            
+
         Note:
             Follows the predecessor/successor links until returning to starting node
         """
@@ -300,15 +300,15 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         get_weight: Callable[[Edge], Domain],
     ) -> bool:
         """Verify if the cycle starting at handle is negative.
-        
+
         Args:
             handle: Starting node of the cycle
             dist: Current distance estimates
             get_weight: Function to get weight of an edge
-            
+
         Returns:
             bool: True if the cycle is negative, False otherwise
-            
+
         Note:
             A cycle is negative if the sum of its edge weights is negative
             This is detected by finding at least one edge that violates the

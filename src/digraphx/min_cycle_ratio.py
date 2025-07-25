@@ -65,6 +65,7 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
     It provides methods to compute distances based on a given ratio and to calculate
     the actual ratio for a given cycle.
     """
+
     def __init__(
         self,
         digraph: Mapping[Node, Mapping[Node, Mapping[str, Domain]]],
@@ -72,10 +73,10 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
     ) -> None:
         """
         Initialize the CycleRatioAPI with a graph and result type.
-        
+
         :param digraph: The graph structure where nodes map to neighbors and edge attributes
         :type digraph: Mapping[Node, Mapping[Node, Mapping[str, Domain]]]
-        
+
         :param result_type: The type to use for calculations (Fraction or float)
         :type result_type: type
         """
@@ -86,13 +87,13 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
         """
         Calculate the parametric distance for an edge given the current ratio.
         The distance formula is: cost - ratio * time
-        
+
         :param ratio: The current ratio value being tested
         :type ratio: Ratio
-        
+
         :param edge: The edge with 'cost' and 'time' attributes
         :type edge: MutableMapping[str, Domain]
-        
+
         :return: The calculated distance value
         :rtype: Ratio
         """
@@ -102,10 +103,10 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
         """
         Calculate the actual ratio for a given cycle by summing all costs and times.
         The ratio is computed as: total_cost / total_time
-        
+
         :param cycle: A sequence of edges forming a cycle
         :type cycle: Cycle
-        
+
         :return: The calculated cycle ratio
         :rtype: Ratio
         """
@@ -140,7 +141,7 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
     def __init__(self, digraph: Graph) -> None:
         """
         Initialize the solver with the graph to analyze.
-        
+
         :param digraph: The graph structure where nodes map to neighbors and edge attributes
         :type digraph: Graph
         """
@@ -149,18 +150,18 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
     def run(self, dist: MutableMapping[Node, Domain], r0: Ratio) -> Tuple[Ratio, Cycle]:
         """
         Run the minimum cycle ratio solver algorithm.
-        
+
         The algorithm works by:
         1. Creating a CycleRatioAPI instance with the graph and ratio type
         2. Using a MaxParametricSolver to find the optimal ratio
         3. Returning both the optimal ratio and the corresponding cycle
-        
+
         :param dist: Initial distance labels for nodes
         :type dist: MutableMapping[Node, Domain]
-        
+
         :param r0: Initial ratio value to start the search
         :type r0: Ratio
-        
+
         :return: A tuple containing the optimal ratio and the cycle that achieves it
         :rtype: Tuple[Ratio, Cycle]
         """

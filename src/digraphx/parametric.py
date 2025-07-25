@@ -148,7 +148,7 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
                 if r_min > ri:
                     r_min = ri
                     c_min = ci
-            
+
             # Termination condition: no better ratio found
             if r_min >= ratio:
                 break

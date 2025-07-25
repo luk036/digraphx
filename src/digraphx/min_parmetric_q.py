@@ -144,7 +144,7 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
                 cycles = ncf.howard_succ(dist, get_weight, update_ok)
             else:
                 cycles = ncf.howard_pred(dist, get_weight, update_ok)
-            
+
             # Evaluate all found cycles
             for c_i in cycles:
                 r_i = self.omega.zero_cancel(c_i)
@@ -153,7 +153,7 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
                     c_max = c_i
                     if pick_one_only:  # Early exit if we only need one improvement
                         break
-            
+
             # Termination condition: no better ratio found
             if r_max <= ratio:
                 break
@@ -162,5 +162,5 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
             cycle = c_max
             ratio = r_max
             reverse = not reverse  # Alternate search direction
-        
+
         return ratio, cycle
