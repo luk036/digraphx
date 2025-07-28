@@ -119,7 +119,6 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
         :return: A tuple containing:
                  - The minimum ratio found (ratio)
                  - The cycle that corresponds to this ratio (cycle)
-        :rtype: Tuple[Ratio, Cycle]
         """
         # Determine the numeric type used in distance calculations
         D = type(next(iter(dist.values())))
