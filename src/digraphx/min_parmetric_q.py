@@ -20,7 +20,7 @@ Overall, this code provides a framework for solving complex network optimization
 
 from abc import abstractmethod
 from fractions import Fraction
-from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar, Callable
+from typing import Callable, Generic, Mapping, MutableMapping, Tuple, TypeVar
 
 from .neg_cycle_q import Cycle, Edge, NegCycleFinder, Node
 

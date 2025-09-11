@@ -3,7 +3,7 @@ from __future__ import print_function
 
 from fractions import Fraction
 
-from digraphx.min_parmetric_q import MinParametricSolver, MinParametricAPI
+from digraphx.min_parmetric_q import MinParametricAPI, MinParametricSolver
 
 
 class MyAPI(MinParametricAPI):
