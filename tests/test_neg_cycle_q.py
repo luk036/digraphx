@@ -8,7 +8,7 @@ from digraphx.neg_cycle_q import NegCycleFinder
 from digraphx.tiny_digraph import DiGraphAdapter, TinyDiGraph
 
 
-def test_raw_graph_by_lict():
+def test_raw_graph_by_MapAdapter():
     def update_ok(dist, v):
         return True
 
