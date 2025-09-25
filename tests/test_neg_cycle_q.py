@@ -186,3 +186,60 @@ def test_tiny_graph():
     assert not has_neg
     has_neg = do_case_succ(digraph, dist)
     assert not has_neg
+
+
+def test_neg_cycle_q_no_edges():
+    def update_ok(dist, v):
+        return True
+
+    digraph = DiGraphAdapter()
+    digraph.add_nodes_from([0, 1, 2])
+    dist = {vtx: 0 for vtx in digraph}
+    finder = NegCycleFinder(digraph)
+    has_neg = False
+    for _ in finder.howard_pred(dist, lambda edge: edge.get("weight", 1), update_ok):
+        has_neg = True
+        break
+    assert not has_neg
+    has_neg = False
+    for _ in finder.howard_succ(dist, lambda edge: edge.get("weight", 1), update_ok):
+        has_neg = True
+        break
+    assert not has_neg
+
+
+def test_neg_cycle_q_self_loop():
+    def update_ok(dist, v):
+        return True
+
+    digraph = DiGraphAdapter()
+    digraph.add_edge(0, 0, weight=-1)
+    dist = {vtx: 0 for vtx in digraph}
+    finder = NegCycleFinder(digraph)
+    has_neg = False
+    for _ in finder.howard_pred(dist, lambda edge: edge.get("weight", 1), update_ok):
+        has_neg = True
+        break
+    assert has_neg
+    has_neg = False
+    for _ in finder.howard_succ(dist, lambda edge: edge.get("weight", 1), update_ok):
+        has_neg = True
+        break
+    assert has_neg
+
+
+def test_neg_cycle_q_multiple_neg_cycles():
+    def update_ok(dist, v):
+        return True
+
+    digraph = DiGraphAdapter()
+    digraph.add_edge(0, 1, weight=-1)
+    digraph.add_edge(1, 0, weight=-1)
+    digraph.add_edge(2, 3, weight=-1)
+    digraph.add_edge(3, 2, weight=-1)
+    dist = {vtx: 0 for vtx in digraph}
+    finder = NegCycleFinder(digraph)
+    cycles = list(finder.howard_pred(dist, lambda edge: edge.get("weight", 1), update_ok))
+    assert len(cycles) >= 1
+    cycles = list(finder.howard_succ(dist, lambda edge: edge.get("weight", 1), update_ok))
+    assert len(cycles) >= 1

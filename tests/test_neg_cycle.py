@@ -137,3 +137,39 @@ def test_tiny_graph():
     dist = MapAdapter([0, 0, 0])
     has_neg = do_case(digraph, dist)
     assert not has_neg
+
+
+def test_neg_cycle_no_edges():
+    digraph = DiGraphAdapter()
+    digraph.add_nodes_from([0, 1, 2])
+    dist = {vtx: 0 for vtx in digraph}
+    finder = NegCycleFinder(digraph)
+    has_neg = False
+    for _ in finder.howard(dist, lambda edge: edge.get("weight", 1)):
+        has_neg = True
+        break
+    assert not has_neg
+
+
+def test_neg_cycle_self_loop():
+    digraph = DiGraphAdapter()
+    digraph.add_edge(0, 0, weight=-1)
+    dist = {vtx: 0 for vtx in digraph}
+    finder = NegCycleFinder(digraph)
+    has_neg = False
+    for _ in finder.howard(dist, lambda edge: edge.get("weight", 1)):
+        has_neg = True
+        break
+    assert has_neg
+
+
+def test_neg_cycle_multiple_neg_cycles():
+    digraph = DiGraphAdapter()
+    digraph.add_edge(0, 1, weight=-1)
+    digraph.add_edge(1, 0, weight=-1)
+    digraph.add_edge(2, 3, weight=-1)
+    digraph.add_edge(3, 2, weight=-1)
+    dist = {vtx: 0 for vtx in digraph}
+    finder = NegCycleFinder(digraph)
+    cycles = list(finder.howard(dist, lambda edge: edge.get("weight", 1)))
+    assert len(cycles) >= 1  # Howard's may not find all elementary cycles

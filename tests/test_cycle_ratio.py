@@ -3,15 +3,39 @@ from __future__ import print_function
 
 from fractions import Fraction
 
+import networkx as nx
+import pytest
+
 from mywheel.map_adapter import MapAdapter
 
 from digraphx.min_cycle_ratio import MinCycleRatioSolver, set_default
+from digraphx.tiny_digraph import DiGraphAdapter
 
 from .test_neg_cycle import (
     create_test_case1,
     create_test_case_timing,
     create_tiny_graph,
 )
+
+
+def test_cycle_ratio_no_cycle():
+    digraph = DiGraphAdapter()
+    digraph.add_edge(0, 1, cost=1, time=1)
+    digraph.add_edge(1, 2, cost=1, time=1)
+    dist = {vtx: 0 for vtx in digraph}
+    solver = MinCycleRatioSolver(digraph)
+    ratio, cycle = solver.run(dist, Fraction(10000, 1))
+    assert not cycle
+
+
+def test_cycle_ratio_self_loop():
+    digraph = DiGraphAdapter()
+    digraph.add_edge(0, 0, cost=2, time=1)
+    dist = {vtx: 0 for vtx in digraph}
+    solver = MinCycleRatioSolver(digraph)
+    ratio, cycle = solver.run(dist, Fraction(10000, 1))
+    assert ratio == Fraction(2, 1)
+    assert cycle
 
 
 def test_cycle_ratio_raw():
