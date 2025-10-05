@@ -8,42 +8,42 @@ from digraphx.tiny_digraph import DiGraphAdapter, TinyDiGraph
 
 def test_min_cycle_ratio_set_default_doctest():
     digraph = {
-        'a': {'b': {'cost': 5}},
-        'b': {'c': {'cost': 3}},
-        'c': {'a': {'cost': -2}}
+        "a": {"b": {"cost": 5}},
+        "b": {"c": {"cost": 3}},
+        "c": {"a": {"cost": -2}},
     }
-    set_default(digraph, 'time', 1)
-    assert digraph['a']['b']['time'] == 1
-    assert digraph['b']['c']['time'] == 1
-    assert digraph['c']['a']['time'] == 1
+    set_default(digraph, "time", 1)
+    assert digraph["a"]["b"]["time"] == 1
+    assert digraph["b"]["c"]["time"] == 1
+    assert digraph["c"]["a"]["time"] == 1
 
 
 def test_min_cycle_ratio_cycle_ratio_api_distance_doctest():
     digraph = {
-        'a': {'b': {'cost': 5, 'time': 1}},
-        'b': {'c': {'cost': 3, 'time': 1}},
-        'c': {'a': {'cost': -2, 'time': 1}}
+        "a": {"b": {"cost": 5, "time": 1}},
+        "b": {"c": {"cost": 3, "time": 1}},
+        "c": {"a": {"cost": -2, "time": 1}},
     }
     api = CycleRatioAPI(digraph, Fraction)
-    assert api.distance(Fraction(1, 2), digraph['a']['b']) == Fraction(9, 2)
+    assert api.distance(Fraction(1, 2), digraph["a"]["b"]) == Fraction(9, 2)
 
 
 def test_min_cycle_ratio_cycle_ratio_api_zero_cancel_doctest():
     digraph = {
-        'a': {'b': {'cost': 5, 'time': 1}},
-        'b': {'c': {'cost': 3, 'time': 1}},
-        'c': {'a': {'cost': -2, 'time': 1}}
+        "a": {"b": {"cost": 5, "time": 1}},
+        "b": {"c": {"cost": 3, "time": 1}},
+        "c": {"a": {"cost": -2, "time": 1}},
     }
     api = CycleRatioAPI(digraph, Fraction)
-    cycle = [digraph['a']['b'], digraph['b']['c'], digraph['c']['a']]
+    cycle = [digraph["a"]["b"], digraph["b"]["c"], digraph["c"]["a"]]
     assert api.zero_cancel(cycle) == Fraction(2, 1)
 
 
 def test_parametric_max_parametric_solver_run_doctest():
     digraph = {
-        'a': {'b': {'cost': 5, 'time': 1}},
-        'b': {'c': {'cost': 3, 'time': 1}},
-        'c': {'a': {'cost': -2, 'time': 1}}
+        "a": {"b": {"cost": 5, "time": 1}},
+        "b": {"c": {"cost": 3, "time": 1}},
+        "c": {"a": {"cost": -2, "time": 1}},
     }
     omega = CycleRatioAPI(digraph, Fraction)
     solver = MaxParametricSolver(digraph, omega)
@@ -53,86 +53,59 @@ def test_parametric_max_parametric_solver_run_doctest():
 
 
 def test_neg_cycle_relax_doctest():
-    digraph = {
-        'a': {'b': 1, 'c': 4},
-        'b': {'c': 2},
-        'c': {'a': -5}
-    }
-    dist = {'a': 0, 'b': float('inf'), 'c': float('inf')}
+    digraph = {"a": {"b": 1, "c": 4}, "b": {"c": 2}, "c": {"a": -5}}
+    dist = {"a": 0, "b": float("inf"), "c": float("inf")}
     finder = NegCycleFinder_neg_cycle(digraph)
     finder.relax(dist, lambda edge: edge)
-    assert dist['b'] == 1
-    assert dist['c'] == 3
+    assert dist["b"] == 1
+    assert dist["c"] == 3
 
 
 def test_neg_cycle_cycle_list_doctest():
-    digraph = {
-        'a': {'b': 'ab'},
-        'b': {'c': 'bc'},
-        'c': {'a': 'ca'}
-    }
+    digraph = {"a": {"b": "ab"}, "b": {"c": "bc"}, "c": {"a": "ca"}}
     finder = NegCycleFinder_neg_cycle(digraph)
-    finder.pred = {'b': ('a', 'ab'), 'c': ('b', 'bc'), 'a': ('c', 'ca')}
-    assert finder.cycle_list('a') == ['ca', 'bc', 'ab']
+    finder.pred = {"b": ("a", "ab"), "c": ("b", "bc"), "a": ("c", "ca")}
+    assert finder.cycle_list("a") == ["ca", "bc", "ab"]
 
 
 def test_neg_cycle_is_negative_doctest():
-    digraph = {
-        'a': {'b': 1},
-        'b': {'c': 1},
-        'c': {'a': -3}
-    }
-    dist = {'a': 0, 'b': 1, 'c': 2}
+    digraph = {"a": {"b": 1}, "b": {"c": 1}, "c": {"a": -3}}
+    dist = {"a": 0, "b": 1, "c": 2}
     finder = NegCycleFinder_neg_cycle(digraph)
-    finder.pred = {'b': ('a', 1), 'c': ('b', 1), 'a': ('c', -3)}
-    assert finder.is_negative('a', dist, lambda edge: edge) is True
+    finder.pred = {"b": ("a", 1), "c": ("b", 1), "a": ("c", -3)}
+    assert finder.is_negative("a", dist, lambda edge: edge) is True
 
 
 def test_neg_cycle_q_relax_pred_doctest():
-    digraph = {
-        'a': {'b': 1, 'c': 4},
-        'b': {'c': 2},
-        'c': {'a': -5}
-    }
-    dist = {'a': 0, 'b': float('inf'), 'c': float('inf')}
+    digraph = {"a": {"b": 1, "c": 4}, "b": {"c": 2}, "c": {"a": -5}}
+    dist = {"a": 0, "b": float("inf"), "c": float("inf")}
     finder = NegCycleFinder_neg_cycle_q(digraph)
     finder.relax_pred(dist, lambda edge: edge, lambda old, new: True)
-    assert dist['b'] == 1
-    assert dist['c'] == 3
+    assert dist["b"] == 1
+    assert dist["c"] == 3
 
 
 def test_neg_cycle_q_relax_succ_doctest():
-    digraph = {
-        'a': {'b': 1},
-        'b': {}
-    }
-    dist = {'a': 0, 'b': 5}
+    digraph = {"a": {"b": 1}, "b": {}}
+    dist = {"a": 0, "b": 5}
     finder = NegCycleFinder_neg_cycle_q(digraph)
     finder.relax_succ(dist, lambda edge: edge, lambda old, new: True)
-    assert dist['a'] == 4
+    assert dist["a"] == 4
 
 
 def test_neg_cycle_q_cycle_list_doctest():
-    digraph = {
-        'a': {'b': 'ab'},
-        'b': {'c': 'bc'},
-        'c': {'a': 'ca'}
-    }
+    digraph = {"a": {"b": "ab"}, "b": {"c": "bc"}, "c": {"a": "ca"}}
     finder = NegCycleFinder_neg_cycle_q(digraph)
-    finder.pred = {'b': ('a', 'ab'), 'c': ('b', 'bc'), 'a': ('c', 'ca')}
-    assert finder.cycle_list('a', finder.pred) == ['ca', 'bc', 'ab']
+    finder.pred = {"b": ("a", "ab"), "c": ("b", "bc"), "a": ("c", "ca")}
+    assert finder.cycle_list("a", finder.pred) == ["ca", "bc", "ab"]
 
 
 def test_neg_cycle_q_is_negative_doctest():
-    digraph = {
-        'a': {'b': 1},
-        'b': {'c': 1},
-        'c': {'a': -3}
-    }
-    dist = {'a': 0, 'b': 1, 'c': 2}
+    digraph = {"a": {"b": 1}, "b": {"c": 1}, "c": {"a": -3}}
+    dist = {"a": 0, "b": 1, "c": 2}
     finder = NegCycleFinder_neg_cycle_q(digraph)
-    finder.pred = {'b': ('a', 1), 'c': ('b', 1), 'a': ('c', -3)}
-    assert finder.is_negative('a', dist, lambda edge: edge) is True
+    finder.pred = {"b": ("a", 1), "c": ("b", 1), "a": ("c", -3)}
+    assert finder.is_negative("a", dist, lambda edge: edge) is True
 
 
 def test_tiny_digraph_adapter_items_doctest():
