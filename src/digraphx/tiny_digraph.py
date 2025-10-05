@@ -36,6 +36,13 @@ class DiGraphAdapter(nx.DiGraph):
         This method overrides the default items() method to use adjacency() instead,
         providing a consistent interface for iterating through the graph's nodes
         and their connections.
+
+        Examples:
+            >>> gr = DiGraphAdapter()
+            >>> gr.add_edge(1, 2)
+            >>> gr.add_edge(2, 3)
+            >>> sorted(list(gr.items()))
+            [(1, {2: {}}), (2, {3: {}}), (3, {})]
         """
         return self.adjacency()
 
@@ -55,6 +62,15 @@ class TinyDiGraph(DiGraphAdapter):
         Returns:
             MapAdapter: A list-based dictionary where each node's attributes are stored
                        in a separate dictionary at the node's index position.
+
+        Examples:
+            >>> gr = TinyDiGraph()
+            >>> gr.init_nodes(3)
+            >>> node_dict = gr.cheat_node_dict()
+            >>> list(node_dict.keys())
+            [0, 1, 2]
+            >>> node_dict[0]
+            {}
         """
         return MapAdapter([dict() for _ in range(self.num_nodes)])
 
@@ -64,6 +80,15 @@ class TinyDiGraph(DiGraphAdapter):
         Returns:
             MapAdapter: A list-based dictionary where each node's outgoing edges are stored
                        in a separate dictionary at the node's index position.
+
+        Examples:
+            >>> gr = TinyDiGraph()
+            >>> gr.init_nodes(2)
+            >>> adj_list = gr.cheat_adjlist_outer_dict()
+            >>> list(adj_list.keys())
+            [0, 1]
+            >>> adj_list[0]
+            {}
         """
         return MapAdapter([dict() for _ in range(self.num_nodes)])
 
@@ -80,6 +105,16 @@ class TinyDiGraph(DiGraphAdapter):
         Args:
             n (int): The number of nodes to initialize in the graph. Nodes will be
                      indexed from 0 to n-1.
+
+        Examples:
+            >>> gr = TinyDiGraph()
+            >>> gr.init_nodes(5)
+            >>> gr.number_of_nodes()
+            5
+            >>> list(gr._node.keys())
+            [0, 1, 2, 3, 4]
+            >>> list(gr._adj.keys())
+            [0, 1, 2, 3, 4]
         """
         self.num_nodes = n
         self._node = self.cheat_node_dict()  # Stores node attributes

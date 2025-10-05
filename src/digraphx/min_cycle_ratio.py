@@ -52,6 +52,20 @@ def set_default(digraph: GraphMut, weight: str, value: Domain) -> None:
     :param value: The `value` parameter is the default value that will be set for the specified weight attribute in the graph
 
     :type value: Domain
+
+    Examples:
+        >>> digraph = {
+        ...     'a': {'b': {'cost': 5}},
+        ...     'b': {'c': {'cost': 3}},
+        ...     'c': {'a': {'cost': -2}}
+        ... }
+        >>> set_default(digraph, 'time', 1)
+        >>> digraph['a']['b']['time']
+        1
+        >>> digraph['b']['c']['time']
+        1
+        >>> digraph['c']['a']['time']
+        1
     """
     for _, neighbors in digraph.items():
         for _, e in neighbors.items():
@@ -96,6 +110,17 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
 
         :return: The calculated distance value
         :rtype: Ratio
+
+        Examples:
+            >>> from fractions import Fraction
+            >>> digraph = {
+            ...     'a': {'b': {'cost': 5, 'time': 1}},
+            ...     'b': {'c': {'cost': 3, 'time': 1}},
+            ...     'c': {'a': {'cost': -2, 'time': 1}}
+            ... }
+            >>> api = CycleRatioAPI(digraph, Fraction)
+            >>> api.distance(Fraction(1, 2), digraph['a']['b'])
+            Fraction(9, 2)
         """
         return self.result_type(edge["cost"]) - ratio * edge["time"]
 
@@ -109,6 +134,18 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
 
         :return: The calculated cycle ratio
         :rtype: Ratio
+
+        Examples:
+            >>> from fractions import Fraction
+            >>> digraph = {
+            ...     'a': {'b': {'cost': 5, 'time': 1}},
+            ...     'b': {'c': {'cost': 3, 'time': 1}},
+            ...     'c': {'a': {'cost': -2, 'time': 1}}
+            ... }
+            >>> api = CycleRatioAPI(digraph, Fraction)
+            >>> cycle = [digraph['a']['b'], digraph['b']['c'], digraph['c']['a']]
+            >>> api.zero_cancel(cycle)
+            Fraction(2, 1)
         """
         total_cost = sum(edge["cost"] for edge in cycle)
         total_time = sum(edge["time"] for edge in cycle)

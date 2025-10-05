@@ -3,9 +3,6 @@ from __future__ import print_function
 
 from fractions import Fraction
 
-import networkx as nx
-import pytest
-
 from mywheel.map_adapter import MapAdapter
 
 from digraphx.min_cycle_ratio import MinCycleRatioSolver, set_default

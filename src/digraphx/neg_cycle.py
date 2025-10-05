@@ -130,6 +130,21 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             Updates both distance estimates (dist) and predecessor information (pred)
             for all edges in the graph following the Bellman-Ford relaxation rule:
             if dist[v] > dist[u] + weight(u,v), then update dist[v]
+
+        Examples:
+            >>> digraph = {
+            ...     'a': {'b': 1, 'c': 4},
+            ...     'b': {'c': 2},
+            ...     'c': {'a': -5}
+            ... }
+            >>> dist = {'a': 0, 'b': float('inf'), 'c': float('inf')}
+            >>> finder = NegCycleFinder(digraph)
+            >>> finder.relax(dist, lambda edge: edge)
+            True
+            >>> dist['b']
+            1
+            >>> dist['c']
+            3
         """
         changed = False
         for utx, neighbors in self.digraph.items():
@@ -152,6 +167,17 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
 
         Note:
             Follows predecessor links until returning to the starting node
+
+        Examples:
+            >>> digraph = {
+            ...     'a': {'b': 'ab'},
+            ...     'b': {'c': 'bc'},
+            ...     'c': {'a': 'ca'}
+            ... }
+            >>> finder = NegCycleFinder(digraph)
+            >>> finder.pred = {'b': ('a', 'ab'), 'c': ('b', 'bc'), 'a': ('c', 'ca')}
+            >>> finder.cycle_list('a')
+            ['ca', 'bc', 'ab']
         """
         vtx = handle
         cycle = list()
@@ -183,6 +209,18 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             A cycle is negative if the sum of its edge weights is negative.
             This is checked by verifying that for at least one edge (u,v) in the cycle,
             dist[v] > dist[u] + weight(u,v) (triangle inequality violation)
+
+        Examples:
+            >>> digraph = {
+            ...     'a': {'b': 1},
+            ...     'b': {'c': 1},
+            ...     'c': {'a': -3}
+            ... }
+            >>> dist = {'a': 0, 'b': 1, 'c': 2}
+            >>> finder = NegCycleFinder(digraph)
+            >>> finder.pred = {'b': ('a', 1), 'c': ('b', 1), 'a': ('c', -3)}
+            >>> finder.is_negative('a', dist, lambda edge: edge)
+            True
         """
         vtx = handle
         # do while loop in C++

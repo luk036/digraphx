@@ -135,6 +135,21 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         Note:
             Updates distances based on predecessor edges (u -> v)
             Implements the relaxation: if dist[v] > dist[u] + weight(u,v), update dist[v]
+
+        Examples:
+            >>> digraph = {
+            ...     'a': {'b': 1, 'c': 4},
+            ...     'b': {'c': 2},
+            ...     'c': {'a': -5}
+            ... }
+            >>> dist = {'a': 0, 'b': float('inf'), 'c': float('inf')}
+            >>> finder = NegCycleFinder(digraph)
+            >>> finder.relax_pred(dist, lambda edge: edge, lambda old, new: True)
+            True
+            >>> dist['b']
+            1
+            >>> dist['c']
+            3
         """
         changed = False
         for utx, neighbors in self.digraph.items():
@@ -165,6 +180,18 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         Note:
             Updates distances based on successor edges (u -> v)
             Implements the relaxation: if dist[u] < dist[v] - weight(u,v), update dist[u]
+
+        Examples:
+            >>> digraph = {
+            ...     'a': {'b': 1},
+            ...     'b': {}
+            ... }
+            >>> dist = {'a': 0, 'b': 5}
+            >>> finder = NegCycleFinder(digraph)
+            >>> finder.relax_succ(dist, lambda edge: edge, lambda old, new: True)
+            True
+            >>> dist['a']
+            4
         """
         changed = False
         for utx, neighbors in self.digraph.items():
@@ -282,6 +309,17 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
 
         Note:
             Follows the predecessor/successor links until returning to starting node
+
+        Examples:
+            >>> digraph = {
+            ...     'a': {'b': 'ab'},
+            ...     'b': {'c': 'bc'},
+            ...     'c': {'a': 'ca'}
+            ... }
+            >>> finder = NegCycleFinder(digraph)
+            >>> finder.pred = {'b': ('a', 'ab'), 'c': ('b', 'bc'), 'a': ('c', 'ca')}
+            >>> finder.cycle_list('a', finder.pred)
+            ['ca', 'bc', 'ab']
         """
         vtx = handle
         cycle = list()
@@ -313,6 +351,18 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             A cycle is negative if the sum of its edge weights is negative
             This is detected by finding at least one edge that violates the
             triangle inequality: dist[v] > dist[u] + weight(u,v)
+
+        Examples:
+            >>> digraph = {
+            ...     'a': {'b': 1},
+            ...     'b': {'c': 1},
+            ...     'c': {'a': -3}
+            ... }
+            >>> dist = {'a': 0, 'b': 1, 'c': 2}
+            >>> finder = NegCycleFinder(digraph)
+            >>> finder.pred = {'b': ('a', 1), 'c': ('b', 1), 'a': ('c', -3)}
+            >>> finder.is_negative('a', dist, lambda edge: edge)
+            True
         """
         vtx = handle
         # C-style do-while loop

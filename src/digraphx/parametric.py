@@ -122,6 +122,21 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
             2. The cycle (`cycle`) that corresponds to this ratio
 
         :rtype: Tuple[Ratio, Cycle]
+
+        Examples:
+            >>> from fractions import Fraction
+            >>> from .min_cycle_ratio import CycleRatioAPI
+            >>> digraph = {
+            ...     'a': {'b': {'cost': 5, 'time': 1}},
+            ...     'b': {'c': {'cost': 3, 'time': 1}},
+            ...     'c': {'a': {'cost': -2, 'time': 1}}
+            ... }
+            >>> omega = CycleRatioAPI(digraph, Fraction)
+            >>> solver = MaxParametricSolver(digraph, omega)
+            >>> dist = {node: Fraction(0) for node in digraph}
+            >>> ratio, cycle = solver.run(dist, Fraction(10))
+            >>> ratio
+            Fraction(2, 1)
         """
         # Determine the type of domain values from the first element in dist
         D = type(next(iter(dist.values())))
