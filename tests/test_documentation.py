@@ -1,8 +1,9 @@
 from fractions import Fraction
-from digraphx.min_cycle_ratio import set_default, CycleRatioAPI
-from digraphx.parametric import MaxParametricSolver
+
+from digraphx.min_cycle_ratio import CycleRatioAPI, set_default
 from digraphx.neg_cycle import NegCycleFinder as NegCycleFinder_neg_cycle
 from digraphx.neg_cycle_q import NegCycleFinder as NegCycleFinder_neg_cycle_q
+from digraphx.parametric import MaxParametricSolver
 from digraphx.tiny_digraph import DiGraphAdapter, TinyDiGraph
 
 
