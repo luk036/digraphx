@@ -1,23 +1,46 @@
-"""
-Negative Cycle Finder (neg_cycle_q.py)
+"""Negative Cycle Finder (neg_cycle_q.py)
 
-This code implements a Negative Cycle Finder for directed graphs using Howard's method. The purpose of this code is to detect and find negative cycles in a directed graph. A negative cycle is a cycle in the graph where the sum of the edge weights is negative.
+This code implements a Negative Cycle Finder for directed graphs using Howard's
+method. The purpose of this code is to detect and find negative cycles in a
+directed graph. A negative cycle is a cycle in the graph where the sum of the
+edge weights is negative.
 
-The main input for this code is a directed graph, represented as a mapping of nodes to their neighboring nodes and the edges connecting them. The graph is passed to the NegCycleFinder class when it's initialized.
+The main input for this code is a directed graph, represented as a mapping of
+nodes to their neighboring nodes and the edges connecting them. The graph is
+passed to the NegCycleFinder class when it's initialized.
 
-The output of this code is a list of cycles (if any negative cycles are found). Each cycle is represented as a list of edges that form the negative cycle.
+The output of this code is a list of cycles (if any negative cycles are found).
+Each cycle is represented as a list of edges that form the negative cycle.
 
-The code achieves its purpose through an algorithm called Howard's method, which is a minimum cycle ratio (MCR) algorithm. It works by maintaining a set of candidate cycles and iteratively updating them until it finds the minimum cycle ratio or detects a negative cycle.
+The code achieves its purpose through an algorithm called Howard's method, which
+is a minimum cycle ratio (MCR) algorithm. It works by maintaining a set of
+candidate cycles and iteratively updating them until it finds the minimum cycle
+ratio or detects a negative cycle.
 
-The main logic flow of the algorithm involves two key operations: relaxation and cycle detection. The relaxation process updates the distances between nodes based on the edge weights. This is done in two ways: predecessor relaxation (relax_pred) and successor relaxation (relax_succ). The cycle detection part (find_cycle) looks for cycles in the graph based on the current set of predecessors or successors.
+The main logic flow of the algorithm involves two key operations: relaxation
+and cycle detection. The relaxation process updates the distances between nodes
+based on the edge weights. This is done in two ways: predecessor relaxation
+(relax_pred) and successor relaxation (relax_succ). The cycle detection part
+(find_cycle) looks for cycles in the graph based on the current set of
+predecessors or successors.
 
-The howard_pred and howard_succ methods combine these operations. They repeatedly perform relaxation and then check for cycles. If a negative cycle is found, it's yielded as output.
+The howard_pred and howard_succ methods combine these operations. They
+repeatedly perform relaxation and then check for cycles. If a negative cycle is
+found, it's yielded as output.
 
-An important data transformation happening in this code is the maintenance of the 'dist' dictionary, which keeps track of the distances between nodes. This dictionary is continuously updated during the relaxation process.
+An important data transformation happening in this code is the maintenance of
+the 'dist' dictionary, which keeps track of the distances between nodes. This
+dictionary is continuously updated during the relaxation process.
 
-The code uses some advanced concepts like generic types and generator functions, but the core idea is straightforward: it's trying to find paths in the graph where going around in a circle results in a negative total weight, which shouldn't happen in many real-world scenarios (like currency exchange rates).
+The code uses some advanced concepts like generic types and generator functions,
+but the core idea is straightforward: it's trying to find paths in the graph
+where going around in a circle results in a negative total weight, which
+shouldn't happen in many real-world scenarios (like currency exchange rates).
 
-Overall, this code provides a tool for analyzing directed graphs and finding problematic cycles, which can be useful in various applications such as detecting arbitrage opportunities in currency exchange or finding inconsistencies in systems modeled as graphs.
+Overall, this code provides a tool for analyzing directed graphs and finding
+problematic cycles, which can be useful in various applications such as
+detecting arbitrage opportunities in currency exchange or finding
+inconsistencies in systems modeled as graphs.
 """
 
 from fractions import Fraction
@@ -56,8 +79,9 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
     graph using the Bellman-Ford relaxation algorithm. If a negative cycle is
     detected, the algorithm terminates and returns the cycle.
 
-    The class implements both predecessor and successor versions of Howard's algorithm,
-    providing flexibility in how negative cycles are detected and processed.
+    The class implements both predecessor and successor versions of Howard's
+    algorithm, providing flexibility in how negative cycles are detected and
+    processed.
     """
 
     # Predecessor dictionary: maps each node to (predecessor_node, connecting_edge)

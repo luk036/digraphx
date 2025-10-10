@@ -1,23 +1,47 @@
-"""
-Minimum Cycle Ratio Solver
+"""Minimum Cycle Ratio Solver.
 
-This code implements a Minimum Cycle Ratio (MCR) Solver for directed graphs. The purpose of this code is to find the cycle in a graph that has the smallest ratio of total edge weights to the number of edges in the cycle. This is useful in analyzing various systems like digital circuits and communication networks.
+This code implements a Minimum Cycle Ratio (MCR) Solver for directed graphs.
+The purpose of this code is to find the cycle in a graph that has the smallest
+ratio of total edge weights to the number of edges in the cycle. This is useful
+in analyzing various systems like digital circuits and communication networks.
 
-The main input for this solver is a directed graph, represented as a mapping of nodes to their neighboring nodes and associated edge attributes. The graph is expected to have "cost" and "time" attributes for each edge.
+The main input for this solver is a directed graph, represented as a mapping of
+nodes to their neighboring nodes and associated edge attributes. The graph is
+expected to have "cost" and "time" attributes for each edge.
 
-The primary output of this solver is a tuple containing two elements: the minimum cycle ratio (a number) and the cycle itself (a sequence of edges that form the cycle with the minimum ratio).
+The primary output of this solver is a tuple containing two elements: the
+minimum cycle ratio (a number) and the cycle itself (a sequence of edges that
+form the cycle with the minimum ratio).
 
-To achieve its purpose, the code uses a parametric approach. It defines a CycleRatioAPI class that calculates distances between nodes based on a given ratio and edge information. This class also computes the ratio for a given cycle.
+To achieve its purpose, the code uses a parametric approach. It defines a
+CycleRatioAPI class that calculates distances between nodes based on a given
+ratio and edge information. This class also computes the ratio for a given
+cycle.
 
-The main solver, MinCycleRatioSolver, uses the CycleRatioAPI in combination with a MaxParametricSolver (which is not fully shown in this code snippet) to iteratively find the minimum cycle ratio. It starts with an initial ratio and distance mapping for each node, and then refines these values until it finds the optimal solution.
+The main solver, MinCycleRatioSolver, uses the CycleRatioAPI in combination with
+a MaxParametricSolver (which is not fully shown in this code snippet) to
+iteratively find the minimum cycle ratio. It starts with an initial ratio and
+distance mapping for each node, and then refines these values until it finds the
+optimal solution.
 
-The algorithm works by repeatedly adjusting the ratio and recalculating distances between nodes. It looks for cycles where the sum of distances around the cycle is negative, which indicates a cycle with a lower ratio than the current best. This process continues until no such cycle can be found, at which point the minimum cycle ratio has been determined.
+The algorithm works by repeatedly adjusting the ratio and recalculating
+distances between nodes. It looks for cycles where the sum of distances around
+the cycle is negative, which indicates a cycle with a lower ratio than the
+current best. This process continues until no such cycle can be found, at which
+point the minimum cycle ratio has been determined.
 
-An important aspect of the code is how it handles different types of numbers. It uses generic types and can work with both fractions and floating-point numbers, allowing for flexibility in how precise the calculations need to be.
+An important aspect of the code is how it handles different types of numbers. It
+uses generic types and can work with both fractions and floating-point numbers,
+allowing for flexibility in how precise the calculations need to be.
 
-The code also includes utility functions like set_default, which ensures that all edges in the graph have a specified weight attribute, setting a default value if it's missing. This helps in preparing the graph data for the main algorithm.
+The code also includes utility functions like set_default, which ensures that
+all edges in the graph have a specified weight attribute, setting a default
+value if it's missing. This helps in preparing the graph data for the main
+algorithm.
 
-Overall, this code provides a flexible and powerful tool for analyzing directed graphs, particularly useful in scenarios where understanding the most "efficient" or "tightest" cycles in a system is important.
+Overall, this code provides a flexible and powerful tool for analyzing directed
+graphs, particularly useful in scenarios where understanding the most
+"efficient" or "tightest" cycles in a system is important.
 """
 
 from fractions import Fraction
@@ -39,17 +63,20 @@ def set_default(digraph: GraphMut, weight: str, value: Domain) -> None:
     It iterates through all edges in the graph and sets the specified weight to the given value
     if it's not already present in the edge attributes.
 
-    :param digraph: The parameter `digraph` is of type `GraphMut`, which is likely a mutable graph data
-        structure. It represents a graph where each node has a dictionary of neighbors and their
-        corresponding edge attributes
+    :param digraph: The parameter `digraph` is of type `GraphMut`, which is
+        likely a mutable graph data structure. It represents a graph where each
+        node has a dictionary of neighbors and their corresponding edge
+        attributes
 
     :type digraph: GraphMut
 
-    :param weight: The `weight` parameter is a string that represents the weight attribute of the edges in the graph
+    :param weight: The `weight` parameter is a string that represents the weight
+        attribute of the edges in the graph
 
     :type weight: str
 
-    :param value: The `value` parameter is the default value that will be set for the specified weight attribute in the graph
+    :param value: The `value` parameter is the default value that will be set for
+        the specified weight attribute in the graph
 
     :type value: Domain
 
@@ -76,8 +103,8 @@ def set_default(digraph: GraphMut, weight: str, value: Domain) -> None:
 class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
     """
     This class implements the parametric API for cycle ratio calculations.
-    It provides methods to compute distances based on a given ratio and to calculate
-    the actual ratio for a given cycle.
+    It provides methods to compute distances based on a given ratio and to
+    calculate the actual ratio for a given cycle.
     """
 
     def __init__(
@@ -88,7 +115,8 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
         """
         Initialize the CycleRatioAPI with a graph and result type.
 
-        :param digraph: The graph structure where nodes map to neighbors and edge attributes
+        :param digraph: The graph structure where nodes map to neighbors and edge
+            attributes
         :type digraph: Mapping[Node, Mapping[Node, Mapping[str, Domain]]]
 
         :param result_type: The type to use for calculations (Fraction or float)
@@ -126,8 +154,8 @@ class CycleRatioAPI(ParametricAPI[Node, MutableMapping[str, Domain], Ratio]):
 
     def zero_cancel(self, cycle: Cycle) -> Ratio:
         """
-        Calculate the actual ratio for a given cycle by summing all costs and times.
-        The ratio is computed as: total_cost / total_time
+        Calculate the actual ratio for a given cycle by summing all costs and
+        times. The ratio is computed as: total_cost / total_time
 
         :param cycle: A sequence of edges forming a cycle
         :type cycle: Cycle
@@ -162,11 +190,11 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
     |         for all (u, v) in E
 
     The minimum cycle ratio (MCR) problem is a fundamental problem in the
-    analysis of directed graphs. Given a directed graph, the MCR problem seeks to
-    find the cycle with the minimum ratio of the sum of edge weights to the
+    analysis of directed graphs. Given a directed graph, the MCR problem seeks
+    to find the cycle with the minimum ratio of the sum of edge weights to the
     number of edges in the cycle. In other words, the MCR problem seeks to find
-    the "tightest" cycle in the graph, where the tightness of a cycle is measured
-    by the ratio of the total weight of the cycle to its length.
+    the "tightest" cycle in the graph, where the tightness of a cycle is
+    measured by the ratio of the total weight of the cycle to its length.
 
     The MCR problem has many applications in the analysis of discrete event
     systems, such as digital circuits and communication networks. It is closely
@@ -199,7 +227,8 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
         :param r0: Initial ratio value to start the search
         :type r0: Ratio
 
-        :return: A tuple containing the optimal ratio and the cycle that achieves it
+        :return: A tuple containing the optimal ratio and the cycle that achieves
+            it
         :rtype: Tuple[Ratio, Cycle]
         """
         omega = CycleRatioAPI(self.digraph, type(r0))
