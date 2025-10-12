@@ -45,18 +45,19 @@ graphs, particularly useful in scenarios where understanding the most
 """
 
 from fractions import Fraction
-from typing import Any, Generic, Mapping, MutableMapping, Tuple, TypeVar
+from typing import Any, Generic, Mapping, MutableMapping, Tuple, TypeVar, List
 
-from .neg_cycle import Cycle, Domain, Node
+from .neg_cycle import Cycle, Domain, Edge, Node
 from .parametric import MaxParametricSolver, ParametricAPI
 
 EdgeDC = MutableMapping[str, Any]
 
 # Define type variables for generic programming
 Ratio = TypeVar("Ratio", Fraction, float)
+EdgeType = TypeVar("EdgeType", bound=MutableMapping[str, Any])
 # Define graph types for type hints
-Graph = Mapping[Node, Mapping[Node, MutableMapping[str, Domain]]]
-GraphMut = MutableMapping[Node, MutableMapping[Node, MutableMapping[str, Domain]]]
+Graph = Mapping[Node, Mapping[Node, EdgeType]]
+GraphMut = MutableMapping[Node, Mapping[Node, EdgeType]]
 
 
 def set_default(digraph: GraphMut, weight: str, value: Domain) -> None:
@@ -102,7 +103,7 @@ def set_default(digraph: GraphMut, weight: str, value: Domain) -> None:
                 e[weight] = value
 
 
-class CycleRatioAPI(ParametricAPI[Node, EdgeDC, Ratio]):
+class CycleRatioAPI(ParametricAPI[Node, EdgeType, Ratio]):
     """
     This class implements the parametric API for cycle ratio calculations.
     It provides methods to compute distances based on a given ratio and to
@@ -127,7 +128,7 @@ class CycleRatioAPI(ParametricAPI[Node, EdgeDC, Ratio]):
         self.digraph: Graph = digraph
         self.result_type = result_type
 
-    def distance(self, ratio: Ratio, edge: MutableMapping[str, Domain]) -> Ratio:
+    def distance(self, ratio: Ratio, edge: EdgeType) -> Ratio:
         """
         Calculate the parametric distance for an edge given the current ratio.
         The distance formula is: cost - ratio * time
@@ -136,7 +137,7 @@ class CycleRatioAPI(ParametricAPI[Node, EdgeDC, Ratio]):
         :type ratio: Ratio
 
         :param edge: The edge with 'cost' and 'time' attributes
-        :type edge: MutableMapping[str, Domain]
+        :type edge: EdgeType
 
         :return: The calculated distance value
         :rtype: Ratio
@@ -154,13 +155,13 @@ class CycleRatioAPI(ParametricAPI[Node, EdgeDC, Ratio]):
         """
         return self.result_type(edge["cost"]) - ratio * edge["time"]
 
-    def zero_cancel(self, cycle: Cycle) -> Ratio:
+    def zero_cancel(self, cycle: List[EdgeType]) -> Ratio:
         """
         Calculate the actual ratio for a given cycle by summing all costs and
         times. The ratio is computed as: total_cost / total_time
 
         :param cycle: A sequence of edges forming a cycle
-        :type cycle: Cycle
+        :type cycle: List[EdgeType]
 
         :return: The calculated cycle ratio
         :rtype: Ratio
@@ -182,7 +183,7 @@ class CycleRatioAPI(ParametricAPI[Node, EdgeDC, Ratio]):
         return self.result_type(total_cost) / total_time
 
 
-class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
+class MinCycleRatioSolver(Generic[Node, EdgeType, Ratio]):
     """Minimum Cycle Ratio Solver
 
     This class solves the following parametric network problem:
@@ -205,7 +206,7 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
     problem are therefore of great practical importance.
     """
 
-    def __init__(self, digraph: Any) -> None:
+    def __init__(self, digraph: GraphMut) -> None:
         """
         Initialize the solver with the graph to analyze.
 
@@ -214,7 +215,7 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
         """
         self.digraph: GraphMut = digraph
 
-    def run(self, dist: MutableMapping[Any, Any], r0: Any) -> Tuple[Any, Any]:
+    def run(self, dist: MutableMapping[Node, Domain], r0: Ratio) -> Tuple[Ratio, Cycle]:
         """
         Run the minimum cycle ratio solver algorithm.
 
@@ -233,7 +234,7 @@ class MinCycleRatioSolver(Generic[Node, Edge, Ratio]):
             it
         :rtype: Tuple[Ratio, Cycle]
         """
-        omega: Any = CycleRatioAPI(self.digraph, type(r0))
-        solver: Any = MaxParametricSolver(self.digraph, omega)
+        omega: CycleRatioAPI[Node, EdgeType, Ratio] = CycleRatioAPI(self.digraph, type(r0))
+        solver = MaxParametricSolver[Node, EdgeType, Ratio](self.digraph, omega)
         ratio, cycle = solver.run(dist, r0)
         return ratio, cycle
