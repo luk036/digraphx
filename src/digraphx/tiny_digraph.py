@@ -46,7 +46,7 @@ in situations where performance is critical.
 """
 
 import networkx as nx
-from mywheel.map_adapter import MapAdapter
+from mywheel.map_adapter import MapAdapter  # type: ignore
 
 
 class DiGraphAdapter(nx.DiGraph):
