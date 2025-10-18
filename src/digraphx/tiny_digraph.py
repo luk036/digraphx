@@ -47,10 +47,11 @@ in situations where performance is critical.
 
 import networkx as nx
 from mywheel.map_adapter import MapAdapter  # type: ignore
+from typing import Any, ItemsView
 
 
 class DiGraphAdapter(nx.DiGraph):
-    def items(self):
+    def items(self) -> "ItemsView[Any, Any]":
         """Returns an iterator over (node, adjacency dict) pairs for all nodes.
 
         This method overrides the default items() method to use adjacency() instead,
@@ -94,7 +95,7 @@ class TinyDiGraph(DiGraphAdapter):
         """
         return MapAdapter([dict() for _ in range(self.num_nodes)])
 
-    def cheat_adjlist_outer_dict(self):
+    def cheat_adjlist_outer_dict(self) -> MapAdapter:
         """Creates a MapAdapter instance to store adjacency lists.
 
         Returns:

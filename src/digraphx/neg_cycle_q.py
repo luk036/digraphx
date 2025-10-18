@@ -101,7 +101,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         """
         self.digraph = digraph
 
-    def find_cycle(self, point_to) -> Generator[Node, None, None]:
+    def find_cycle(self, point_to: Dict[Node, Tuple[Node, Edge]]) -> Generator[Node, None, None]:
         """Detect cycles in the current predecessor/successor graph using depth-first search.
 
         Args:
@@ -321,7 +321,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
                 found = True
                 yield self.cycle_list(vtx, self.succ)
 
-    def cycle_list(self, handle: Node, point_to) -> Cycle:
+    def cycle_list(self, handle: Node, point_to: Dict[Node, Tuple[Node, Edge]]) -> Cycle:
         """Reconstruct the cycle starting from the given node.
 
         Args:

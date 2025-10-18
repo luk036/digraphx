@@ -126,7 +126,7 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
         dist: MutableMapping[Node, Domain],
         ratio: Ratio,
         update_ok: Callable[[Domain, Domain], bool],
-        pick_one_only=False,
+        pick_one_only: bool = False,
     ) -> Tuple[Ratio, Cycle]:
         """
         The `run` function executes the parametric solver algorithm to find the
