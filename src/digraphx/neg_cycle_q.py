@@ -1,23 +1,46 @@
-"""
-Negative Cycle Finder (neg_cycle_q.py)
+"""Negative Cycle Finder (neg_cycle_q.py)
 
-This code implements a Negative Cycle Finder for directed graphs using Howard's method. The purpose of this code is to detect and find negative cycles in a directed graph. A negative cycle is a cycle in the graph where the sum of the edge weights is negative.
+This code implements a Negative Cycle Finder for directed graphs using Howard's
+method. The purpose of this code is to detect and find negative cycles in a
+directed graph. A negative cycle is a cycle in the graph where the sum of the
+edge weights is negative.
 
-The main input for this code is a directed graph, represented as a mapping of nodes to their neighboring nodes and the edges connecting them. The graph is passed to the NegCycleFinder class when it's initialized.
+The main input for this code is a directed graph, represented as a mapping of
+nodes to their neighboring nodes and the edges connecting them. The graph is
+passed to the NegCycleFinder class when it's initialized.
 
-The output of this code is a list of cycles (if any negative cycles are found). Each cycle is represented as a list of edges that form the negative cycle.
+The output of this code is a list of cycles (if any negative cycles are found).
+Each cycle is represented as a list of edges that form the negative cycle.
 
-The code achieves its purpose through an algorithm called Howard's method, which is a minimum cycle ratio (MCR) algorithm. It works by maintaining a set of candidate cycles and iteratively updating them until it finds the minimum cycle ratio or detects a negative cycle.
+The code achieves its purpose through an algorithm called Howard's method, which
+is a minimum cycle ratio (MCR) algorithm. It works by maintaining a set of
+candidate cycles and iteratively updating them until it finds the minimum cycle
+ratio or detects a negative cycle.
 
-The main logic flow of the algorithm involves two key operations: relaxation and cycle detection. The relaxation process updates the distances between nodes based on the edge weights. This is done in two ways: predecessor relaxation (relax_pred) and successor relaxation (relax_succ). The cycle detection part (find_cycle) looks for cycles in the graph based on the current set of predecessors or successors.
+The main logic flow of the algorithm involves two key operations: relaxation
+and cycle detection. The relaxation process updates the distances between nodes
+based on the edge weights. This is done in two ways: predecessor relaxation
+(relax_pred) and successor relaxation (relax_succ). The cycle detection part
+(find_cycle) looks for cycles in the graph based on the current set of
+predecessors or successors.
 
-The howard_pred and howard_succ methods combine these operations. They repeatedly perform relaxation and then check for cycles. If a negative cycle is found, it's yielded as output.
+The howard_pred and howard_succ methods combine these operations. They
+repeatedly perform relaxation and then check for cycles. If a negative cycle is
+found, it's yielded as output.
 
-An important data transformation happening in this code is the maintenance of the 'dist' dictionary, which keeps track of the distances between nodes. This dictionary is continuously updated during the relaxation process.
+An important data transformation happening in this code is the maintenance of
+the 'dist' dictionary, which keeps track of the distances between nodes. This
+dictionary is continuously updated during the relaxation process.
 
-The code uses some advanced concepts like generic types and generator functions, but the core idea is straightforward: it's trying to find paths in the graph where going around in a circle results in a negative total weight, which shouldn't happen in many real-world scenarios (like currency exchange rates).
+The code uses some advanced concepts like generic types and generator functions,
+but the core idea is straightforward: it's trying to find paths in the graph
+where going around in a circle results in a negative total weight, which
+shouldn't happen in many real-world scenarios (like currency exchange rates).
 
-Overall, this code provides a tool for analyzing directed graphs and finding problematic cycles, which can be useful in various applications such as detecting arbitrage opportunities in currency exchange or finding inconsistencies in systems modeled as graphs.
+Overall, this code provides a tool for analyzing directed graphs and finding
+problematic cycles, which can be useful in various applications such as
+detecting arbitrage opportunities in currency exchange or finding
+inconsistencies in systems modeled as graphs.
 """
 
 from fractions import Fraction
@@ -56,8 +79,9 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
     graph using the Bellman-Ford relaxation algorithm. If a negative cycle is
     detected, the algorithm terminates and returns the cycle.
 
-    The class implements both predecessor and successor versions of Howard's algorithm,
-    providing flexibility in how negative cycles are detected and processed.
+    The class implements both predecessor and successor versions of Howard's
+    algorithm, providing flexibility in how negative cycles are detected and
+    processed.
     """
 
     # Predecessor dictionary: maps each node to (predecessor_node, connecting_edge)
@@ -77,7 +101,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         """
         self.digraph = digraph
 
-    def find_cycle(self, point_to) -> Generator[Node, None, None]:
+    def find_cycle(self, point_to: Dict[Node, Tuple[Node, Edge]]) -> Generator[Node, None, None]:
         """Detect cycles in the current predecessor/successor graph using depth-first search.
 
         Args:
@@ -135,6 +159,21 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         Note:
             Updates distances based on predecessor edges (u -> v)
             Implements the relaxation: if dist[v] > dist[u] + weight(u,v), update dist[v]
+
+        Examples:
+            >>> digraph = {
+            ...     'a': {'b': 1, 'c': 4},
+            ...     'b': {'c': 2},
+            ...     'c': {'a': -5}
+            ... }
+            >>> dist = {'a': 0, 'b': float('inf'), 'c': float('inf')}
+            >>> finder = NegCycleFinder(digraph)
+            >>> finder.relax_pred(dist, lambda edge: edge, lambda old, new: True)
+            True
+            >>> dist['b']
+            1
+            >>> dist['c']
+            3
         """
         changed = False
         for utx, neighbors in self.digraph.items():
@@ -165,6 +204,18 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         Note:
             Updates distances based on successor edges (u -> v)
             Implements the relaxation: if dist[u] < dist[v] - weight(u,v), update dist[u]
+
+        Examples:
+            >>> digraph = {
+            ...     'a': {'b': 1},
+            ...     'b': {}
+            ... }
+            >>> dist = {'a': 0, 'b': 5}
+            >>> finder = NegCycleFinder(digraph)
+            >>> finder.relax_succ(dist, lambda edge: edge, lambda old, new: True)
+            True
+            >>> dist['a']
+            4
         """
         changed = False
         for utx, neighbors in self.digraph.items():
@@ -270,7 +321,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
                 found = True
                 yield self.cycle_list(vtx, self.succ)
 
-    def cycle_list(self, handle: Node, point_to) -> Cycle:
+    def cycle_list(self, handle: Node, point_to: Dict[Node, Tuple[Node, Edge]]) -> Cycle:
         """Reconstruct the cycle starting from the given node.
 
         Args:
@@ -282,6 +333,17 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
 
         Note:
             Follows the predecessor/successor links until returning to starting node
+
+        Examples:
+            >>> digraph = {
+            ...     'a': {'b': 'ab'},
+            ...     'b': {'c': 'bc'},
+            ...     'c': {'a': 'ca'}
+            ... }
+            >>> finder = NegCycleFinder(digraph)
+            >>> finder.pred = {'b': ('a', 'ab'), 'c': ('b', 'bc'), 'a': ('c', 'ca')}
+            >>> finder.cycle_list('a', finder.pred)
+            ['ca', 'bc', 'ab']
         """
         vtx = handle
         cycle = list()
@@ -313,6 +375,18 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             A cycle is negative if the sum of its edge weights is negative
             This is detected by finding at least one edge that violates the
             triangle inequality: dist[v] > dist[u] + weight(u,v)
+
+        Examples:
+            >>> digraph = {
+            ...     'a': {'b': 1},
+            ...     'b': {'c': 1},
+            ...     'c': {'a': -3}
+            ... }
+            >>> dist = {'a': 0, 'b': 1, 'c': 2}
+            >>> finder = NegCycleFinder(digraph)
+            >>> finder.pred = {'b': ('a', 1), 'c': ('b', 1), 'a': ('c', -3)}
+            >>> finder.is_negative('a', dist, lambda edge: edge)
+            True
         """
         vtx = handle
         # C-style do-while loop

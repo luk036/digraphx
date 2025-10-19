@@ -239,7 +239,11 @@ def test_neg_cycle_q_multiple_neg_cycles():
     digraph.add_edge(3, 2, weight=-1)
     dist = {vtx: 0 for vtx in digraph}
     finder = NegCycleFinder(digraph)
-    cycles = list(finder.howard_pred(dist, lambda edge: edge.get("weight", 1), update_ok))
+    cycles = list(
+        finder.howard_pred(dist, lambda edge: edge.get("weight", 1), update_ok)
+    )
     assert len(cycles) >= 1
-    cycles = list(finder.howard_succ(dist, lambda edge: edge.get("weight", 1), update_ok))
+    cycles = list(
+        finder.howard_succ(dist, lambda edge: edge.get("weight", 1), update_ok)
+    )
     assert len(cycles) >= 1

@@ -1,25 +1,47 @@
 """
 Parametric Network Solver
 
-This code defines a system for solving parametric network problems, which are a type of optimization problem in graph theory. The main purpose of this code is to find the maximum ratio that satisfies certain conditions in a graph, where the distances between nodes depend on this ratio.
+This code defines a system for solving parametric network problems, which are a
+type of optimization problem in graph theory. The main purpose of this code is
+to find the maximum ratio that satisfies certain conditions in a graph, where
+the distances between nodes depend on this ratio.
 
-The code takes two main inputs: a graph (represented as a mapping of nodes and edges) and an object that defines how to calculate distances based on the ratio. It produces two outputs: the maximum ratio that satisfies the conditions and a cycle in the graph that corresponds to this ratio.
+The code takes two main inputs: a graph (represented as a mapping of nodes and
+edges) and an object that defines how to calculate distances based on the
+ratio. It produces two outputs: the maximum ratio that satisfies the conditions
+and a cycle in the graph that corresponds to this ratio.
 
-The code achieves its purpose through an iterative algorithm implemented in the run method of the MaxParametricSolver class. This method starts with an initial ratio and repeatedly finds cycles in the graph that could potentially improve this ratio. It uses a negative cycle finder (NCF) to detect these cycles efficiently.
+The code achieves its purpose through an iterative algorithm implemented in the
+run method of the MaxParametricSolver class. This method starts with an
+initial ratio and repeatedly finds cycles in the graph that could potentially
+improve this ratio. It uses a negative cycle finder (NCF) to detect these
+cycles efficiently.
 
 The algorithm works as follows:
 
 1. It starts with an initial ratio and distance estimates for each node.
-2. It uses the NCF to find cycles in the graph where the total distance is negative.
-3. For each negative cycle found, it calculates a new ratio that would make the cycle's total distance zero.
-4. If this new ratio is smaller than the current best ratio, it updates the best ratio and remembers this cycle.
+2. It uses the NCF to find cycles in the graph where the total distance is
+   negative.
+3. For each negative cycle found, it calculates a new ratio that would make
+   the cycle's total distance zero.
+4. If this new ratio is smaller than the current best ratio, it updates the
+   best ratio and remembers this cycle.
 5. It repeats steps 2-4 until no better ratio can be found.
 
-The main data transformation happening here is the continuous updating of the ratio based on the cycles found in the graph. The algorithm is essentially searching for the highest ratio that doesn't allow any negative cycles in the graph, when distances are calculated using this ratio.
+The main data transformation happening here is the continuous updating of the
+ratio based on the cycles found in the graph. The algorithm is essentially
+searching for the highest ratio that doesn't allow any negative cycles in the
+graph, when distances are calculated using this ratio.
 
-This code is designed to be flexible, using generic types for nodes, edges, and ratios. This allows it to work with different types of graphs and different ways of calculating distances. The ParametricAPI class defines an interface for how distances should be calculated and how to find the ratio that makes a cycle's total distance zero.
+This code is designed to be flexible, using generic types for nodes, edges,
+and ratios. This allows it to work with different types of graphs and
+different ways of calculating distances. The ParametricAPI class defines an
+interface for how distances should be calculated and how to find the ratio
+that makes a cycle's total distance zero.
 
-Overall, this code provides a framework for solving a specific type of optimization problem on graphs, where the goal is to maximize a ratio while maintaining certain constraints on the distances between nodes in the graph.
+Overall, this code provides a framework for solving a specific type of
+optimization problem on graphs, where the goal is to maximize a ratio while
+maintaining certain constraints on the distances between nodes in the graph.
 """
 
 from abc import abstractmethod
@@ -122,6 +144,21 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
             2. The cycle (`cycle`) that corresponds to this ratio
 
         :rtype: Tuple[Ratio, Cycle]
+
+        Examples:
+            >>> from fractions import Fraction
+            >>> from .min_cycle_ratio import CycleRatioAPI
+            >>> digraph = {
+            ...     'a': {'b': {'cost': 5, 'time': 1}},
+            ...     'b': {'c': {'cost': 3, 'time': 1}},
+            ...     'c': {'a': {'cost': -2, 'time': 1}}
+            ... }
+            >>> omega = CycleRatioAPI(digraph, Fraction)
+            >>> solver = MaxParametricSolver(digraph, omega)
+            >>> dist = {node: Fraction(0) for node in digraph}
+            >>> ratio, cycle = solver.run(dist, Fraction(10))
+            >>> ratio
+            Fraction(2, 1)
         """
         # Determine the type of domain values from the first element in dist
         D = type(next(iter(dist.values())))
