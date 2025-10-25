@@ -1,11 +1,25 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import networkx as nx
 from mywheel.map_adapter import MapAdapter
 
 from digraphx.neg_cycle import NegCycleFinder
-from digraphx.tiny_digraph import DiGraphAdapter, TinyDiGraph
+from digraphx.tiny_digraph import DiGraphAdapter
+
+
+def has_negative_cycle(digraph, dist, get_weight=lambda edge: edge.get("weight", 1)):
+    """
+    Check if a digraph has a negative cycle using Howard's algorithm.
+
+    :param digraph: The graph to check.
+    :param dist: A dictionary or MapAdapter with initial distances for each node.
+    :param get_weight: A function to extract the weight from an edge.
+    :return: True if a negative cycle is found, False otherwise.
+    """
+    finder = NegCycleFinder(digraph)
+    for _ in finder.howard(dist, get_weight):
+        return True
+    return False
 
 
 def test_raw_graph_by_MapAdapter():
@@ -16,14 +30,8 @@ def test_raw_graph_by_MapAdapter():
             {1: 1, 0: 2},
         ]
     )
-
     dist = MapAdapter([0, 0, 0])
-    finder = NegCycleFinder(digraph)
-    has_neg = False
-    for _ in finder.howard(dist, lambda edge: edge):
-        has_neg = True
-        break
-    assert not has_neg
+    assert not has_negative_cycle(digraph, dist, lambda edge: edge)
 
 
 def test_raw_graph_by_dict():
@@ -32,135 +40,40 @@ def test_raw_graph_by_dict():
         "a1": {"a0": 0, "a2": 3},
         "a2": {"a1": 1, "a0": 2},
     }
-
     dist = {vtx: 0 for vtx in digraph}
-    finder = NegCycleFinder(digraph)
-    has_neg = False
-    for _ in finder.howard(dist, lambda edge: edge):
-        has_neg = True
-        break
-    assert not has_neg
+    assert not has_negative_cycle(digraph, dist, lambda edge: edge)
 
 
-def create_test_case1():
-    """[summary]
-
-    Returns:
-        [type]: [description]
-    """
-    digraph = nx.cycle_graph(5, create_using=DiGraphAdapter())
-    digraph[1][2]["weight"] = -5
-    digraph.add_edges_from([(5, n) for n in digraph])
-    return digraph
-
-
-def create_test_case_timing():
-    """[summary]
-
-    Returns:
-        [type]: [description]
-    """
-    digraph = DiGraphAdapter()
-    nodelist = ["a1", "a2", "a3"]
-    digraph.add_nodes_from(nodelist)
-    digraph.add_edges_from(
-        [
-            ("a1", "a2", {"weight": 7}),
-            ("a2", "a1", {"weight": 0}),
-            ("a2", "a3", {"weight": 3}),
-            ("a3", "a2", {"weight": 1}),
-            ("a3", "a1", {"weight": 2}),
-            ("a1", "a3", {"weight": 5}),
-        ]
-    )
-    return digraph
-
-
-def create_tiny_graph():
-    """[summary]
-
-    Returns:
-        [type]: [description]
-    """
-    digraph = TinyDiGraph()
-    digraph.init_nodes(3)
-    digraph.add_edges_from(
-        [
-            (0, 1, {"weight": 7}),
-            (1, 0, {"weight": 0}),
-            (1, 2, {"weight": 3}),
-            (2, 1, {"weight": 1}),
-            (2, 0, {"weight": 2}),
-            (0, 2, {"weight": 5}),
-        ]
-    )
-    return digraph
-
-
-def do_case(digraph, dist):
-    """[summary]
-
-    Arguments:
-        digraph ([type]): [description]
-
-    Returns:
-        [type]: [description]
-    """
-
-    def get_weight(edge):
-        return edge.get("weight", 1)
-
-    ncf = NegCycleFinder(digraph)
-    has_neg = False
-    for _ in ncf.howard(dist, get_weight):
-        has_neg = True
-        break
-    return has_neg
-
-
-def test_neg_cycle():
-    digraph = create_test_case1()
+def test_neg_cycle(create_test_case1):
+    digraph = create_test_case1
     dist = list(0 for _ in digraph)
-    has_neg = do_case(digraph, dist)
-    assert has_neg
+    assert has_negative_cycle(digraph, dist)
 
 
-def test_timing_graph():
-    digraph = create_test_case_timing()
+def test_timing_graph(create_test_case_timing):
+    digraph = create_test_case_timing
     dist = {vtx: 0 for vtx in digraph}
-    has_neg = do_case(digraph, dist)
-    assert not has_neg
+    assert not has_negative_cycle(digraph, dist)
 
 
-def test_tiny_graph():
-    digraph = create_tiny_graph()
+def test_tiny_graph(create_tiny_graph):
+    digraph = create_tiny_graph
     dist = MapAdapter([0, 0, 0])
-    has_neg = do_case(digraph, dist)
-    assert not has_neg
+    assert not has_negative_cycle(digraph, dist)
 
 
 def test_neg_cycle_no_edges():
     digraph = DiGraphAdapter()
     digraph.add_nodes_from([0, 1, 2])
     dist = {vtx: 0 for vtx in digraph}
-    finder = NegCycleFinder(digraph)
-    has_neg = False
-    for _ in finder.howard(dist, lambda edge: edge.get("weight", 1)):
-        has_neg = True
-        break
-    assert not has_neg
+    assert not has_negative_cycle(digraph, dist)
 
 
 def test_neg_cycle_self_loop():
     digraph = DiGraphAdapter()
     digraph.add_edge(0, 0, weight=-1)
     dist = {vtx: 0 for vtx in digraph}
-    finder = NegCycleFinder(digraph)
-    has_neg = False
-    for _ in finder.howard(dist, lambda edge: edge.get("weight", 1)):
-        has_neg = True
-        break
-    assert has_neg
+    assert has_negative_cycle(digraph, dist)
 
 
 def test_neg_cycle_multiple_neg_cycles():
