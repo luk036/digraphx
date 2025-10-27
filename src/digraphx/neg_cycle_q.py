@@ -1,4 +1,4 @@
-"""Negative Cycle Finder (neg_cycle_q.py)
+"""Negative Cycle Finder with constraints (neg_cycle_q.py)
 
 This code implements a Negative Cycle Finder for directed graphs using Howard's
 method. The purpose of this code is to detect and find negative cycles in a
@@ -7,7 +7,7 @@ edge weights is negative.
 
 The main input for this code is a directed graph, represented as a mapping of
 nodes to their neighboring nodes and the edges connecting them. The graph is
-passed to the NegCycleFinder class when it's initialized.
+passed to the NegCycleFinderQ class when it's initialized.
 
 The output of this code is a list of cycles (if any negative cycles are found).
 Each cycle is represented as a list of edges that form the negative cycle.
@@ -66,8 +66,8 @@ Domain = TypeVar("Domain", int, Fraction, float)  # Comparable Ring
 Cycle = List[Edge]  # List of Edges
 
 
-class NegCycleFinder(Generic[Node, Edge, Domain]):
-    """Negative Cycle Finder by Howard's method
+class NegCycleFinderQ(Generic[Node, Edge, Domain]):
+    """Negative Cycle Finder with constraints by Howard's method
 
     Howard's method is a minimum cycle ratio (MCR) algorithm that uses a policy
     iteration algorithm to find the minimum cycle ratio of a directed graph. The
@@ -123,7 +123,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             ...     "a1": {"a0": 0, "a2": 3},
             ...     "a2": {"a1": 1, "a0": 2},
             ... }
-            >>> finder = NegCycleFinder(digraph)
+            >>> finder = NegCycleFinderQ(digraph)
             >>> for cycle in finder.find_cycle(finder.pred):
             ...     print(cycle)
         """
@@ -167,7 +167,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             ...     'c': {'a': -5}
             ... }
             >>> dist = {'a': 0, 'b': float('inf'), 'c': float('inf')}
-            >>> finder = NegCycleFinder(digraph)
+            >>> finder = NegCycleFinderQ(digraph)
             >>> finder.relax_pred(dist, lambda edge: edge, lambda old, new: True)
             True
             >>> dist['b']
@@ -211,7 +211,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             ...     'b': {}
             ... }
             >>> dist = {'a': 0, 'b': 5}
-            >>> finder = NegCycleFinder(digraph)
+            >>> finder = NegCycleFinderQ(digraph)
             >>> finder.relax_succ(dist, lambda edge: edge, lambda old, new: True)
             True
             >>> dist['a']
@@ -257,7 +257,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             ... }
             >>> dist = {vtx: 0 for vtx in digraph}
             >>> def update_ok(dist, v) : return True
-            >>> finder = NegCycleFinder(digraph)
+            >>> finder = NegCycleFinderQ(digraph)
             >>> has_neg = False
             >>> for _ in finder.howard_pred(dist, lambda edge: edge, update_ok):
             ...     has_neg = True
@@ -303,7 +303,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             ... }
             >>> def update_ok(dist, v) : return True
             >>> dist = {vtx: 0 for vtx in digraph}
-            >>> finder = NegCycleFinder(digraph)
+            >>> finder = NegCycleFinderQ(digraph)
             >>> has_neg = False
             >>> for _ in finder.howard_succ(dist, lambda edge: edge, update_ok):
             ...     has_neg = True
@@ -340,7 +340,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             ...     'b': {'c': 'bc'},
             ...     'c': {'a': 'ca'}
             ... }
-            >>> finder = NegCycleFinder(digraph)
+            >>> finder = NegCycleFinderQ(digraph)
             >>> finder.pred = {'b': ('a', 'ab'), 'c': ('b', 'bc'), 'a': ('c', 'ca')}
             >>> finder.cycle_list('a', finder.pred)
             ['ca', 'bc', 'ab']
@@ -383,7 +383,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             ...     'c': {'a': -3}
             ... }
             >>> dist = {'a': 0, 'b': 1, 'c': 2}
-            >>> finder = NegCycleFinder(digraph)
+            >>> finder = NegCycleFinderQ(digraph)
             >>> finder.pred = {'b': ('a', 1), 'c': ('b', 1), 'a': ('c', -3)}
             >>> finder.is_negative('a', dist, lambda edge: edge)
             True

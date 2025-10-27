@@ -3,7 +3,7 @@ from __future__ import print_function
 
 from mywheel.map_adapter import MapAdapter
 
-from digraphx.neg_cycle_q import NegCycleFinder
+from digraphx.neg_cycle_q import NegCycleFinderQ
 from digraphx.tiny_digraph import DiGraphAdapter
 
 
@@ -16,7 +16,7 @@ def has_negative_cycle_pred(digraph, dist, get_weight=lambda edge: edge.get("wei
     :param get_weight: A function to extract the weight from an edge.
     :return: True if a negative cycle is found, False otherwise.
     """
-    finder = NegCycleFinder(digraph)
+    finder = NegCycleFinderQ(digraph)
     for _ in finder.howard_pred(dist, get_weight, lambda d, v: True):
         return True
     return False
@@ -31,7 +31,7 @@ def has_negative_cycle_succ(digraph, dist, get_weight=lambda edge: edge.get("wei
     :param get_weight: A function to extract the weight from an edge.
     :return: True if a negative cycle is found, False otherwise.
     """
-    finder = NegCycleFinder(digraph)
+    finder = NegCycleFinderQ(digraph)
     for _ in finder.howard_succ(dist, get_weight, lambda d, v: True):
         return True
     return False
@@ -105,7 +105,7 @@ def test_neg_cycle_q_multiple_neg_cycles():
     digraph.add_edge(2, 3, weight=-1)
     digraph.add_edge(3, 2, weight=-1)
     dist = {vtx: 0 for vtx in digraph}
-    finder = NegCycleFinder(digraph)
+    finder = NegCycleFinderQ(digraph)
     cycles = list(finder.howard_pred(dist, lambda edge: edge.get("weight", 1), lambda d, v: True))
     assert len(cycles) >= 1
     cycles = list(finder.howard_succ(dist, lambda edge: edge.get("weight", 1), lambda d, v: True))

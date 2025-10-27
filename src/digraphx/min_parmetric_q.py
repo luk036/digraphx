@@ -1,4 +1,4 @@
-"""Min Parametric Solver
+"""Min Parametric Solver with constraints
 
 This code defines a system for solving a specific type of network optimization
 problem called a "minimum parametric problem." The purpose of this code is to
@@ -43,7 +43,7 @@ from abc import abstractmethod
 from fractions import Fraction
 from typing import Callable, Generic, Mapping, MutableMapping, Tuple, TypeVar
 
-from .neg_cycle_q import Cycle, Edge, NegCycleFinder, Node
+from .neg_cycle_q import Cycle, Edge, NegCycleFinderQ, Node
 
 # Define type variables for domain (numeric types) and ratio (fraction or float)
 Domain = TypeVar("Domain", int, Fraction, float)  # Comparable Ring
@@ -86,7 +86,7 @@ class MinParametricAPI(Generic[Node, Edge, Ratio]):
 
 
 class MinParametricSolver(Generic[Node, Edge, Ratio]):
-    """Minimum Parametric Solver
+    """Minimum Parametric Solver with constraints
 
     This class solves the following parametric network problem:
 
@@ -117,7 +117,7 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
             parameterizes the solver's behavior.
         :type omega: MinParametricAPI[Node, Edge, Ratio]
         """
-        # self.ncf = NegCycleFinder(digraph)
+        # self.ncf = NegCycleFinderQ(digraph)
         self.digraph = digraph
         self.omega: MinParametricAPI[Node, Edge, Ratio] = omega
 
@@ -163,7 +163,7 @@ class MinParametricSolver(Generic[Node, Edge, Ratio]):
         reverse: bool = True  # Flag to alternate search direction
 
         # Initialize the negative cycle finder with our graph
-        ncf: NegCycleFinder[Node, Edge, Domain] = NegCycleFinder(self.digraph)
+        ncf: NegCycleFinderQ[Node, Edge, Domain] = NegCycleFinderQ(self.digraph)
 
         # Main optimization loop
         while True:
