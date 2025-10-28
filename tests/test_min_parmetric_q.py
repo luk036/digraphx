@@ -22,7 +22,7 @@ def test_min_parametric_q():
         "a1": {"a0": {"cost": 0, "time": 1}, "a2": {"cost": 3, "time": 1}},
         "a2": {"a1": {"cost": 1, "time": 1}, "a0": {"cost": 2, "time": 1}},
     }
-    dist = {vtx: float('inf') for vtx in digraph}
+    dist = {vtx: float("inf") for vtx in digraph}
     solver = MinParametricSolver(digraph, MyAPI())
     ratio, cycle = solver.run(dist, Fraction(0), lambda D, d: D > d)
     assert ratio == Fraction(0, 1)

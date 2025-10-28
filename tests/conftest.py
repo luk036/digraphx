@@ -5,7 +5,6 @@ Fixtures for digraphx tests.
 import pytest
 import networkx as nx
 from fractions import Fraction
-from mywheel.map_adapter import MapAdapter
 
 from digraphx.tiny_digraph import DiGraphAdapter, TinyDiGraph
 

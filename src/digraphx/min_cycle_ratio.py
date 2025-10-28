@@ -47,7 +47,7 @@ graphs, particularly useful in scenarios where understanding the most
 from fractions import Fraction
 from typing import Any, Generic, Mapping, MutableMapping, Tuple, TypeVar, List
 
-from .neg_cycle import Cycle, Domain, Edge, Node
+from .neg_cycle import Cycle, Domain, Node
 from .parametric import MaxParametricSolver, ParametricAPI
 
 EdgeDC = MutableMapping[str, Any]
@@ -234,7 +234,9 @@ class MinCycleRatioSolver(Generic[Node, EdgeType, Ratio]):
             it
         :rtype: Tuple[Ratio, Cycle]
         """
-        omega: CycleRatioAPI[Node, EdgeType, Ratio] = CycleRatioAPI(self.digraph, type(r0))
+        omega: CycleRatioAPI[Node, EdgeType, Ratio] = CycleRatioAPI(
+            self.digraph, type(r0)
+        )
         solver = MaxParametricSolver[Node, EdgeType, Ratio](self.digraph, omega)
         ratio, cycle = solver.run(dist, r0)
         return ratio, cycle
