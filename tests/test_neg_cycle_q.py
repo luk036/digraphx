@@ -11,7 +11,7 @@ SELF_LOOP_WEIGHT = -1
 MULTIPLE_NEG_CYCLES_WEIGHT = -1
 
 
-def _always_update(d, v):
+def _always_ok(d, v):
     return True
 
 
@@ -29,7 +29,7 @@ def _has_negative_cycle_pred(digraph, dist, get_weight):
     :return: True if a negative cycle is found, False otherwise.
     """
     finder = NegCycleFinderQ(digraph)
-    for _ in finder.howard_pred(dist, get_weight, _always_update):
+    for _ in finder.howard_pred(dist, get_weight, _always_ok):
         return True
     return False
 
@@ -44,7 +44,7 @@ def _has_negative_cycle_succ(digraph, dist, get_weight):
     :return: True if a negative cycle is found, False otherwise.
     """
     finder = NegCycleFinderQ(digraph)
-    for _ in finder.howard_succ(dist, get_weight, _always_update):
+    for _ in finder.howard_succ(dist, get_weight, _always_ok):
         return True
     return False
 
@@ -118,7 +118,7 @@ def test_neg_cycle_q_multiple_neg_cycles():
     digraph.add_edge(3, 2, weight=MULTIPLE_NEG_CYCLES_WEIGHT)
     dist = {vtx: 0 for vtx in digraph}
     finder = NegCycleFinderQ(digraph)
-    cycles = list(finder.howard_pred(dist, _get_weight, _always_update))
+    cycles = list(finder.howard_pred(dist, _get_weight, _always_ok))
     assert len(cycles) >= 1
-    cycles = list(finder.howard_succ(dist, _get_weight, _always_update))
+    cycles = list(finder.howard_succ(dist, _get_weight, _always_ok))
     assert len(cycles) >= 1
