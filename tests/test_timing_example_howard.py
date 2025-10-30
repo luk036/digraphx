@@ -3,7 +3,7 @@ from pytest import approx
 from digraphx.neg_cycle import NegCycleFinder
 
 
-def find_beta(digraph, beta, dist, make_weight_fn, get_new_beta_fn, max_iter=2000):
+def find_beta(digraph, beta, dist, make_weight_fn, zero_cancel_fn, max_iter=2000):
     """
     Finds the beta value using a fixed-point iteration.
 
@@ -20,7 +20,7 @@ def find_beta(digraph, beta, dist, make_weight_fn, get_new_beta_fn, max_iter=200
         make_weight_fn (callable): A function that takes the current `beta`
             value and returns a weight function. The weight function, in turn,
             takes an edge and returns its weight.
-        get_new_beta_fn (callable): A function that takes a negative cycle
+        zero_cancel_fn (callable): A function that takes a negative cycle
             (a list of edges) and returns the new `beta` value.
         max_iter (int, optional): The maximum number of iterations.
             Defaults to 2000.
@@ -31,17 +31,19 @@ def find_beta(digraph, beta, dist, make_weight_fn, get_new_beta_fn, max_iter=200
     """
     finder = NegCycleFinder(digraph)
     num_iter = 0
+    critical_cycle = None
     while num_iter < max_iter:
         num_iter += 1
         weight_fn = make_weight_fn(beta)
         cycle_found = False
         for neg_cycle in finder.howard(dist, weight_fn):
-            beta = get_new_beta_fn(neg_cycle)
+            beta = zero_cancel_fn(neg_cycle)
             cycle_found = True
+            critical_cycle = neg_cycle
             break
         if not cycle_found:
-            return beta, num_iter
-    return beta, max_iter
+            return beta, num_iter, critical_cycle
+    return beta, max_iter, critical_cycle
 
 
 def even(digraph, beta, dist, max_iter=2000):
@@ -65,7 +67,7 @@ def test_even():
         "v4": {"v1": TCP - 3, "v3": 8},
     }
     dist = {"v0": 0, "v1": 0, "v2": 0, "v3": 0, "v4": 0}
-    beta, num_iter = even(digraph, 10, dist)
+    beta, num_iter, _ = even(digraph, 10, dist)
     assert num_iter < 5
     assert beta == approx(1.0)
 
@@ -103,7 +105,8 @@ def test_prop():
         "v4": {"v1": {"cost": TCP - 3, "time": 1.1}, "v3": {"cost": 8, "time": 1.5}},
     }
     dist = {"v0": 0, "v1": 0, "v2": 0, "v3": 0, "v4": 0}
-    beta, num_iter = prop(digraph, 10, dist)
+    beta, num_iter, critical_cycle = prop(digraph, 10, dist)
+    print(critical_cycle)
     assert num_iter < 5
     assert beta == approx(0.32258064516129037)
     # assert dist == {"v1": -1, "v2": 0, "v3": 0}
