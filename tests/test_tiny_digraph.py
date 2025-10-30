@@ -5,7 +5,6 @@ import pytest
 
 from digraphx.tiny_digraph import TinyDiGraph
 
-
 WEIGHT_0_1 = 7
 WEIGHT_1_0 = 0
 WEIGHT_1_2 = 3

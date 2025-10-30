@@ -6,7 +6,6 @@ from mywheel.map_adapter import MapAdapter
 from digraphx.neg_cycle import NegCycleFinder
 from digraphx.tiny_digraph import DiGraphAdapter
 
-
 SELF_LOOP_WEIGHT = -1
 MULTIPLE_NEG_CYCLES_WEIGHT = -1
 

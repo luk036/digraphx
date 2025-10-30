@@ -45,7 +45,7 @@ graphs, particularly useful in scenarios where understanding the most
 """
 
 from fractions import Fraction
-from typing import Any, Generic, Mapping, MutableMapping, Tuple, TypeVar, List
+from typing import Any, Generic, List, Mapping, MutableMapping, Tuple, TypeVar
 
 from .neg_cycle import Cycle, Domain, Node
 from .parametric import MaxParametricSolver, ParametricAPI

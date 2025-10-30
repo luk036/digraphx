@@ -45,9 +45,10 @@ memory-efficient manner, which could be particularly useful for large graphs or
 in situations where performance is critical.
 """
 
+from typing import Any, ItemsView
+
 import networkx as nx
 from mywheel.map_adapter import MapAdapter  # type: ignore
-from typing import Any, ItemsView
 
 
 class DiGraphAdapter(nx.DiGraph):

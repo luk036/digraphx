@@ -1,5 +1,6 @@
-from digraphx.neg_cycle import NegCycleFinder
 from pytest import approx
+
+from digraphx.neg_cycle import NegCycleFinder
 
 
 def even(digraph, beta, dist, max_iter=2000):

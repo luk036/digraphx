@@ -1,19 +1,58 @@
-from digraphx.neg_cycle import NegCycleFinder
 from pytest import approx
+
+from digraphx.neg_cycle import NegCycleFinder
+
+
+def find_beta(digraph, beta, dist, make_weight_fn, get_new_beta_fn, max_iter=2000):
+    """
+    Finds the beta value using a fixed-point iteration.
+
+    This function iteratively searches for negative cycles in a directed graph
+    and updates a `beta` value based on the cycles found. The process
+    continues until no more negative cycles are found or the maximum number of
+    iterations is reached.
+
+    Args:
+        digraph (dict): The graph to search for negative cycles, represented as
+            an adjacency list.
+        beta (float): The initial beta value.
+        dist (dict): The initial distances to the nodes.
+        make_weight_fn (callable): A function that takes the current `beta`
+            value and returns a weight function. The weight function, in turn,
+            takes an edge and returns its weight.
+        get_new_beta_fn (callable): A function that takes a negative cycle
+            (a list of edges) and returns the new `beta` value.
+        max_iter (int, optional): The maximum number of iterations.
+            Defaults to 2000.
+
+    Returns:
+        tuple: A tuple containing the final `beta` value and the number of
+        iterations performed.
+    """
+    finder = NegCycleFinder(digraph)
+    num_iter = 0
+    while num_iter < max_iter:
+        num_iter += 1
+        weight_fn = make_weight_fn(beta)
+        cycle_found = False
+        for neg_cycle in finder.howard(dist, weight_fn):
+            beta = get_new_beta_fn(neg_cycle)
+            cycle_found = True
+            break
+        if not cycle_found:
+            return beta, num_iter
+    return beta, max_iter
 
 
 def even(digraph, beta, dist, max_iter=2000):
-    finder = NegCycleFinder(digraph)
-    done = False
-    num_iter = 0
-    while not done and num_iter < max_iter:
-        done = True
-        for neg_cycle in finder.howard(dist, lambda edge: edge - beta):
-            beta = sum(neg_cycle) / len(neg_cycle)
-            done = False
-            break  # pick only the first one
-        num_iter += 1
-    return beta, num_iter
+    return find_beta(
+        digraph,
+        beta,
+        dist,
+        lambda b: (lambda edge: edge - b),
+        lambda neg_cycle: sum(neg_cycle) / len(neg_cycle),
+        max_iter,
+    )
 
 
 def test_even():
@@ -32,21 +71,15 @@ def test_even():
 
 
 def prop(digraph, beta, dist, max_iter=2000):
-    finder = NegCycleFinder(digraph)
-    done = False
-    num_iter = 0
-    while not done and num_iter < max_iter:
-        done = True
-        for neg_cycle in finder.howard(
-            dist, lambda edge: edge["cost"] - beta * edge["time"]
-        ):
-            beta = sum(edge["cost"] for edge in neg_cycle) / sum(
-                edge["time"] for edge in neg_cycle
-            )
-            done = False
-            break  # pick only the first one
-        num_iter += 1
-    return beta, num_iter
+    return find_beta(
+        digraph,
+        beta,
+        dist,
+        lambda b: (lambda edge: edge["cost"] - b * edge["time"]),
+        lambda neg_cycle: sum(edge["cost"] for edge in neg_cycle)
+        / sum(edge["time"] for edge in neg_cycle),
+        max_iter,
+    )
 
 
 def test_prop():
