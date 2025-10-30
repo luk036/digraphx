@@ -14,19 +14,19 @@ def has_negative_cycle(TCP, dist):
     return False
 
 
-def test_simple_timing_example1():
+def test_example1():
     """Creates a test graph for timing tests."""
     dist = {"v1": 0, "v2": 0, "v3": 0}
     assert has_negative_cycle(4.0, dist) is False
 
 
-def test_simple_timing_example2():
+def test_example2():
     """Creates a test graph for timing tests."""
     dist = {"v1": 0, "v2": 0, "v3": 0}
     assert has_negative_cycle(2.0, dist) is True
 
 
-def test_simple_timing_example3():
+def test_example3():
     dist = {"v1": 0, "v2": 0, "v3": 0}
     assert has_negative_cycle(3.0, dist) is False
     assert dist == {"v1": -1, "v2": 0, "v3": 0}
