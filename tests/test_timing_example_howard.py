@@ -1,9 +1,18 @@
+from typing import Any, Callable, Dict, List, Tuple
+
 from pytest import approx
 
 from digraphx.neg_cycle import NegCycleFinder
 
 
-def find_beta(digraph, beta, dist, make_weight_fn, zero_cancel_fn, max_iter=2000):
+def find_beta(
+    digraph: Dict[str, Dict[str, Any]],
+    beta: float,
+    dist: Dict[str, float],
+    make_weight_fn: Callable[[float], Callable[[Any], float]],
+    zero_cancel_fn: Callable[[List[Any]], float],
+    max_iter: int = 2000,
+) -> Tuple[float, int, Any]:
     """
     Finds the beta value using a fixed-point iteration.
 
@@ -29,13 +38,13 @@ def find_beta(digraph, beta, dist, make_weight_fn, zero_cancel_fn, max_iter=2000
         tuple: A tuple containing the final `beta` value and the number of
         iterations performed.
     """
-    finder = NegCycleFinder(digraph)
-    num_iter = 0
-    critical_cycle = None
+    finder: NegCycleFinder[str, Any, float] = NegCycleFinder(digraph)
+    num_iter: int = 0
+    critical_cycle: Any = None
     while num_iter < max_iter:
         num_iter += 1
         weight_fn = make_weight_fn(beta)
-        cycle_found = False
+        cycle_found: bool = False
         for neg_cycle in finder.howard(dist, weight_fn):
             beta = zero_cancel_fn(neg_cycle)
             cycle_found = True
@@ -46,7 +55,12 @@ def find_beta(digraph, beta, dist, make_weight_fn, zero_cancel_fn, max_iter=2000
     return beta, max_iter, critical_cycle
 
 
-def even(digraph, beta, dist, max_iter=2000):
+def even(
+    digraph: Dict[str, Dict[str, float]],
+    beta: float,
+    dist: Dict[str, float],
+    max_iter: int = 2000,
+) -> Tuple[float, int, Any]:
     return find_beta(
         digraph,
         beta,
@@ -57,22 +71,27 @@ def even(digraph, beta, dist, max_iter=2000):
     )
 
 
-def test_even():
-    TCP = 7.5
-    digraph = {
+def test_even() -> None:
+    TCP: float = 7.5
+    digraph: Dict[str, Dict[str, float]] = {
         "v0": {"v3": TCP - 6, "v2": TCP - 7},
         "v1": {"v2": TCP - 9, "v4": 3},
         "v2": {"v0": 6, "v1": 6, "v3": TCP - 6},
         "v3": {"v4": TCP - 8, "v0": 6, "v2": 6},
         "v4": {"v1": TCP - 3, "v3": 8},
     }
-    dist = {"v0": 0, "v1": 0, "v2": 0, "v3": 0, "v4": 0}
+    dist: Dict[str, float] = {"v0": 0, "v1": 0, "v2": 0, "v3": 0, "v4": 0}
     beta, num_iter, _ = even(digraph, 10, dist)
     assert num_iter < 5
     assert beta == approx(1.0)
 
 
-def prop(digraph, beta, dist, max_iter=2000):
+def prop(
+    digraph: Dict[str, Dict[str, Dict[str, float]]],
+    beta: float,
+    dist: Dict[str, float],
+    max_iter: int = 2000,
+) -> Tuple[float, int, Any]:
     return find_beta(
         digraph,
         beta,
@@ -84,9 +103,9 @@ def prop(digraph, beta, dist, max_iter=2000):
     )
 
 
-def test_prop():
-    TCP = 7.5
-    digraph = {
+def test_prop() -> None:
+    TCP: float = 7.5
+    digraph: Dict[str, Dict[str, Dict[str, float]]] = {
         "v0": {
             "v3": {"cost": TCP - 6, "time": 3.1},
             "v2": {"cost": TCP - 7, "time": 1.5},
@@ -104,7 +123,7 @@ def test_prop():
         },
         "v4": {"v1": {"cost": TCP - 3, "time": 1.1}, "v3": {"cost": 8, "time": 1.5}},
     }
-    dist = {"v0": 0, "v1": 0, "v2": 0, "v3": 0, "v4": 0}
+    dist: Dict[str, float] = {"v0": 0, "v1": 0, "v2": 0, "v3": 0, "v4": 0}
     beta, num_iter, critical_cycle = prop(digraph, 10, dist)
     print(critical_cycle)
     assert num_iter < 5

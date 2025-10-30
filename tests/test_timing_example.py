@@ -1,9 +1,11 @@
+from typing import Dict
+
 import pytest
 
 from digraphx.neg_cycle import NegCycleFinder
 
 
-def create_graph(TCP):
+def create_graph(TCP: float) -> Dict[str, Dict[str, float]]:
     """Create a test graph with TCP-dependent edge weights."""
     return {
         "v0": {"v3": TCP - 6, "v2": TCP - 7},
@@ -14,9 +16,11 @@ def create_graph(TCP):
     }
 
 
-def has_negative_cycle(digraph, dist):
+def has_negative_cycle(
+    digraph: Dict[str, Dict[str, float]], dist: Dict[str, float]
+) -> bool:
     """Check for negative cycles in the graph."""
-    finder = NegCycleFinder(digraph)
+    finder: NegCycleFinder[str, float, float] = NegCycleFinder(digraph)
     return any(finder.howard(dist, lambda edge: edge))
 
 
@@ -28,16 +32,16 @@ def has_negative_cycle(digraph, dist):
         (7.0, False),
     ],
 )
-def test_negative_cycle_detection(tcp, expected_result):
+def test_negative_cycle_detection(tcp: float, expected_result: bool) -> None:
     """Test for negative cycles with different TCP values."""
-    dist = {f"v{i}": 0 for i in range(5)}
+    dist: Dict[str, float] = {f"v{i}": 0 for i in range(5)}
     digraph = create_graph(tcp)
     assert has_negative_cycle(digraph, dist) is expected_result
 
 
-def test_distance_updates():
+def test_distance_updates() -> None:
     """Test that the distances are correctly updated."""
-    dist = {f"v{i}": 0 for i in range(5)}
+    dist: Dict[str, float] = {f"v{i}": 0 for i in range(5)}
     digraph = create_graph(7.0)
     has_negative_cycle(digraph, dist)
     assert dist == {"v0": 0, "v1": 0, "v2": -2.0, "v3": -1, "v4": -2}
