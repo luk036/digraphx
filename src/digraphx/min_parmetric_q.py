@@ -85,7 +85,7 @@ class MinParametricAPI(Generic[Node, Edge, Ratio]):
         pass
 
 
-class MinParametricSolver(Generic[Node, Edge, Ratio]):
+class MinParametricSolver(Generic[Node, Edge, Ratio, Domain]):
     """Minimum Parametric Solver with constraints
 
     This class solves the following parametric network problem:

@@ -16,7 +16,7 @@ def even(
     num_iter: int = 0
     while not done and num_iter < max_iter:
         done = True
-        for neg_cycle in finder.howard(dist, lambda edge: edge - beta):  # type: ignore
+        for neg_cycle in finder.howard(dist, lambda edge: edge - beta):
             beta = sum(neg_cycle) / len(neg_cycle)
             done = False
             break  # pick only the first one
@@ -43,12 +43,12 @@ def prop(
     dist: Dict[str, float],
     max_iter: int = 2000,
 ) -> Tuple[float, int]:
-    finder: NegCycleFinder[str, Any, float] = NegCycleFinder(digraph)
+    finder: NegCycleFinder[str, Dict[str, float], float] = NegCycleFinder(digraph)
     done: bool = False
     num_iter: int = 0
     while not done and num_iter < max_iter:
         done = True
-        for neg_cycle in finder.howard(  # type: ignore
+        for neg_cycle in finder.howard(
             dist, lambda edge: edge["cost"] - beta * edge["time"]
         ):
             beta = sum(edge["cost"] for edge in neg_cycle) / sum(
