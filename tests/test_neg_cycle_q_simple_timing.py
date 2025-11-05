@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict
+from typing import Any, Dict
 
 from digraphx.neg_cycle_q import NegCycleFinderQ
 

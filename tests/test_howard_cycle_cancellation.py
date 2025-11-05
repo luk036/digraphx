@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Dict, Tuple
 
 from pytest import approx
 

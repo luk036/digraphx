@@ -2,7 +2,7 @@
 from __future__ import print_function
 
 from fractions import Fraction
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Dict, Tuple, Union
 
 import pytest
 from mywheel.map_adapter import MapAdapter
@@ -45,7 +45,7 @@ TINY_GRAPH_0_2_COST: int = 4
 
 @pytest.fixture
 def solver(
-    digraph: Union[DiGraphAdapter, TinyDiGraph, Dict[str, Dict[str, Any]]]
+    digraph: Union[DiGraphAdapter, TinyDiGraph, Dict[str, Dict[str, Any]]],
 ) -> Tuple[MinCycleRatioSolver[Any, Any, Any], Union[Dict[Any, int], MapAdapter]]:
     dist: Dict[Any, int] = {vtx: 0 for vtx in digraph}
     return MinCycleRatioSolver(digraph), dist  # type: ignore
@@ -93,9 +93,7 @@ def test_cycle_ratio_raw(high_ratio: Fraction) -> None:
     assert ratio == Fraction(RAW_GRAPH_A2_A0_COST, RAW_GRAPH_A2_A0_TIME)
 
 
-def test_cycle_ratio(
-    create_test_case1: DiGraphAdapter, high_ratio: Fraction
-) -> None:
+def test_cycle_ratio(create_test_case1: DiGraphAdapter, high_ratio: Fraction) -> None:
     digraph: DiGraphAdapter = create_test_case1
     set_default(digraph, "time", DEFAULT_TIME)
     set_default(digraph, "cost", DEFAULT_COST)

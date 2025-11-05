@@ -3,7 +3,7 @@ Fixtures for digraphx tests.
 """
 
 from fractions import Fraction
-from typing import Any, Dict, List, Tuple, Union
+from typing import List
 
 import networkx as nx
 import pytest

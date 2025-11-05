@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict, Union
 
 from mywheel.map_adapter import MapAdapter
 
