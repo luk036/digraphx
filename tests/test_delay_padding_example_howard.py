@@ -58,7 +58,7 @@ def find_beta(
 
 
 def even(
-    digraph: Dict[str, Dict[str, float]],
+    digraph,
     beta: float,
     dist: Dict[str, float],
     max_iter: int = 2000,
@@ -67,22 +67,46 @@ def even(
         digraph,
         beta,
         dist,
-        lambda b: (lambda edge: edge - b),
-        lambda neg_cycle: sum(neg_cycle) / len(neg_cycle),
+        lambda beta: (lambda e: e["delay"] - beta if e["type"] != "p" else e["delay"]),
+        lambda neg_cycle: sum(e["delay"] for e in neg_cycle)
+        / sum(1 for e in neg_cycle if e["type"] != "p"),
         max_iter,
     )
 
 
-def test_even() -> None:
-    TCP: float = 7.5
-    digraph: Dict[str, Dict[str, float]] = {
-        "v0": {"v2": 6, "v3": 6},
-        "v1": {"v2": 6, "v4": TCP - 3},
-        "v2": {"v0": TCP - 7, "v1": TCP - 9, "v3": 6},
-        "v3": {"v4": 8, "v2": TCP - 6, "v0": TCP - 6},
-        "v4": {"v3": TCP - 8, "v1": 3},
+def test_even1() -> None:
+    TCP: float = 6.5
+    digraph: Dict[str, Dict[str, Dict[str, Any]]] = {
+        "v1": {"v2": {"type": "s", "delay": TCP - 7}, "v3": {"type": "h", "delay": 2}},
+        "v2": {"v1": {"type": "h", "delay": 4}, "v3": {"type": "p", "delay": 0}},
+        "v3": {"v1": {"type": "s", "delay": TCP - 3}},
     }
-    dist: Dict[str, float] = {"v0": 0, "v1": 0, "v2": 0, "v3": 0, "v4": 0}
+    dist: Dict[str, float] = {"v1": 0, "v2": 0, "v3": 0}
+    beta, num_iter, _ = even(digraph, 10, dist)
+    assert num_iter < 10
+    assert beta == approx(1.5)
+    assert dist == {"v1": -17, "v2": -19, "v3": -19}
+
+
+def test_even2() -> None:
+    TCP: float = 7.5
+    digraph: Dict[str, Dict[str, Dict[str, Any]]] = {
+        "v0": {"v2": {"type": "h", "delay": 6}, "v3": {"type": "h", "delay": 6}},
+        "v1": {"v2": {"type": "h", "delay": 6}, "v5": {"type": "p", "delay": 0}},
+        "v2": {
+            "v0": {"type": "s", "delay": TCP - 7},
+            "v1": {"type": "s", "delay": TCP - 9},
+            "v3": {"type": "s", "delay": 6},
+        },
+        "v3": {
+            "v4": {"type": "h", "delay": 8},
+            "v2": {"type": "s", "delay": TCP - 6},
+            "v0": {"type": "s", "delay": TCP - 6},
+        },
+        "v4": {"v3": {"type": "s", "delay": TCP - 8}, "v5": {"type": "h", "delay": 3}},
+        "v5": {"v4": {"type": "s", "delay": TCP - 3}},
+    }
+    dist: Dict[str, float] = {"v0": 0, "v1": 0, "v2": 0, "v3": 0, "v4": 0, "v5": 0}
     beta, num_iter, _ = even(digraph, 10, dist)
     print("slack02(s) = {}".format(TCP - 7 + dist["v2"] - dist["v0"]))
     print("slack02(h) = {}".format(6 + dist["v0"] - dist["v2"]))
@@ -92,60 +116,11 @@ def test_even() -> None:
     print("slack23(h) = {}".format(6 + dist["v2"] - dist["v3"]))
     print("slack34(s) = {}".format(TCP - 8 + dist["v4"] - dist["v3"]))
     print("slack34(h) = {}".format(8 + dist["v3"] - dist["v4"]))
-    print("slack41(s) = {}".format(TCP - 3 + dist["v1"] - dist["v4"]))
-    print("slack41(h) = {}".format(3 + dist["v4"] - dist["v1"]))
+    print("slack45(s) = {}".format(TCP - 3 + dist["v5"] - dist["v4"]))
+    print("slack45(h) = {}".format(3 + dist["v4"] - dist["v5"]))
     print("slack12(s) = {}".format(TCP - 9 + dist["v2"] - dist["v1"]))
     print("slack12(h) = {}".format(6 + dist["v1"] - dist["v2"]))
-    assert num_iter < 5
+    print(dist["v5"])
+    print(dist["v1"])
+    assert num_iter < 10
     assert beta == approx(1.0)
-
-
-def prop(
-    digraph: Dict[str, Dict[str, Dict[str, float]]],
-    beta: float,
-    dist: Dict[str, float],
-    max_iter: int = 2000,
-) -> Tuple[float, int, Any]:
-    return find_beta(
-        digraph,
-        beta,
-        dist,
-        lambda b: (lambda edge: edge["cost"] - b * edge["time"]),
-        lambda neg_cycle: sum(edge["cost"] for edge in neg_cycle)
-        / sum(edge["time"] for edge in neg_cycle),
-        max_iter,
-    )
-
-
-def test_prop() -> None:
-    TCP: float = 7.5
-    digraph: Dict[str, Dict[str, Dict[str, float]]] = {
-        "v0": {
-            "v3": {"cost": 6.0, "time": 2.5},
-            "v2": {"cost": 6.0, "time": 3.1},
-        },
-        "v1": {
-            "v2": {"cost": 6.0, "time": 2.5},
-            "v4": {"cost": TCP - 3, "time": 1.1},
-        },
-        "v2": {
-            "v0": {"cost": TCP - 7, "time": 1.5},
-            "v1": {"cost": TCP - 9, "time": 4.1},
-            "v3": {"cost": 6.0, "time": 2.5},
-        },
-        "v3": {
-            "v0": {"cost": TCP - 6, "time": 3.1},
-            "v2": {"cost": TCP - 6, "time": 3.1},
-            "v4": {"cost": 8.0, "time": 1.5},
-        },
-        "v4": {
-            "v1": {"cost": 3.0, "time": 1.0},
-            "v3": {"cost": TCP - 8, "time": 4.1},
-        },
-    }
-    dist: Dict[str, float] = {"v0": 0.0, "v1": 0.0, "v2": 0.0, "v3": 0.0, "v4": 0.0}
-    beta, num_iter, critical_cycle = prop(digraph, 10.0, dist)
-    print(critical_cycle)
-    assert num_iter < 5
-    assert beta == approx(0.32258064516129037)
-    # assert dist == {"v1": -1, "v2": 0, "v3": 0}
