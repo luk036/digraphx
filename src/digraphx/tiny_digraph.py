@@ -52,7 +52,7 @@ from mywheel.map_adapter import MapAdapter  # type: ignore
 
 
 class DiGraphAdapter(nx.DiGraph):
-    def items(self) -> "ItemsView[Any, Any]":
+    def items(self):
         """Returns an iterator over (node, adjacency dict) pairs for all nodes.
 
         This method overrides the default items() method to use adjacency() instead,
@@ -66,6 +66,7 @@ class DiGraphAdapter(nx.DiGraph):
             >>> sorted(list(gr.items()))
             [(1, {2: {}}), (2, {3: {}}), (3, {})]
         """
+
         return self.adjacency()
 
 
@@ -114,9 +115,11 @@ class TinyDiGraph(DiGraphAdapter):
         """
         return MapAdapter([dict() for _ in range(self.num_nodes)])
 
-    # Use the custom methods as factories for node and edge storage
-    node_dict_factory = cheat_node_dict
-    adjlist_outer_dict_factory = cheat_adjlist_outer_dict
+    def node_dict_factory(self): # type: ignore
+        return self.cheat_node_dict()
+
+    def adjlist_outer_dict_factory(self): # type: ignore
+        return self.cheat_adjlist_outer_dict()
 
     def init_nodes(self, n: int):
         """Initializes the graph with a specified number of nodes.
