@@ -28,7 +28,10 @@ sys.path.insert(0, os.path.join(__location__, "../src"))
 # setup.py install" in the RTD Advanced Settings.
 # Additionally it helps us to avoid running apidoc manually
 
-from sphinx.ext import apidoc
+try:  # for Sphinx >= 1.7
+    from sphinx.ext import apidoc
+except ImportError:
+    from sphinx import apidoc
 
 output_dir = os.path.join(__location__, "api")
 module_dir = os.path.join(__location__, "../src/digraphx")
@@ -69,6 +72,7 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "sphinxcontrib.svgbob",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -286,11 +290,11 @@ python_version = ".".join(map(str, sys.version_info[0:2]))
 intersphinx_mapping = {
     "sphinx": ("https://www.sphinx-doc.org/en/master", None),
     "python": ("https://docs.python.org/" + python_version, None),
-    "matplotlib": ("https://matplotlib.org/stable", None),
+    "matplotlib": ("https://matplotlib.org", None),
     "numpy": ("https://numpy.org/doc/stable", None),
     "sklearn": ("https://scikit-learn.org/stable", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
     "setuptools": ("https://setuptools.pypa.io/en/stable/", None),
     "pyscaffold": ("https://pyscaffold.org/en/stable", None),
 }

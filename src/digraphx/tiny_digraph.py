@@ -45,13 +45,41 @@ memory-efficient manner, which could be particularly useful for large graphs or
 in situations where performance is critical.
 """
 
-from typing import Any, ItemsView
+from typing import Any, ItemsView, MutableMapping
 
 import networkx as nx
 from mywheel.map_adapter import MapAdapter  # type: ignore
 
 
-class DiGraphAdapter(nx.DiGraph):
+class DiGraphAdapter(nx.DiGraph, MutableMapping):
+    def __iter__(self):
+        """
+        Return an iterator over the nodes in the graph.
+
+        Returns:
+            iterator: An iterator over the nodes in the graph.
+        """
+        return super().__iter__()
+
+    def __setitem__(self, key, value):
+        """
+        Set the value for a given key.
+
+        Args:
+            key: The key to set.
+            value: The value to set.
+        """
+        super().__setitem__(key, value)
+
+    def __delitem__(self, key):
+        """
+        Delete a key from the graph.
+
+        Args:
+            key: The key to delete.
+        """
+        super().__delitem__(key)
+
     def items(self):
         """Returns an iterator over (node, adjacency dict) pairs for all nodes.
 
@@ -115,10 +143,66 @@ class TinyDiGraph(DiGraphAdapter):
         """
         return MapAdapter([dict() for _ in range(self.num_nodes)])
 
-    def node_dict_factory(self): # type: ignore
+    def node_dict_factory(self):  # type: ignore
+        """Return `cheat_node_dict` function.
+
+        The `node_dict_factory` method is responsible for creating a factory
+        that produces the dictionary used to store node attributes in the
+        `TinyDiGraph`. In this specific implementation, it returns the
+        `cheat_node_dict` method, which is a custom function designed to create
+        a `MapAdapter` instance. This `MapAdapter` serves as a highly
+        efficient, list-based dictionary for storing node attributes.
+
+        The primary purpose of this method is to allow `TinyDiGraph` to
+        leverage a more memory-efficient data structure for its node storage
+        compared to a standard Python dictionary. By using a `MapAdapter`, the
+        graph can achieve better performance, especially when the number of
+        nodes is known in advance. This method is part of the internal factory
+        customization that allows `TinyDiGraph` to be optimized for specific use
+        cases.
+
+        Returns:
+            MapAdapter: a list-based dictionary for storing node attributes
+
+        Examples:
+            >>> gr = TinyDiGraph()
+            >>> gr.init_nodes(3)
+            >>> factory = gr.node_dict_factory()
+            >>> isinstance(factory, MapAdapter)
+            True
+
+        """
         return self.cheat_node_dict()
 
-    def adjlist_outer_dict_factory(self): # type: ignore
+    def adjlist_outer_dict_factory(self):  # type: ignore
+        """Return `cheat_adjlist_outer_dict` function.
+
+        The `adjlist_outer_dict_factory` method is responsible for creating a
+        factory that produces the outer dictionary for the adjacency list of the
+        `TinyDiGraph`. In this case, it returns the `cheat_adjlist_outer_dict`
+        method, which is a custom method designed to create a `MapAdapter`
+        instance. This `MapAdapter` serves as a highly efficient, list-based
+        dictionary for storing the adjacency lists of each node in the graph.
+
+        The primary purpose of this method is to allow `TinyDiGraph` to
+        leverage a more memory-efficient data structure for its adjacency list
+        compared to a standard Python dictionary. By using a `MapAdapter`, the
+        graph can achieve better performance, especially when the number of
+        nodes is known in advance. This method is part of the internal factory
+        customization that allows `TinyDiGraph` to be optimized for specific use
+        cases.
+
+        Returns:
+            MapAdapter: a list-based dictionary for storing node attributes
+
+        Examples:
+            >>> gr = TinyDiGraph()
+            >>> gr.init_nodes(2)
+            >>> factory = gr.adjlist_outer_dict_factory()
+            >>> isinstance(factory, MapAdapter)
+            True
+
+        """
         return self.cheat_adjlist_outer_dict()
 
     def init_nodes(self, n: int):

@@ -4,4 +4,5 @@
 # sphinx_rtd_theme
 myst-parser[linkify]
 sphinx>=3.2.1
--e ../mywheel
+sphinxcontrib-svgbob
+git+https://github.com/luk036/mywheel.git
