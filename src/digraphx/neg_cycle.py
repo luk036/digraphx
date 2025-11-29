@@ -103,7 +103,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
     """
 
     # Dictionary to store predecessor information (node -> (predecessor_node, edge))
-    pred: Dict[Node, Tuple[Node, Edge]] = {}
+    pred: Dict[Node, Tuple[Node, Edge]]
 
     def __init__(self, digraph: Mapping[Node, Mapping[Node, Edge]]) -> None:
         """Initialize the negative cycle finder with a directed graph.
@@ -115,6 +115,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
                 Example: {u: {v: edge_uv, w: edge_uw}, v: {u: edge_vu}}
         """
         self.digraph = digraph
+        self.pred: Dict[Node, Tuple[Node, Edge]] = {}
 
     def find_cycle(self) -> Generator[Node, None, None]:
         """Find cycles in the current predecessor graph using depth-first search.
