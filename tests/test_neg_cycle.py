@@ -13,8 +13,8 @@ MULTIPLE_NEG_CYCLES_WEIGHT: int = -1
 
 
 def _has_negative_cycle(
-    digraph: Union[MapAdapter, Dict, DiGraphAdapter, TinyDiGraph],
-    dist: Union[MapAdapter, Dict],
+    digraph: Union[MapAdapter[Any], Dict[Any, Any], DiGraphAdapter, TinyDiGraph],
+    dist: Union[MapAdapter[Any], Dict[Any, Any]],
     get_weight: Callable[[Any], Any] = lambda edge: edge.get("weight", 1),
 ) -> bool:
     """
@@ -32,14 +32,14 @@ def _has_negative_cycle(
 
 
 def test_raw_graph_by_MapAdapter() -> None:
-    digraph: MapAdapter = MapAdapter(
+    digraph: MapAdapter[Any] = MapAdapter(
         [
             {1: 7, 2: 5},
             {0: 0, 2: 3},
             {1: 1, 0: 2},
         ]
     )
-    dist: MapAdapter = MapAdapter([0, 0, 0])
+    dist: MapAdapter[Any] = MapAdapter([0, 0, 0])
     assert not _has_negative_cycle(digraph, dist, lambda edge: edge)
 
 
@@ -49,7 +49,7 @@ def test_raw_graph_by_dict() -> None:
         "a1": {"a0": 0, "a2": 3},
         "a2": {"a1": 1, "a0": 2},
     }
-    dist: Dict[str, int] = {vtx: 0 for vtx in digraph}
+    dist: Dict[str, Any] = {vtx: 0 for vtx in digraph}
     assert not _has_negative_cycle(digraph, dist, lambda edge: edge)
 
 
@@ -67,7 +67,7 @@ def test_timing_graph(create_test_case_timing: DiGraphAdapter) -> None:
 
 def test_tiny_graph(create_tiny_graph: TinyDiGraph) -> None:
     digraph: TinyDiGraph = create_tiny_graph
-    dist: MapAdapter = MapAdapter([0, 0, 0])
+    dist: MapAdapter[Any] = MapAdapter([0, 0, 0])
     assert not _has_negative_cycle(digraph, dist)
 
 
@@ -93,5 +93,5 @@ def test_neg_cycle_multiple_neg_cycles() -> None:
     digraph.add_edge(3, 2, weight=MULTIPLE_NEG_CYCLES_WEIGHT)
     dist: Dict[int, int] = {vtx: 0 for vtx in digraph}
     finder: NegCycleFinder[Any, Any, Any] = NegCycleFinder(digraph)
-    cycles = list(finder.howard(dist, lambda edge: edge.get("weight", 1)))  # type: ignore
+    cycles = list(finder.howard(dist, lambda edge: edge.get("weight", 1)))
     assert len(cycles) >= 1  # Howard's may not find all elementary cycles

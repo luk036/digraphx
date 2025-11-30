@@ -28,10 +28,13 @@ sys.path.insert(0, os.path.join(__location__, "../src"))
 # setup.py install" in the RTD Advanced Settings.
 # Additionally it helps us to avoid running apidoc manually
 
-try:  # for Sphinx >= 1.7
-    from sphinx.ext import apidoc
-except ImportError:
-    from sphinx import apidoc
+def get_apidoc_module():
+    try:  # for Sphinx >= 1.7
+        from sphinx.ext import apidoc
+        return apidoc
+    except ImportError:
+        from sphinx import apidoc
+        return apidoc
 
 output_dir = os.path.join(__location__, "api")
 module_dir = os.path.join(__location__, "../src/digraphx")
@@ -42,15 +45,17 @@ except FileNotFoundError:
 
 try:
     import sphinx
+    apidoc = get_apidoc_module()
 
     cmd_line = f"sphinx-apidoc --implicit-namespaces -f -o {output_dir} {module_dir}"
 
     args = cmd_line.split(" ")
     if tuple(sphinx.__version__.split(".")) >= ("1", "7"):
         # This is a rudimentary parse_version to avoid external dependencies
-        args = args[1:]
-
-    apidoc.main(args)
+        # For Sphinx >= 1.7, apidoc.main expects the arguments without the command name
+        apidoc.main(args[1:])  # Skip the 'sphinx-apidoc' part
+    else:
+        apidoc.main(args)
 except Exception as e:
     print("Running `sphinx-apidoc` failed!\n{}".format(e))
 
@@ -250,7 +255,7 @@ htmlhelp_basename = "digraphx-doc"
 
 # -- Options for LaTeX output ------------------------------------------------
 
-latex_elements = {
+latex_elements: dict[str, str] = {
     # The paper size ("letterpaper" or "a4paper").
     # "papersize": "letterpaper",
     # The font size ("10pt", "11pt" or "12pt").

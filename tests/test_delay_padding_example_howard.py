@@ -58,7 +58,7 @@ def find_beta(
 
 
 def even(
-    digraph,
+    digraph: Dict[str, Dict[str, Any]],
     beta: float,
     dist: Dict[str, float],
     max_iter: int = 2000,

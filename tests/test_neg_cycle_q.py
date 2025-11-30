@@ -21,8 +21,8 @@ def _get_weight(edge: Dict[str, int]) -> int:
 
 
 def _has_negative_cycle_pred(
-    digraph: Union[MapAdapter, Dict, DiGraphAdapter, TinyDiGraph],
-    dist: Union[MapAdapter, Dict],
+    digraph: Union[MapAdapter[Any], Dict[Any, Any], DiGraphAdapter, TinyDiGraph],
+    dist: Union[MapAdapter[Any], Dict[Any, Any]],
     get_weight: Callable[[Any], Any],
 ) -> bool:
     """
@@ -40,8 +40,8 @@ def _has_negative_cycle_pred(
 
 
 def _has_negative_cycle_succ(
-    digraph: Union[MapAdapter, Dict, DiGraphAdapter, TinyDiGraph],
-    dist: Union[MapAdapter, Dict],
+    digraph: Union[MapAdapter[Any], Dict[Any, Any], DiGraphAdapter, TinyDiGraph],
+    dist: Union[MapAdapter[Any], Dict[Any, Any]],
     get_weight: Callable[[Any], Any],
 ) -> bool:
     """
@@ -59,14 +59,14 @@ def _has_negative_cycle_succ(
 
 
 def test_raw_graph_by_MapAdapter() -> None:
-    digraph: MapAdapter = MapAdapter(
+    digraph: MapAdapter[Any] = MapAdapter(
         [
             {1: 7, 2: 5},
             {0: 0, 2: 3},
             {1: 1, 0: 2},
         ]
     )
-    dist: MapAdapter = MapAdapter([0, 0, 0])
+    dist: MapAdapter[Any] = MapAdapter([0, 0, 0])
     assert not _has_negative_cycle_pred(digraph, dist, lambda edge: edge)
     assert not _has_negative_cycle_succ(digraph, dist, lambda edge: edge)
 
@@ -98,7 +98,7 @@ def test_timing_graph(create_test_case_timing: DiGraphAdapter) -> None:
 
 def test_tiny_graph(create_tiny_graph: TinyDiGraph) -> None:
     digraph: TinyDiGraph = create_tiny_graph
-    dist: MapAdapter = MapAdapter([0, 0, 0])
+    dist: MapAdapter[Any] = MapAdapter([0, 0, 0])
     assert not _has_negative_cycle_pred(digraph, dist, _get_weight)
     assert not _has_negative_cycle_succ(digraph, dist, _get_weight)
 

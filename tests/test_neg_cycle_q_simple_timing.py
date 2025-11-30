@@ -15,7 +15,7 @@ def has_negative_cycle(TCP: float, dist: Dict[str, float]) -> bool:
         "v3": {"v1": TCP - 4, "v2": 3},
     }
     finder: NegCycleFinderQ[str, float, float] = NegCycleFinderQ(digraph)
-    for _ in finder.howard_succ(dist, lambda edge: edge, _always_ok):  # type: ignore
+    for _ in finder.howard_succ(dist, lambda edge: edge, _always_ok):
         return True
     return False
 

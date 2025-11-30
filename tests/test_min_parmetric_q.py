@@ -15,7 +15,7 @@ class MyAPI(MinParametricAPI[Node, Dict[str, int], Fraction]):
     def distance(self, ratio: Fraction, edge: Dict[str, int]) -> Fraction:
         return edge["cost"] - ratio * edge["time"]
 
-    def zero_cancel(self, cycle: Cycle) -> Fraction:
+    def zero_cancel(self, cycle: Cycle[Dict[str, int]]) -> Fraction:
         total_cost: int = sum(edge["cost"] for edge in cycle)
         total_time: int = sum(edge["time"] for edge in cycle)
         return Fraction(total_cost, total_time)
