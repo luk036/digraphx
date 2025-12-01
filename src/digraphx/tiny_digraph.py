@@ -45,14 +45,14 @@ memory-efficient manner, which could be particularly useful for large graphs or
 in situations where performance is critical.
 """
 
-from typing import MutableMapping
+from typing import ItemsView, Iterator, MutableMapping
 
 import networkx as nx
 from mywheel.map_adapter import MapAdapter  # type: ignore
 
 
 class DiGraphAdapter(nx.DiGraph, MutableMapping):
-    def __iter__(self):
+    def __iter__(self) -> Iterator:
         """
         Return an iterator over the nodes in the graph.
 
@@ -61,7 +61,7 @@ class DiGraphAdapter(nx.DiGraph, MutableMapping):
         """
         return super().__iter__()
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: object, value: object) -> None:
         """
         Set the value for a given key.
 
@@ -71,7 +71,7 @@ class DiGraphAdapter(nx.DiGraph, MutableMapping):
         """
         super().__setitem__(key, value)
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: object) -> None:
         """
         Delete a key from the graph.
 
@@ -80,7 +80,7 @@ class DiGraphAdapter(nx.DiGraph, MutableMapping):
         """
         super().__delitem__(key)
 
-    def items(self):
+    def items(self) -> ItemsView:
         """Returns an iterator over (node, adjacency dict) pairs for all nodes.
 
         This method overrides the default items() method to use adjacency() instead,
@@ -107,7 +107,7 @@ class TinyDiGraph(DiGraphAdapter):
 
     num_nodes = 0  # Class variable to store the total number of nodes in the graph
 
-    def cheat_node_dict(self):
+    def cheat_node_dict(self) -> MapAdapter:
         """Creates a MapAdapter instance to store node attributes.
 
         Returns:
@@ -143,7 +143,7 @@ class TinyDiGraph(DiGraphAdapter):
         """
         return MapAdapter([dict() for _ in range(self.num_nodes)])
 
-    def node_dict_factory(self):  # type: ignore
+    def node_dict_factory(self) -> MapAdapter:  # type: ignore
         """Return `cheat_node_dict` function.
 
         The `node_dict_factory` method is responsible for creating a factory
@@ -174,7 +174,7 @@ class TinyDiGraph(DiGraphAdapter):
         """
         return self.cheat_node_dict()
 
-    def adjlist_outer_dict_factory(self):  # type: ignore
+    def adjlist_outer_dict_factory(self) -> MapAdapter:  # type: ignore
         """Return `cheat_adjlist_outer_dict` function.
 
         The `adjlist_outer_dict_factory` method is responsible for creating a
@@ -205,7 +205,7 @@ class TinyDiGraph(DiGraphAdapter):
         """
         return self.cheat_adjlist_outer_dict()
 
-    def init_nodes(self, n: int):
+    def init_nodes(self, n: int) -> None:
         """Initializes the graph with a specified number of nodes.
 
         Sets up the internal data structures for node storage, adjacency lists (successors),
