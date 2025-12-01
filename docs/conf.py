@@ -28,13 +28,17 @@ sys.path.insert(0, os.path.join(__location__, "../src"))
 # setup.py install" in the RTD Advanced Settings.
 # Additionally it helps us to avoid running apidoc manually
 
+
 def get_apidoc_module():
     try:  # for Sphinx >= 1.7
         from sphinx.ext import apidoc
+
         return apidoc
     except ImportError:
         from sphinx import apidoc
+
         return apidoc
+
 
 output_dir = os.path.join(__location__, "api")
 module_dir = os.path.join(__location__, "../src/digraphx")
@@ -45,6 +49,7 @@ except FileNotFoundError:
 
 try:
     import sphinx
+
     apidoc = get_apidoc_module()
 
     cmd_line = f"sphinx-apidoc --implicit-namespaces -f -o {output_dir} {module_dir}"
