@@ -76,8 +76,8 @@ public:
             throw std::invalid_argument("Cycle cannot be empty");
         }
         
-        R total_cost = R::zero();
-        R total_time = R::zero();
+        R total_cost = numeric_traits<R>::zero();
+        R total_time = numeric_traits<R>::zero();
         
         for (const auto& edge : cycle) {
             // Similar to distance(), we need to extract cost and time
@@ -85,7 +85,7 @@ public:
             throw std::runtime_error("CycleRatioAPI::zero_cancel not implemented for generic E");
         }
         
-        if (total_time == R::zero()) {
+        if (total_time == numeric_traits<R>::zero()) {
             throw std::runtime_error("Total time cannot be zero");
         }
         

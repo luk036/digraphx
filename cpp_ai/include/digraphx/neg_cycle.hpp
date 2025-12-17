@@ -99,14 +99,14 @@ public:
         bool changed = false;
 
         for (const auto& [utx, neighbors] : digraph_) {
-            D dist_u = dist.contains(utx) ? dist[utx] : D::zero();
+            D dist_u = dist.contains(utx) ? dist[utx] : numeric_traits<D>::zero();
             
             for (const auto& [vtx, edge] : neighbors) {
                 D weight = get_weight(edge);
                 D distance = dist_u + weight;
                 
                 if (!dist.contains(vtx)) {
-                    dist[vtx] = D::zero();
+                    dist[vtx] = numeric_traits<D>::zero();
                 }
                 
                 if (dist[vtx] > distance) {
@@ -177,8 +177,8 @@ public:
             const auto& [utx, edge] = pred_.at(vtx);
             D weight = get_weight(edge);
             
-            D dist_v = dist.contains(vtx) ? dist.at(vtx) : D::zero();
-            D dist_u = dist.contains(utx) ? dist.at(utx) : D::zero();
+            D dist_v = dist.contains(vtx) ? dist.at(vtx) : numeric_traits<D>::zero();
+            D dist_u = dist.contains(utx) ? dist.at(utx) : numeric_traits<D>::zero();
             
             if (dist_v > dist_u + weight) {
                 return true;

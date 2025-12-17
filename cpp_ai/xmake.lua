@@ -2,11 +2,14 @@
 set_project("digraphx")
 set_version("0.1.0")
 
--- Set C++ standard
-set_languages("c++23")
+-- Set C++ standard to C++20
+set_languages("c++20")
 
--- Add cppcoro include path
-add_includedirs("include/cppcoro")
+-- Global configuration
+set_warnings("all")
+
+-- Add doctest package
+add_requires("doctest")
 
 -- Library target
 target("digraphx")
@@ -19,34 +22,36 @@ target("digraphx")
     -- Header files
     add_headerfiles("include/digraphx/*.hpp")
     
-    -- Public include directory
+    -- Include directories
     add_includedirs("include", {public = true})
+    add_includedirs("include/cppcoro")
     
-    -- C++23 features
-    set_policy("build.c++.modules", true)
+    -- Enable coroutines for C++20
+    add_cxxflags("-fcoroutines")
 
--- Tests with doctest
-target("digraphx_tests")
+-- Test target
+target("tests")
     set_kind("binary")
     set_default(false)
     
-    -- Test source files
+    -- Test files
     add_files("tests/*.cpp")
     
     -- Dependencies
     add_deps("digraphx")
     
-    -- Add doctest
-    add_requires("doctest")
+    -- Add doctest package
     add_packages("doctest")
     
-    -- Run tests after build
-    after_build(function (target)
-        os.exec(target:targetfile())
-    end)
+    -- Include directories
+    add_includedirs("include")
+    add_includedirs("include/cppcoro")
+    
+    -- Enable coroutines
+    add_cxxflags("-fcoroutines")
 
--- Examples
-target("basic_usage")
+-- Example target
+target("example")
     set_kind("binary")
     set_default(false)
     
@@ -55,17 +60,10 @@ target("basic_usage")
     
     -- Dependencies
     add_deps("digraphx")
-
--- Package configuration
-package("digraphx")
-    set_description("C++23 directed graph optimization library")
-    set_homepage("https://github.com/luk036/digraphx")
-    set_license("MIT")
     
-    on_install(function (package)
-        import("package.tools.cmake").install(package)
-    end)
+    -- Include directories
+    add_includedirs("include")
+    add_includedirs("include/cppcoro")
     
-    on_test(function (package)
-        os.exec("digraphx_tests")
-    end)
+    -- Enable coroutines
+    add_cxxflags("-fcoroutines")

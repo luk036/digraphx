@@ -28,9 +28,38 @@ cmake --build .
 
 ### Using xmake
 
+xmake is a cross-platform build utility that provides a simpler build configuration.
+
 ```bash
+# Build the library (default target)
 xmake
+
+# Build all targets (library, tests, example)
+xmake build --all
+
+# Build specific targets
+xmake build tests      # Build test executable
+xmake build example    # Build example executable
+
+# Clean build
+xmake clean
+
+# Reconfigure project
+xmake f -c
 ```
+
+Build output is located in `build/linux/x86_64/release/` (or equivalent for your platform):
+- `libdigraphx.a` - Static library
+- `tests` - Test executable
+- `example` - Example executable
+
+To run the executables:
+```bash
+./build/linux/x86_64/release/tests    # Run tests
+./build/linux/x86_64/release/example  # Run example
+```
+
+**Note**: You may see a bash warning `setlocale: LC_ALL: cannot change locale (zh_CN.UTF-8)` when running xmake commands. This is a system locale configuration issue and does not affect the build process.
 
 ## Project Structure
 
@@ -134,8 +163,12 @@ Tests use the [doctest](https://github.com/doctest/doctest) framework:
 # Run tests with CMake
 cd build && ctest
 
-# Run tests with xmake
-xmake build digraphx_tests
+# Build and run tests with xmake
+xmake build tests
+./build/linux/x86_64/release/tests
+
+# Run tests with verbose output
+./build/linux/x86_64/release/tests -s
 ```
 
 ## License

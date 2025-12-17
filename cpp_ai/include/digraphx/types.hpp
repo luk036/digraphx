@@ -13,21 +13,27 @@
 
 namespace digraphx {
 
-// Forward declarations
-template<typename N, typename E, typename D>
-class NegCycleFinder;
+// Helper functions for numeric types
+template<typename T>
+struct numeric_traits {};
 
-template<typename N, typename E, typename R>
-class NegCycleFinderQ;
+template<>
+struct numeric_traits<int> {
+    static constexpr int zero() { return 0; }
+    static constexpr int max() { return std::numeric_limits<int>::max(); }
+};
 
-template<typename N, typename E, typename R>
-class MaxParametricSolver;
+template<>
+struct numeric_traits<double> {
+    static constexpr double zero() { return 0.0; }
+    static constexpr double max() { return std::numeric_limits<double>::max(); }
+};
 
-template<typename N, typename E, typename R>
-class MinCycleRatioSolver;
-
-template<typename N, typename E, typename R, typename API>
-class MinParametricQSolver;
+template<>
+struct numeric_traits<float> {
+    static constexpr float zero() { return 0.0f; }
+    static constexpr float max() { return std::numeric_limits<float>::max(); }
+};
 
 // Type traits and concepts
 template<typename T>
@@ -53,8 +59,9 @@ concept Domain = requires(T a, T b) {
     { a > b } -> std::convertible_to<bool>;
     { a < b } -> std::convertible_to<bool>;
     { a == b } -> std::convertible_to<bool>;
-    { T::zero() } -> std::convertible_to<T>;
     requires std::copyable<T>;
+} && requires {
+    { numeric_traits<T>::zero() } -> std::convertible_to<T>;
 };
 
 template<typename T>
@@ -62,6 +69,22 @@ concept RatioType = Domain<T> && requires(T a) {
     { a.numerator() } -> std::integral;
     { a.denominator() } -> std::integral;
 };
+
+// Forward declarations
+template<Node N, Edge E, Domain D>
+class NegCycleFinder;
+
+template<Node N, Edge E, RatioType R>
+class NegCycleFinderQ;
+
+template<Node N, Edge E, RatioType R>
+class MaxParametricSolver;
+
+template<Node N, Edge E, RatioType R>
+class MinCycleRatioSolver;
+
+template<Node N, Edge E, RatioType R, typename API>
+class MinParametricQSolver;
 
 // Alias for cycle representation
 template<typename E>
@@ -74,28 +97,6 @@ using Digraph = std::unordered_map<N, std::unordered_map<N, E>>;
 // Distance map type
 template<typename N, typename D>
 using DistanceMap = std::unordered_map<N, D>;
-
-// Helper functions for numeric types
-template<typename T>
-struct numeric_traits {};
-
-template<>
-struct numeric_traits<int> {
-    static constexpr int zero() { return 0; }
-    static constexpr int max() { return std::numeric_limits<int>::max(); }
-};
-
-template<>
-struct numeric_traits<double> {
-    static constexpr double zero() { return 0.0; }
-    static constexpr double max() { return std::numeric_limits<double>::max(); }
-};
-
-template<>
-struct numeric_traits<float> {
-    static constexpr float zero() { return 0.0f; }
-    static constexpr float max() { return std::numeric_limits<float>::max(); }
-};
 
 // Rational number type for ratio calculations
 template<typename IntType = int64_t>

@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <iterator>
 #include <concepts>
+#include <ranges>
 
 namespace digraphx {
 

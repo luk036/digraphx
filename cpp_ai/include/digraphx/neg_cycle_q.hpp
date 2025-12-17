@@ -21,9 +21,9 @@ namespace digraphx {
  * 
  * @tparam N Node type (must satisfy Node concept)
  * @tparam E Edge type (must satisfy Edge concept)
- * @tparam D Domain type for distances (must satisfy Domain concept)
+ * @tparam R Ratio type for distances (must satisfy RatioType concept)
  */
-template<Node N, Edge E, Domain D>
+template<Node N, Edge E, RatioType R>
 class NegCycleFinderQ {
 private:
     Digraph<N, E> digraph_;
@@ -48,18 +48,18 @@ public:
      * @param get_weight Function to get weight/cost of an edge
      * @return true if any distance was updated, false otherwise
      */
-    bool relax_pred(DistanceMap<N, D>& dist, std::function<D(const E&)> get_weight) {
+    bool relax_pred(DistanceMap<N, R>& dist, std::function<R(const E&)> get_weight) {
         bool changed = false;
 
         for (const auto& [utx, neighbors] : digraph_) {
-            D dist_u = dist.contains(utx) ? dist[utx] : D::zero();
+            R dist_u = dist.contains(utx) ? dist[utx] : numeric_traits<R>::zero();
             
             for (const auto& [vtx, edge] : neighbors) {
-                D weight = get_weight(edge);
-                D distance = dist_u + weight;
+                R weight = get_weight(edge);
+                R distance = dist_u + weight;
                 
                 if (!dist.contains(vtx)) {
-                    dist[vtx] = D::zero();
+                    dist[vtx] = numeric_traits<R>::zero();
                 }
                 
                 if (dist[vtx] > distance) {
@@ -82,7 +82,7 @@ public:
      * @param get_weight Function to get weight/cost of an edge
      * @return true if any distance was updated, false otherwise
      */
-    bool relax_succ(DistanceMap<N, D>& dist, std::function<D(const E&)> get_weight) {
+    bool relax_succ(DistanceMap<N, R>& dist, std::function<R(const E&)> get_weight) {
         bool changed = false;
 
         // Build reverse graph for successor-based relaxation
@@ -94,14 +94,14 @@ public:
         }
 
         for (const auto& [vtx, neighbors] : reverse_graph) {
-            D dist_v = dist.contains(vtx) ? dist[vtx] : D::zero();
+            R dist_v = dist.contains(vtx) ? dist[vtx] : numeric_traits<R>::zero();
             
             for (const auto& [utx, edge] : neighbors) {
-                D weight = get_weight(edge);
-                D distance = dist_v - weight;  // Note: different sign for successor
+                R weight = get_weight(edge);
+                R distance = dist_v - weight;  // Note: different sign for successor
                 
                 if (!dist.contains(utx)) {
-                    dist[utx] = D::zero();
+                    dist[utx] = numeric_traits<R>::zero();
                 }
                 
                 if (dist[utx] < distance) {  // Note: different comparison
@@ -240,8 +240,8 @@ public:
      * @param get_weight Function to get edge weights
      * @return cppcoro::generator<Cycle<E>> Generator of negative cycles
      */
-    cppcoro::generator<Cycle<E>> howard_pred(DistanceMap<N, D>& dist, 
-                                             std::function<D(const E&)> get_weight) {
+    cppcoro::generator<Cycle<E>> howard_pred(DistanceMap<N, R>& dist, 
+                                             std::function<R(const E&)> get_weight) {
         pred_.clear();
         bool found = false;
 
@@ -261,8 +261,8 @@ public:
      * @param get_weight Function to get edge weights
      * @return cppcoro::generator<Cycle<E>> Generator of negative cycles
      */
-    cppcoro::generator<Cycle<E>> howard_succ(DistanceMap<N, D>& dist, 
-                                             std::function<D(const E&)> get_weight) {
+    cppcoro::generator<Cycle<E>> howard_succ(DistanceMap<N, R>& dist, 
+                                             std::function<R(const E&)> get_weight) {
         succ_.clear();
         bool found = false;
 

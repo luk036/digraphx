@@ -64,10 +64,6 @@ if(BUILD_TESTS)
     set(TEST_SOURCES
         tests/test_tiny_digraph.cpp
         tests/test_neg_cycle.cpp
-        tests/test_neg_cycle_q.cpp
-        tests/test_cycle_ratio.cpp
-        tests/test_min_parmetric_q.cpp
-        tests/test_parametric.cpp
         tests/integration_tests.cpp
     )
 

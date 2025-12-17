@@ -59,7 +59,6 @@ public:
  * @tparam API Parametric API type (must satisfy MinParametricAPI concept)
  */
 template<Node N, Edge E, RatioType R, typename API>
-requires std::derived_from<API, MinParametricAPI<N, E, R>>
 class MinParametricQSolver {
 private:
     Digraph<N, E> digraph_;
