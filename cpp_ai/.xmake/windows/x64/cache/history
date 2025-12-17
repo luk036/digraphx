@@ -1,0 +1,8 @@
+{
+    cmdlines = {
+        "xmake -v",
+        "xmake config",
+        "xmake require --list",
+        "xmake "
+    }
+}
