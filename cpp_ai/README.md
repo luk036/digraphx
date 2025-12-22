@@ -82,6 +82,7 @@ cpp_ai/
 
 ## Quick Start
 
+{% raw %}
 ```cpp
 #include "digraphx/tiny_digraph.hpp"
 #include "digraphx/neg_cycle.hpp"
@@ -119,7 +120,7 @@ int main() {
     
     // Find negative cycles
     NegCycleFinder<std::string, int, int> finder(digraph);
-    DistanceMap<std::string, int> dist{{"A", 0}, {"B", 1000}, {"C", 1000}};
+    DistanceMap<std::string, int> dist{ {"A", 0}, {"B", 1000}, {"C", 1000} };
     
     auto get_weight = [](const int& edge) { return edge; };
     
@@ -130,6 +131,7 @@ int main() {
     return 0;
 }
 ```
+{% endraw %}
 
 ## Algorithms
 

@@ -161,15 +161,15 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
             Fraction(2, 1)
         """
         # Determine the type of domain values from the first element in dist
-        D = type(next(iter(dist.values())))
+        DomainType = type(next(iter(dist.values())))
 
         # Define a weight function that calculates distance based on current ratio
         def get_weight(e: Edge) -> Domain:
-            return D(self.omega.distance(ratio, e))
+            return DomainType(self.omega.distance(ratio, e))
 
         # Initialize minimum ratio and cycle
-        r_min = ratio
-        c_min = []
+        ratio_min = ratio
+        cycle_min = []
         cycle = []
 
         # Create a negative cycle finder instance with the graph
@@ -180,17 +180,17 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
             # Find all negative cycles in the graph
             for ci in ncf.howard(dist, get_weight):
                 # Calculate the ratio that would make this cycle's total distance zero
-                ri = self.omega.zero_cancel(ci)
+                ratio_i = self.omega.zero_cancel(ci)
                 # Update minimum ratio if a smaller one is found
-                if r_min > ri:
-                    r_min = ri
-                    c_min = ci
+                if ratio_min > ratio_i:
+                    ratio_min = ratio_i
+                    cycle_min = ci
 
             # Termination condition: no better ratio found
-            if r_min >= ratio:
+            if ratio_min >= ratio:
                 break
 
             # Update cycle and ratio for next iteration
-            cycle = c_min
-            ratio = r_min
+            cycle = cycle_min
+            ratio = ratio_min
         return ratio, cycle

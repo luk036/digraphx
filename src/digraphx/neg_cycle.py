@@ -141,16 +141,16 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             ...     print(cycle)
         """
         visited: Dict[Node, Node] = {}  # Maps nodes to their DFS root
-        for vtx in filter(lambda vtx: vtx not in visited, self.digraph):
-            utx = vtx
-            visited[utx] = vtx  # Mark as visited with current DFS root
-            while utx in self.pred:
-                utx, _ = self.pred[utx]  # Move to predecessor
-                if utx in visited:
-                    if visited[utx] == vtx:  # Found a cycle back to current root
-                        yield utx
+        for v_node in filter(lambda v_node: v_node not in visited, self.digraph):
+            u_node = v_node
+            visited[u_node] = v_node  # Mark as visited with current DFS root
+            while u_node in self.pred:
+                u_node, _ = self.pred[u_node]  # Move to predecessor
+                if u_node in visited:
+                    if visited[u_node] == v_node:  # Found a cycle back to current root
+                        yield u_node
                     break
-                visited[utx] = vtx  # Mark predecessor as visited
+                visited[u_node] = v_node  # Mark predecessor as visited
 
     def relax(
         self,
@@ -188,12 +188,12 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             3
         """
         changed = False
-        for utx, neighbors in self.digraph.items():
-            for vtx, edge in neighbors.items():
-                distance = dist[utx] + get_weight(edge)
-                if dist[vtx] > distance:  # Found a shorter path
-                    dist[vtx] = distance
-                    self.pred[vtx] = (utx, edge)  # Update predecessor
+        for u_node, neighbors in self.digraph.items():
+            for v_node, edge in neighbors.items():
+                distance = dist[u_node] + get_weight(edge)
+                if dist[v_node] > distance:  # Found a shorter path
+                    dist[v_node] = distance
+                    self.pred[v_node] = (u_node, edge)  # Update predecessor
                     changed = True
         return changed
 
@@ -220,13 +220,13 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             >>> finder.cycle_list('a')
             ['ca', 'bc', 'ab']
         """
-        vtx = handle
+        v_node = handle
         cycle = list()
         while True:
-            utx, edge = self.pred[vtx]  # Get predecessor and connecting edge
+            u_node, edge = self.pred[v_node]  # Get predecessor and connecting edge
             cycle.append(edge)  # Add edge to cycle
-            vtx = utx  # Move to predecessor
-            if vtx == handle:  # Completed the cycle
+            v_node = u_node  # Move to predecessor
+            if v_node == handle:  # Completed the cycle
                 break
         return cycle
 
@@ -264,14 +264,16 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
             >>> finder.is_negative('a', dist, lambda edge: edge)
             True
         """
-        vtx = handle
+        v_node = handle
         # do while loop in C++
         while True:
-            utx, edge = self.pred[vtx]
-            if dist[vtx] > dist[utx] + get_weight(edge):  # Triangle inequality violated
+            u_node, edge = self.pred[v_node]
+            if dist[v_node] > dist[u_node] + get_weight(
+                edge
+            ):  # Triangle inequality violated
                 return True
-            vtx = utx
-            if vtx == handle:  # Completed full cycle
+            v_node = u_node
+            if v_node == handle:  # Completed full cycle
                 break
         return False
 
@@ -315,8 +317,10 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         found = False
         # Continue relaxing until no changes or a cycle is found
         while not found and self.relax(dist, get_weight):
-            for vtx in self.find_cycle():  # Check for cycles in predecessor graph
+            for v_node in self.find_cycle():  # Check for cycles in predecessor graph
                 # Will zero cycle be found???
-                assert self.is_negative(vtx, dist, get_weight)  # Verify it's negative
+                assert self.is_negative(
+                    v_node, dist, get_weight
+                )  # Verify it's negative
                 found = True
-                yield self.cycle_list(vtx)  # Return the negative cycle
+                yield self.cycle_list(v_node)  # Return the negative cycle

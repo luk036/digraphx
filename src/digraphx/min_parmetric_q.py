@@ -150,15 +150,15 @@ class MinParametricSolver(Generic[Node, Edge, Ratio, Domain]):
                  - The cycle that corresponds to this ratio (cycle)
         """
         # Determine the numeric type used in distance calculations
-        D = type(next(iter(dist.values())))
+        DomainType = type(next(iter(dist.values())))
 
         # Helper function to calculate edge weights based on current ratio
         def get_weight(e: Edge) -> Domain:
-            return D(self.omega.distance(ratio, e))
+            return DomainType(self.omega.distance(ratio, e))
 
         # Initialize tracking variables for minimum ratio and corresponding cycle
-        r_max = ratio
-        c_max = []
+        ratio_max = ratio
+        cycle_max = []
         cycle = []
         reverse: bool = True  # Flag to alternate search direction
 
@@ -175,20 +175,20 @@ class MinParametricSolver(Generic[Node, Edge, Ratio, Domain]):
 
             # Evaluate all found cycles
             for c_i in cycles:
-                r_i = self.omega.zero_cancel(c_i)
-                if r_max < r_i:
-                    r_max = r_i
-                    c_max = c_i
+                ratio_i = self.omega.zero_cancel(c_i)
+                if ratio_max < ratio_i:
+                    ratio_max = ratio_i
+                    cycle_max = c_i
                     if pick_one_only:  # Early exit if we only need one improvement
                         break
 
             # Termination condition: no better ratio found
-            if r_max <= ratio:
+            if ratio_max <= ratio:
                 break
 
             # Update state for next iteration
-            cycle = c_max
-            ratio = r_max
+            cycle = cycle_max
+            ratio = ratio_max
             reverse = not reverse  # Alternate search direction
 
         return ratio, cycle

@@ -215,7 +215,9 @@ class MinCycleRatioSolver(Generic[Node, EdgeType, Ratio]):
         """
         self.digraph: GraphMut = digraph
 
-    def run(self, dist: MutableMapping[Node, Domain], r0: Ratio) -> Tuple[Ratio, Cycle]:
+    def run(
+        self, dist: MutableMapping[Node, Domain], ratio0: Ratio
+    ) -> Tuple[Ratio, Cycle]:
         """
         Run the minimum cycle ratio solver algorithm.
 
@@ -227,16 +229,16 @@ class MinCycleRatioSolver(Generic[Node, EdgeType, Ratio]):
         :param dist: Initial distance labels for nodes
         :type dist: MutableMapping[Node, Domain]
 
-        :param r0: Initial ratio value to start the search
-        :type r0: Ratio
+        :param ratio0: Initial ratio value to start the search
+        :type ratio0: Ratio
 
         :return: A tuple containing the optimal ratio and the cycle that achieves
             it
         :rtype: Tuple[Ratio, Cycle]
         """
         omega: CycleRatioAPI[Node, EdgeType, Ratio] = CycleRatioAPI(
-            self.digraph, type(r0)
+            self.digraph, type(ratio0)
         )
         solver = MaxParametricSolver[Node, EdgeType, Ratio](self.digraph, omega)
-        ratio, cycle = solver.run(dist, r0)
+        ratio, cycle = solver.run(dist, ratio0)
         return ratio, cycle

@@ -88,10 +88,10 @@ class DiGraphAdapter(nx.DiGraph, MutableMapping):
         and their connections.
 
         Examples:
-            >>> gr = DiGraphAdapter()
-            >>> gr.add_edge(1, 2)
-            >>> gr.add_edge(2, 3)
-            >>> sorted(list(gr.items()))
+            >>> graph = DiGraphAdapter()
+            >>> graph.add_edge(1, 2)
+            >>> graph.add_edge(2, 3)
+            >>> sorted(list(graph.items()))
             [(1, {2: {}}), (2, {3: {}}), (3, {})]
         """
 
@@ -115,9 +115,9 @@ class TinyDiGraph(DiGraphAdapter):
                        in a separate dictionary at the node's index position.
 
         Examples:
-            >>> gr = TinyDiGraph()
-            >>> gr.init_nodes(3)
-            >>> node_dict = gr.cheat_node_dict()
+            >>> graph = TinyDiGraph()
+            >>> graph.init_nodes(3)
+            >>> node_dict = graph.cheat_node_dict()
             >>> list(node_dict.keys())
             [0, 1, 2]
             >>> node_dict[0]
@@ -133,9 +133,9 @@ class TinyDiGraph(DiGraphAdapter):
                        in a separate dictionary at the node's index position.
 
         Examples:
-            >>> gr = TinyDiGraph()
-            >>> gr.init_nodes(2)
-            >>> adj_list = gr.cheat_adjlist_outer_dict()
+            >>> graph = TinyDiGraph()
+            >>> graph.init_nodes(2)
+            >>> adj_list = graph.cheat_adjlist_outer_dict()
             >>> list(adj_list.keys())
             [0, 1]
             >>> adj_list[0]
@@ -165,9 +165,9 @@ class TinyDiGraph(DiGraphAdapter):
             MapAdapter: a list-based dictionary for storing node attributes
 
         Examples:
-            >>> gr = TinyDiGraph()
-            >>> gr.init_nodes(3)
-            >>> factory = gr.node_dict_factory()
+            >>> graph = TinyDiGraph()
+            >>> graph.init_nodes(3)
+            >>> factory = graph.node_dict_factory()
             >>> isinstance(factory, MapAdapter)
             True
 
@@ -196,36 +196,36 @@ class TinyDiGraph(DiGraphAdapter):
             MapAdapter: a list-based dictionary for storing node attributes
 
         Examples:
-            >>> gr = TinyDiGraph()
-            >>> gr.init_nodes(2)
-            >>> factory = gr.adjlist_outer_dict_factory()
+            >>> graph = TinyDiGraph()
+            >>> graph.init_nodes(2)
+            >>> factory = graph.adjlist_outer_dict_factory()
             >>> isinstance(factory, MapAdapter)
             True
 
         """
         return self.cheat_adjlist_outer_dict()
 
-    def init_nodes(self, n: int) -> None:
+    def init_nodes(self, num_nodes: int) -> None:
         """Initializes the graph with a specified number of nodes.
 
         Sets up the internal data structures for node storage, adjacency lists (successors),
         and predecessor lists. This method must be called before adding any edges.
 
         Args:
-            n (int): The number of nodes to initialize in the graph. Nodes will be
-                     indexed from 0 to n-1.
+            num_nodes (int): The number of nodes to initialize in the graph. Nodes will be
+                     indexed from 0 to num_nodes-1.
 
         Examples:
-            >>> gr = TinyDiGraph()
-            >>> gr.init_nodes(5)
-            >>> gr.number_of_nodes()
+            >>> graph = TinyDiGraph()
+            >>> graph.init_nodes(5)
+            >>> graph.number_of_nodes()
             5
-            >>> list(gr._node.keys())
+            >>> list(graph._node.keys())
             [0, 1, 2, 3, 4]
-            >>> list(gr._adj.keys())
+            >>> list(graph._adj.keys())
             [0, 1, 2, 3, 4]
         """
-        self.num_nodes = n
+        self.num_nodes = num_nodes
         self._node = self.cheat_node_dict()  # Stores node attributes
         self._adj = (
             self.cheat_adjlist_outer_dict()
@@ -237,23 +237,23 @@ class TinyDiGraph(DiGraphAdapter):
 
 if __name__ == "__main__":
     # Example usage of TinyDiGraph
-    gr = TinyDiGraph()
-    gr.init_nodes(1000)  # Initialize graph with 1000 nodes
-    gr.add_edge(2, 1)  # Add an edge from node 2 to node 1
+    graph = TinyDiGraph()
+    graph.init_nodes(1000)  # Initialize graph with 1000 nodes
+    graph.add_edge(2, 1)  # Add an edge from node 2 to node 1
 
     # Print basic graph properties
-    print(gr.number_of_nodes())  # Expected output: 1000
-    print(gr.number_of_edges())  # Expected output: 1
+    print(graph.number_of_nodes())  # Expected output: 1000
+    print(graph.number_of_edges())  # Expected output: 1
 
     # Iterate through all edges in the graph
-    for utx in gr:
-        for vtx in gr.neighbors(utx):
+    for utx in graph:
+        for vtx in graph.neighbors(utx):
             print(f"{utx}, {vtx}")  # Will print "2, 1"
 
     # Demonstration of MapAdapter functionality
     a = MapAdapter([0] * 8)  # Create a MapAdapter with 8 zero-initialized elements
-    for i in a:
-        a[i] = i * i  # Square each element's index and store it
-    for i, vtx in a.items():
-        print(f"{i}: {vtx}")  # Print index: value pairs
+    for idx in a:
+        a[idx] = idx * idx  # Square each element's index and store it
+    for idx, vtx in a.items():
+        print(f"{idx}: {vtx}")  # Print index: value pairs
     print(3 in a)  # Check if index 3 exists (should return True)
