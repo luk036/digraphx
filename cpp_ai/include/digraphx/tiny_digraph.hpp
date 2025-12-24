@@ -60,14 +60,14 @@ public:
         node_to_index_.clear();
         index_to_node_.clear();
 
-        std::size_t idx = 0;
-        for (auto it = first; it != last; ++it) {
-            node_to_index_[*it] = idx;
-            index_to_node_.push_back(*it);
+        std::size_t index = 0;
+        for (auto iter = first; iter != last; ++iter) {
+            node_to_index_[*iter] = index;
+            index_to_node_.push_back(*iter);
             nodes_.emplace_back();
             adj_.emplace_back();
             pred_.emplace_back();
-            ++idx;
+            ++index;
         }
 
         num_nodes_ = index_to_node_.size();

@@ -68,7 +68,7 @@ public:
             visited[utx] = vtx;
             
             while (pred_.contains(utx)) {
-                const auto& [pred_node, _] = pred_.at(utx);
+                const auto& [pred_node, unused] = pred_.at(utx);
                 utx = pred_node;
                 
                 if (visited.contains(utx)) {

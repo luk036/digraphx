@@ -123,7 +123,7 @@ public:
     cppcoro::generator<N> find_cycle_pred() const {
         std::unordered_map<N, N> visited;
         
-        for (const auto& [vtx, _] : digraph_) {
+        for (const auto& [vtx, unused] : digraph_) {
             if (visited.contains(vtx)) {
                 continue;
             }
@@ -132,7 +132,7 @@ public:
             visited[utx] = vtx;
             
             while (pred_.contains(utx)) {
-                const auto& [pred_node, _] = pred_.at(utx);
+                const auto& [pred_node, unused] = pred_.at(utx);
                 utx = pred_node;
                 
                 if (visited.contains(utx)) {
@@ -155,7 +155,7 @@ public:
     cppcoro::generator<N> find_cycle_succ() const {
         std::unordered_map<N, N> visited;
         
-        for (const auto& [vtx, _] : digraph_) {
+        for (const auto& [vtx, unused] : digraph_) {
             if (visited.contains(vtx)) {
                 continue;
             }
@@ -164,7 +164,7 @@ public:
             visited[utx] = vtx;
             
             while (succ_.contains(utx)) {
-                const auto& [succ_node, _] = succ_.at(utx);
+                const auto& [succ_node, unused] = succ_.at(utx);
                 utx = succ_node;
                 
                 if (visited.contains(utx)) {

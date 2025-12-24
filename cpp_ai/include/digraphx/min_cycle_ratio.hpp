@@ -179,8 +179,8 @@ public:
  */
 template<Node N, typename E, Domain D>
 void set_default(Digraph<N, E>& digraph, const std::string& weight, const D& value) {
-    for (auto& [_, neighbors] : digraph) {
-        for (auto& [_, edge] : neighbors) {
+    for (auto& [unused, neighbors] : digraph) {
+        for (auto& [unused, edge] : neighbors) {
             // In C++, we need a way to set default values on edges
             // This depends on the Edge type implementation
             // For a generic solution, we might need a callback or trait

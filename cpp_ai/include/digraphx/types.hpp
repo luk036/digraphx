@@ -110,18 +110,18 @@ private:
             num_ = -num_;
             den_ = -den_;
         }
-        IntType g = gcd(std::abs(num_), den_);
-        num_ /= g;
-        den_ /= g;
+        IntType gcd_result = gcd(std::abs(num_), den_);
+        num_ /= gcd_result;
+        den_ /= gcd_result;
     }
     
-    static IntType gcd(IntType a, IntType b) {
-        while (b != 0) {
-            IntType t = b;
-            b = a % b;
-            a = t;
+    static IntType gcd(IntType first_val, IntType second_val) {
+        while (second_val != 0) {
+            IntType temp = second_val;
+            second_val = first_val % second_val;
+            first_val = temp;
         }
-        return a;
+        return first_val;
     }
     
 public:

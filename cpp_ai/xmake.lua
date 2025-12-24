@@ -27,7 +27,7 @@ target("digraphx")
     add_includedirs("include/cppcoro")
     
     -- Enable coroutines for C++20
-    add_cxxflags("-fcoroutines")
+    -- add_cxxflags("-fcoroutines")
 
 -- Test target
 target("tests")
@@ -48,7 +48,7 @@ target("tests")
     add_includedirs("include/cppcoro")
     
     -- Enable coroutines
-    add_cxxflags("-fcoroutines")
+    -- add_cxxflags("-fcoroutines")
 
 -- Example target
 target("example")
@@ -66,4 +66,4 @@ target("example")
     add_includedirs("include/cppcoro")
     
     -- Enable coroutines
-    add_cxxflags("-fcoroutines")
+    -- add_cxxflags("-fcoroutines")
