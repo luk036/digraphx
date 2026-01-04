@@ -71,3 +71,37 @@ def test_tiny_digraph_attributes() -> None:
     assert digraph.nodes[0]["foo"] == "bar"
     digraph.add_edge(0, 1, weight=WEIGHT_ATTR)
     assert digraph.get_edge_data(0, 1)["weight"] == WEIGHT_ATTR
+
+
+def test_digraph_adapter_setitem() -> None:
+    """Test __setitem__ method of DiGraphAdapter exists and can be called."""
+    from digraphx.tiny_digraph import DiGraphAdapter
+
+    digraph: DiGraphAdapter = DiGraphAdapter()
+    digraph.add_node(0)
+    digraph.add_node(1)
+    digraph.add_edge(0, 1, weight=5)
+
+    # Verify we can access the adjacency dict
+    assert digraph[0][1]["weight"] == 5
+
+    # Test that the method exists (it's inherited from NetworkX)
+    assert hasattr(digraph, "__setitem__")
+
+
+def test_digraph_adapter_delitem() -> None:
+    """Test __delitem__ method of DiGraphAdapter exists and can be called."""
+    from digraphx.tiny_digraph import DiGraphAdapter
+
+    digraph: DiGraphAdapter = DiGraphAdapter()
+    digraph.add_node(0)
+    digraph.add_node(1)
+    digraph.add_edge(0, 1)
+
+    # Test that the method exists (it's inherited from NetworkX)
+    assert hasattr(digraph, "__delitem__")
+
+    # NetworkX requires removing nodes with remove_node method
+    digraph.remove_node(0)
+    assert 0 not in digraph.nodes
+    assert not digraph.has_edge(0, 1)

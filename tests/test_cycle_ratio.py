@@ -141,3 +141,18 @@ def test_cycle_ratio_tiny_graph(
     ratio, cycle = solver.run(dist, high_ratio)  # type: ignore
     assert cycle
     assert ratio == Fraction(1, 1)
+
+
+def test_set_default_with_existing_value() -> None:
+    """Test set_default when the weight already exists (missing branch)."""
+    digraph: DiGraphAdapter = DiGraphAdapter()
+    digraph.add_edge(0, 1, cost=5, time=2)
+    digraph.add_edge(1, 2, cost=3)  # No time attribute
+
+    # This should not override existing cost values
+    set_default(digraph, "cost", 10)
+    assert digraph[0][1]["cost"] == 5  # Should remain unchanged
+
+    # This should add the missing time attribute
+    set_default(digraph, "time", 1)
+    assert digraph[1][2]["time"] == 1  # Should be set to default

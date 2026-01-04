@@ -95,3 +95,20 @@ def test_neg_cycle_multiple_neg_cycles() -> None:
     finder: NegCycleFinder[Any, Any, Any] = NegCycleFinder(digraph)
     cycles = list(finder.howard(dist, lambda edge: edge.get("weight", 1)))
     assert len(cycles) >= 1  # Howard's may not find all elementary cycles
+
+
+def test_neg_cycle_is_negative_edge_case() -> None:
+    """Test edge case in is_negative method where triangle inequality is not violated."""
+    digraph: DiGraphAdapter = DiGraphAdapter()
+    digraph.add_edge(0, 1, weight=1)
+    digraph.add_edge(1, 2, weight=1)
+    digraph.add_edge(2, 0, weight=1)
+
+    dist: Dict[int, int] = {0: 0, 1: 1, 2: 2}
+    finder: NegCycleFinder[Any, Any, Any] = NegCycleFinder(digraph)
+
+    # Set up predecessor information to create a cycle
+    finder.pred = {1: (0, digraph[0][1]), 2: (1, digraph[1][2]), 0: (2, digraph[2][0])}
+
+    # This should return False as the triangle inequality is not violated
+    assert not finder.is_negative(0, dist, lambda edge: edge.get("weight", 1))
