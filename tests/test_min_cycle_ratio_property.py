@@ -3,14 +3,14 @@
 
 from __future__ import annotations
 
+from fractions import Fraction
 from typing import Any, List
 
 import hypothesis.strategies as st
-from hypothesis import given, assume
 import networkx as nx
-from fractions import Fraction
+from hypothesis import assume, given
 
-from digraphx.min_cycle_ratio import MinCycleRatioSolver, CycleRatioAPI
+from digraphx.min_cycle_ratio import CycleRatioAPI, MinCycleRatioSolver
 
 
 @st.composite

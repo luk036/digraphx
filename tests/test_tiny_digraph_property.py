@@ -6,7 +6,7 @@ from __future__ import annotations
 from typing import Any
 
 import hypothesis.strategies as st
-from hypothesis import given, assume
+from hypothesis import assume, given
 
 from digraphx.tiny_digraph import TinyDiGraph
 

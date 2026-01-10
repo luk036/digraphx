@@ -65,32 +65,32 @@ where
     pub fn find_cycle_pred(&self) -> Vec<N> {
         let mut visited: HashMap<N, N> = HashMap::new();
         let mut result = Vec::new();
-        
+
         // Collect keys first to avoid borrowing issues
         let keys: Vec<N> = self.digraph.keys().cloned().collect();
-        
+
         for vtx in keys {
             if visited.contains_key(&vtx) {
                 continue;
             }
-            
+
             let mut utx = vtx.clone();
             visited.insert(utx.clone(), vtx.clone());
-            
+
             while let Some((pred_node, _)) = self.pred.get(&utx) {
                 utx = pred_node.clone();
-                
+
                 if let Some(root) = visited.get(&utx) {
                     if root == &vtx {
                         result.push(utx.clone());
                     }
                     break;
                 }
-                
+
                 visited.insert(utx.clone(), vtx.clone());
             }
         }
-        
+
         result
     }
 
@@ -104,32 +104,32 @@ where
     pub fn find_cycle_succ(&self) -> Vec<N> {
         let mut visited: HashMap<N, N> = HashMap::new();
         let mut result = Vec::new();
-        
+
         // Collect keys first to avoid borrowing issues
         let keys: Vec<N> = self.digraph.keys().cloned().collect();
-        
+
         for vtx in keys {
             if visited.contains_key(&vtx) {
                 continue;
             }
-            
+
             let mut utx = vtx.clone();
             visited.insert(utx.clone(), vtx.clone());
-            
+
             while let Some((succ_node, _)) = self.succ.get(&utx) {
                 utx = succ_node.clone();
-                
+
                 if let Some(root) = visited.get(&utx) {
                     if root == &vtx {
                         result.push(utx.clone());
                     }
                     break;
                 }
-                
+
                 visited.insert(utx.clone(), vtx.clone());
             }
         }
-        
+
         result
     }
 
@@ -153,11 +153,11 @@ where
 
         for (utx, neighbors) in &self.digraph {
             let dist_u = dist.get(utx).cloned().unwrap_or_else(D::zero);
-            
+
             for (vtx, edge) in neighbors {
                 let weight = get_weight(edge);
                 let distance = dist_u.clone() + weight;
-                
+
                 let dist_v = dist.entry(vtx.clone()).or_insert_with(D::zero);
                 if *dist_v > distance {
                     *dist_v = distance;
@@ -195,7 +195,7 @@ where
                     let dist_u = dist.get(utx).cloned().unwrap_or_else(D::zero);
                     let weight = get_weight(edge);
                     let distance = dist_u.clone() + weight;
-                    
+
                     let dist_v = dist.entry(vtx.clone()).or_insert_with(D::zero);
                     if *dist_v > distance {
                         *dist_v = distance;
@@ -227,7 +227,7 @@ where
             let (utx, edge) = pred_map.get(&vtx).expect("Node not in predecessor graph");
             cycle.push(edge.clone());
             vtx = utx.clone();
-            
+
             if &vtx == handle {
                 break;
             }
@@ -254,7 +254,7 @@ where
             let (next_vtx, edge) = succ_map.get(&vtx).expect("Node not in successor graph");
             cycle.push(edge.clone());
             vtx = next_vtx.clone();
-            
+
             if &vtx == handle {
                 break;
             }
@@ -290,14 +290,14 @@ where
         loop {
             let (utx, edge) = pred_map.get(&vtx).expect("Node not in predecessor graph");
             let weight = get_weight(edge);
-            
+
             let dist_v = dist.get(&vtx).cloned().unwrap_or_else(D::zero);
             let dist_u = dist.get(utx).cloned().unwrap_or_else(D::zero);
-            
+
             if dist_v > dist_u.clone() + weight {
                 return true;
             }
-            
+
             vtx = utx.clone();
             if &vtx == handle {
                 break;
@@ -334,14 +334,14 @@ where
         loop {
             let (next_vtx, edge) = succ_map.get(&vtx).expect("Node not in successor graph");
             let weight = get_weight(edge);
-            
+
             let dist_v = dist.get(&vtx).cloned().unwrap_or_else(D::zero);
             let dist_u = dist.get(next_vtx).cloned().unwrap_or_else(D::zero);
-            
+
             if dist_v > dist_u.clone() + weight {
                 return true;
             }
-            
+
             vtx = next_vtx.clone();
             if &vtx == handle {
                 break;

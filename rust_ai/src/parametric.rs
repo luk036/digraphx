@@ -117,7 +117,7 @@ where
             for ci in cycles {
                 // Calculate the ratio that would make this cycle's total distance zero
                 let ri = self.omega.zero_cancel(&ci);
-                
+
                 // Update minimum ratio if a smaller one is found
                 if r_min > ri {
                     r_min = ri;
@@ -165,7 +165,7 @@ mod tests {
         let _digraph: HashMap<&str, HashMap<&str, i32>> = HashMap::new();
         let api = TestAPI;
         let _solver = MaxParametricSolver::new(_digraph, api);
-        
+
         // Just verify it compiles
         assert!(true);
     }

@@ -85,11 +85,11 @@ where
         let total_cost: R = cycle.iter()
             .map(|edge| edge["cost"].clone())
             .fold(R::zero(), |acc, x| acc + x);
-        
+
         let total_time: R = cycle.iter()
             .map(|edge| edge["time"].clone())
             .fold(R::zero(), |acc, x| acc + x);
-        
+
         total_cost / total_time
     }
 }

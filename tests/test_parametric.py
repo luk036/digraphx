@@ -4,8 +4,8 @@ from __future__ import print_function
 from fractions import Fraction
 from typing import Dict
 
-from digraphx.parametric import MaxParametricSolver, ParametricAPI
 from digraphx.neg_cycle import Cycle, Node
+from digraphx.parametric import MaxParametricSolver, ParametricAPI
 
 
 class TestParametricAPI(ParametricAPI[Node, Dict[str, int], Fraction]):

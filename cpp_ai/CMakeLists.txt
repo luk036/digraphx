@@ -37,7 +37,7 @@ set(LIB_HEADERS
 
 # Create library
 add_library(digraphx ${LIB_SOURCES} ${LIB_HEADERS})
-target_include_directories(digraphx PUBLIC 
+target_include_directories(digraphx PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
@@ -71,7 +71,7 @@ if(BUILD_TESTS)
     add_executable(digraphx_tests ${TEST_SOURCES})
     target_link_libraries(digraphx_tests PRIVATE digraphx doctest::doctest)
     target_include_directories(digraphx_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-    
+
     # Add test command
     add_test(NAME digraphx_tests COMMAND digraphx_tests)
 endif()

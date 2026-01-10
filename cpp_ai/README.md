@@ -90,26 +90,26 @@ cpp_ai/
 
 int main() {
     using namespace digraphx;
-    
+
     // Create a graph
     TinyDiGraph<int, std::string> gr;
     gr.init_nodes({0, 1, 2, 3, 4});
-    
+
     // Add edges
     gr.add_edge(0, 1, "edge_0_1");
     gr.add_edge(1, 2, "edge_1_2");
     gr.add_edge(2, 0, "edge_2_0");  // Creates a cycle
-    
+
     std::cout << "Graph has " << gr.number_of_nodes() << " nodes\n";
     std::cout << "Graph has " << gr.number_of_edges() << " edges\n";
-    
+
     // Find negative cycles (with weights)
     TinyDiGraph<std::string, int> weighted_graph;
     weighted_graph.init_nodes({"A", "B", "C"});
     weighted_graph.add_edge("A", "B", 1);
     weighted_graph.add_edge("B", "C", 2);
     weighted_graph.add_edge("C", "A", -4);  // Negative cycle
-    
+
     // Convert to Digraph format
     Digraph<std::string, int> digraph;
     for (const auto& node : weighted_graph.nodes()) {
@@ -117,17 +117,17 @@ int main() {
             digraph[node][neighbor] = edge;
         }
     }
-    
+
     // Find negative cycles
     NegCycleFinder<std::string, int, int> finder(digraph);
     DistanceMap<std::string, int> dist{ {"A", 0}, {"B", 1000}, {"C", 1000} };
-    
+
     auto get_weight = [](const int& edge) { return edge; };
-    
+
     for (const auto& cycle : finder.howard(dist, get_weight)) {
         std::cout << "Found negative cycle with " << cycle.size() << " edges\n";
     }
-    
+
     return 0;
 }
 ```

@@ -104,7 +104,7 @@ class Rational {
 private:
     IntType num_;
     IntType den_;
-    
+
     void normalize() {
         if (den_ < 0) {
             num_ = -num_;
@@ -114,7 +114,7 @@ private:
         num_ /= gcd_result;
         den_ /= gcd_result;
     }
-    
+
     static IntType gcd(IntType first_val, IntType second_val) {
         while (second_val != 0) {
             IntType temp = second_val;
@@ -123,7 +123,7 @@ private:
         }
         return first_val;
     }
-    
+
 public:
     Rational() : num_(0), den_(1) {}
     Rational(IntType n) : num_(n), den_(1) {}
@@ -133,61 +133,61 @@ public:
         }
         normalize();
     }
-    
+
     IntType numerator() const { return num_; }
     IntType denominator() const { return den_; }
-    
+
     double to_double() const {
         return static_cast<double>(num_) / static_cast<double>(den_);
     }
-    
+
     // Arithmetic operators
     Rational operator+(const Rational& other) const {
         return Rational(num_ * other.den_ + other.num_ * den_, den_ * other.den_);
     }
-    
+
     Rational operator-(const Rational& other) const {
         return Rational(num_ * other.den_ - other.num_ * den_, den_ * other.den_);
     }
-    
+
     Rational operator*(const Rational& other) const {
         return Rational(num_ * other.num_, den_ * other.den_);
     }
-    
+
     Rational operator/(const Rational& other) const {
         return Rational(num_ * other.den_, den_ * other.num_);
     }
-    
+
     // Comparison operators
     bool operator==(const Rational& other) const {
         return num_ == other.num_ && den_ == other.den_;
     }
-    
+
     bool operator!=(const Rational& other) const {
         return !(*this == other);
     }
-    
+
     bool operator<(const Rational& other) const {
         return num_ * other.den_ < other.num_ * den_;
     }
-    
+
     bool operator>(const Rational& other) const {
         return num_ * other.den_ > other.num_ * den_;
     }
-    
+
     bool operator<=(const Rational& other) const {
         return num_ * other.den_ <= other.num_ * den_;
     }
-    
+
     bool operator>=(const Rational& other) const {
         return num_ * other.den_ >= other.num_ * den_;
     }
-    
+
     // Unary operators
     Rational operator-() const {
         return Rational(-num_, den_);
     }
-    
+
     // Static methods
     static Rational zero() { return Rational(0, 1); }
     static Rational one() { return Rational(1, 1); }

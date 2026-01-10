@@ -71,32 +71,32 @@ where
     pub fn find_cycle(&self) -> Vec<N> {
         let mut visited: HashMap<N, N> = HashMap::new();
         let mut result = Vec::new();
-        
+
         // Collect keys first to avoid borrowing issues
         let keys: Vec<N> = self.digraph.keys().cloned().collect();
-        
+
         for vtx in keys {
             if visited.contains_key(&vtx) {
                 continue;
             }
-            
+
             let mut utx = vtx.clone();
             visited.insert(utx.clone(), vtx.clone());
-            
+
             while let Some((pred_node, _)) = self.pred.get(&utx) {
                 utx = pred_node.clone();
-                
+
                 if let Some(root) = visited.get(&utx) {
                     if root == &vtx {
                         result.push(utx.clone());
                     }
                     break;
                 }
-                
+
                 visited.insert(utx.clone(), vtx.clone());
             }
         }
-        
+
         result
     }
 
@@ -123,11 +123,11 @@ where
 
         for (utx, neighbors) in &self.digraph {
             let dist_u = dist.get(utx).cloned().unwrap_or_else(D::zero);
-            
+
             for (vtx, edge) in neighbors {
                 let weight = get_weight(edge);
                 let distance = dist_u.clone() + weight;
-                
+
                 let dist_v = dist.entry(vtx.clone()).or_insert_with(D::zero);
                 if *dist_v > distance {
                     *dist_v = distance;
@@ -159,7 +159,7 @@ where
             let (utx, edge) = self.pred.get(&vtx).expect("Node not in predecessor graph");
             cycle.push(edge.clone());
             vtx = utx.clone();
-            
+
             if &vtx == handle {
                 break;
             }
@@ -192,14 +192,14 @@ where
         loop {
             let (utx, edge) = self.pred.get(&vtx).expect("Node not in predecessor graph");
             let weight = get_weight(edge);
-            
+
             let dist_v = dist.get(&vtx).cloned().unwrap_or_else(D::zero);
             let dist_u = dist.get(utx).cloned().unwrap_or_else(D::zero);
-            
+
             if dist_v > dist_u.clone() + weight {
                 return true;
             }
-            
+
             vtx = utx.clone();
             if &vtx == handle {
                 break;
@@ -288,7 +288,7 @@ mod tests {
     fn test_cycle_list() {
         let digraph: HashMap<&str, HashMap<&str, &str>> = HashMap::new();
         let mut finder: NegCycleFinder<&str, &str, i32> = NegCycleFinder::new(digraph);
-        
+
         finder.pred.insert("b", ("a", "ab"));
         finder.pred.insert("c", ("b", "bc"));
         finder.pred.insert("a", ("c", "ca"));
@@ -301,7 +301,7 @@ mod tests {
     fn test_is_negative() {
         let digraph: HashMap<&str, HashMap<&str, i32>> = HashMap::new();
         let mut finder: NegCycleFinder<&str, i32, i32> = NegCycleFinder::new(digraph);
-        
+
         finder.pred.insert("b", ("a", 1));
         finder.pred.insert("c", ("b", 1));
         finder.pred.insert("a", ("c", -3));

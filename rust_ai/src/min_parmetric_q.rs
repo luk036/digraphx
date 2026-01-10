@@ -118,7 +118,7 @@ where
             for ci in cycles {
                 // Calculate the ratio that would make this cycle's total distance zero
                 let ri = self.omega.zero_cancel(&ci);
-                
+
                 // Update minimum ratio if a smaller one is found
                 if r_min > ri {
                     r_min = ri;
