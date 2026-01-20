@@ -160,6 +160,10 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
             >>> ratio
             Fraction(2, 1)
         """
+        # Handle empty graph case - return early with no cycle found
+        if not dist:
+            return ratio, []
+
         # Determine the type of domain values from the first element in dist
         DomainType = type(next(iter(dist.values())))
 
