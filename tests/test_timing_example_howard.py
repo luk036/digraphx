@@ -67,7 +67,7 @@ def even(
         digraph,
         beta,
         dist,
-        lambda b: (lambda edge: edge - b),
+        lambda b: lambda edge: edge - b,
         lambda neg_cycle: sum(neg_cycle) / len(neg_cycle),
         max_iter,
     )
@@ -110,9 +110,11 @@ def prop(
         digraph,
         beta,
         dist,
-        lambda b: (lambda edge: edge["cost"] - b * edge["time"]),
-        lambda neg_cycle: sum(edge["cost"] for edge in neg_cycle)
-        / sum(edge["time"] for edge in neg_cycle),
+        lambda b: lambda edge: edge["cost"] - b * edge["time"],
+        lambda neg_cycle: (
+            sum(edge["cost"] for edge in neg_cycle)
+            / sum(edge["time"] for edge in neg_cycle)
+        ),
         max_iter,
     )
 

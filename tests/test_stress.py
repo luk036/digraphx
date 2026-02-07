@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 """Stress tests for large graphs to test performance and correctness."""
 
-import pytest
 import time
-from typing import Dict
-
-from digraphx.tiny_digraph import TinyDiGraph, DiGraphAdapter
-from digraphx.neg_cycle import NegCycleFinder
-from digraphx.min_cycle_ratio import MinCycleRatioSolver, set_default
 from fractions import Fraction
+
+from digraphx.min_cycle_ratio import MinCycleRatioSolver, set_default
+from digraphx.neg_cycle import NegCycleFinder
+from digraphx.tiny_digraph import DiGraphAdapter, TinyDiGraph
 
 
 def test_tiny_digraph_large_graph():
@@ -156,9 +154,9 @@ def test_memory_efficiency_tiny_digraph():
     graph.init_nodes(num_nodes)
 
     # Verify internal structures are MapAdapter instances
-    assert hasattr(graph._node, '__getitem__')
-    assert hasattr(graph._adj, '__getitem__')
-    assert hasattr(graph._pred, '__getitem__')
+    assert hasattr(graph._node, "__getitem__")
+    assert hasattr(graph._adj, "__getitem__")
+    assert hasattr(graph._pred, "__getitem__")
 
     # Add some edges and verify they work
     for i in range(100):

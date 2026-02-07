@@ -67,9 +67,11 @@ def even(
         digraph,
         beta,
         dist,
-        lambda beta: (lambda e: e["delay"] - beta if e["type"] != "p" else e["delay"]),
-        lambda neg_cycle: sum(e["delay"] for e in neg_cycle)
-        / sum(1 for e in neg_cycle if e["type"] != "p"),
+        lambda beta: lambda e: e["delay"] - beta if e["type"] != "p" else e["delay"],
+        lambda neg_cycle: (
+            sum(e["delay"] for e in neg_cycle)
+            / sum(1 for e in neg_cycle if e["type"] != "p")
+        ),
         max_iter,
     )
 

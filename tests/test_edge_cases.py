@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 """Edge case and error handling tests."""
 
-import pytest
+from fractions import Fraction
 from typing import Dict
 
-from digraphx.tiny_digraph import TinyDiGraph, DiGraphAdapter
-from digraphx.neg_cycle import NegCycleFinder
+import pytest
+
 from digraphx.min_cycle_ratio import MinCycleRatioSolver
-from fractions import Fraction
+from digraphx.neg_cycle import NegCycleFinder
+from digraphx.tiny_digraph import DiGraphAdapter, TinyDiGraph
 
 
 def test_empty_graph_neg_cycle():
@@ -94,11 +95,11 @@ def test_tiny_digraph_add_edge_before_init():
 def test_non_numeric_weights():
     """Test that algorithm works with non-numeric weight types."""
     graph = DiGraphAdapter()
-    graph.add_edge('a', 'b', weight=Fraction(1, 2))
-    graph.add_edge('b', 'c', weight=Fraction(1, 3))
-    graph.add_edge('c', 'a', weight=Fraction(-1, 1))
+    graph.add_edge("a", "b", weight=Fraction(1, 2))
+    graph.add_edge("b", "c", weight=Fraction(1, 3))
+    graph.add_edge("c", "a", weight=Fraction(-1, 1))
 
-    dist = {'a': Fraction(0), 'b': Fraction(0), 'c': Fraction(0)}
+    dist = {"a": Fraction(0), "b": Fraction(0), "c": Fraction(0)}
     finder = NegCycleFinder(graph)
     cycles = list(finder.howard(dist, lambda edge: edge["weight"]))
     assert len(cycles) > 0
@@ -107,11 +108,11 @@ def test_non_numeric_weights():
 def test_mixed_node_types():
     """Test graph with mixed node types (strings and ints)."""
     graph = DiGraphAdapter()
-    graph.add_edge('a', 0, weight=1)
-    graph.add_edge(0, 'b', weight=2)
-    graph.add_edge('b', 'a', weight=-5)
+    graph.add_edge("a", 0, weight=1)
+    graph.add_edge(0, "b", weight=2)
+    graph.add_edge("b", "a", weight=-5)
 
-    dist = {'a': 0, 'b': 0, 0: 0}
+    dist = {"a": 0, "b": 0, 0: 0}
     finder = NegCycleFinder(graph)
     cycles = list(finder.howard(dist, lambda edge: edge.get("weight", 1)))
     assert len(cycles) > 0
@@ -147,13 +148,13 @@ def test_very_large_weights():
 def test_digraph_adapter_mixed_edge_attributes():
     """Test DiGraphAdapter with mixed edge attributes."""
     graph = DiGraphAdapter()
-    graph.add_edge('a', 'b', weight=5, cost=10, time=2, label='edge1')
-    graph.add_edge('b', 'c', weight=3, cost=6, time=1, label='edge2')
-    graph.add_edge('c', 'a', weight=-2, cost=0, time=1, label='edge3')
+    graph.add_edge("a", "b", weight=5, cost=10, time=2, label="edge1")
+    graph.add_edge("b", "c", weight=3, cost=6, time=1, label="edge2")
+    graph.add_edge("c", "a", weight=-2, cost=0, time=1, label="edge3")
 
-    assert graph['a']['b']['weight'] == 5
-    assert graph['a']['b']['cost'] == 10
-    assert graph['a']['b']['label'] == 'edge1'
+    assert graph["a"]["b"]["weight"] == 5
+    assert graph["a"]["b"]["cost"] == 10
+    assert graph["a"]["b"]["label"] == "edge1"
 
 
 def test_min_cycle_ratio_empty_graph():
@@ -170,9 +171,9 @@ def test_min_cycle_ratio_empty_graph():
 def test_min_cycle_ratio_single_node():
     """Test minimum cycle ratio solver on single node graph."""
     graph = DiGraphAdapter()
-    graph.add_edge('a', 'a', cost=5, time=1)
+    graph.add_edge("a", "a", cost=5, time=1)
 
-    dist = {'a': Fraction(0)}
+    dist = {"a": Fraction(0)}
     solver = MinCycleRatioSolver(graph)
     ratio, cycle = solver.run(dist, Fraction(10))
     assert isinstance(ratio, (Fraction, float))
@@ -181,10 +182,10 @@ def test_min_cycle_ratio_single_node():
 def test_invalid_weight_extraction():
     """Test handling of edges with missing weight attributes."""
     graph = DiGraphAdapter()
-    graph.add_edge('a', 'b', weight=5)
-    graph.add_edge('b', 'c')  # No weight attribute
+    graph.add_edge("a", "b", weight=5)
+    graph.add_edge("b", "c")  # No weight attribute
 
-    dist = {'a': 0, 'b': 0, 'c': 0}
+    dist = {"a": 0, "b": 0, "c": 0}
     finder = NegCycleFinder(graph)
     cycles = list(finder.howard(dist, lambda edge: edge.get("weight", 1)))
     assert len(cycles) == 0
