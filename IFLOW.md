@@ -29,7 +29,7 @@
 提供最小环比率问题的求解，使用参数化方法结合最大参数化求解器。
 
 ### 4. 其他模块
-- `min_parmetric_q.py` - 参数化 Q 优化
+- `min_parametric_q.py` - 参数化 Q 优化
 - `neg_cycle_q.py` - 负环 Q 检测
 - `parametric.py` - 参数化算法接口
 
@@ -70,7 +70,7 @@ src/digraphx/ - 源代码目录
 ├── min_cycle_ratio.py - 最小环比率求解器
 ├── parametric.py - 参数化算法接口
 ├── neg_cycle_q.py - 负环 Q 检测
-├── min_parmetric_q.py - 参数化 Q 优化
+├── min_parametric_q.py - 参数化 Q 优化
 └── py.typed - 类型提示标记文件
 
 tests/ - 测试目录

@@ -21,7 +21,7 @@ set(LIB_SOURCES
     src/neg_cycle_q.cpp
     src/parametric.cpp
     src/min_cycle_ratio.cpp
-    src/min_parmetric_q.cpp
+    src/min_parametric_q.cpp
 )
 
 # Library headers
@@ -31,7 +31,7 @@ set(LIB_HEADERS
     include/digraphx/neg_cycle_q.hpp
     include/digraphx/parametric.hpp
     include/digraphx/min_cycle_ratio.hpp
-    include/digraphx/min_parmetric_q.hpp
+    include/digraphx/min_parametric_q.hpp
     include/digraphx/types.hpp
 )
 

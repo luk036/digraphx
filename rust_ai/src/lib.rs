@@ -10,14 +10,14 @@ pub mod tiny_digraph;
 pub mod neg_cycle;
 pub mod neg_cycle_q;
 pub mod min_cycle_ratio;
-pub mod min_parmetric_q;
+pub mod min_parametric_q;
 pub mod parametric;
 
 pub use tiny_digraph::TinyDiGraph;
 pub use neg_cycle::NegCycleFinder;
 pub use neg_cycle_q::NegCycleFinderQ;
 pub use min_cycle_ratio::{MinCycleRatioSolver, CycleRatioAPI};
-pub use min_parmetric_q::{MinParametricQSolver, MinParametricAPI};
+pub use min_parametric_q::{MinParametricQSolver, MinParametricAPI};
 pub use parametric::{MaxParametricSolver, ParametricAPI};
 
 /// Common types used throughout the library

@@ -1,4 +1,4 @@
-#include "digraphx/min_parmetric_q.hpp"
+#include "digraphx/min_parametric_q.hpp"
 
 namespace digraphx {
     // Explicit template instantiations would depend on specific API implementations

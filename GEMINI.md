@@ -16,7 +16,7 @@ The project is structured as a standard Python library using a `src` layout and 
 ### Core Modules
 
 *   `min_cycle_ratio.py`: Implements the Minimum Cycle Ratio (MCR) solver.
-*   `parametric.py` & `min_parmetric_q.py`: Implements solvers for parametric network problems.
+*   `parametric.py` & `min_parametric_q.py`: Implements solvers for parametric network problems.
 *   `neg_cycle.py` & `neg_cycle_q.py`: Implements negative cycle detection using Howard's algorithm.
 *   `tiny_digraph.py`: Defines a memory-efficient `TinyDiGraph` data structure.
 

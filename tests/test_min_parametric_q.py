@@ -4,7 +4,7 @@ from __future__ import print_function
 from fractions import Fraction
 from typing import Dict
 
-from digraphx.min_parmetric_q import MinParametricAPI, MinParametricSolver
+from digraphx.min_parametric_q import MinParametricAPI, MinParametricSolver
 from digraphx.neg_cycle_q import Cycle, Node
 
 # Define type variables for generic programming

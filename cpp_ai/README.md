@@ -72,7 +72,7 @@ cpp_ai/
 │   ├── neg_cycle_q.hpp   # Negative cycle finder with predecessor/successor variants
 │   ├── parametric.hpp    # Parametric API and solver
 │   ├── min_cycle_ratio.hpp  # Minimum cycle ratio solver
-│   └── min_parmetric_q.hpp  # Minimum parametric solver with constraints
+│   └── min_parametric_q.hpp  # Minimum parametric solver with constraints
 ├── src/                  # Implementation files
 ├── tests/                # doctest-based tests
 ├── examples/             # Usage examples
