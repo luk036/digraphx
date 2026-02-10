@@ -28,9 +28,9 @@ def test_min_parametric_q() -> None:
         "a2": {"a1": {"cost": 1, "time": 1}, "a0": {"cost": 2, "time": 1}},
     }
     dist: Dict[str, float] = {vtx: float("inf") for vtx in digraph}
-    solver: MinParametricSolver[
-        str, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[str, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     ratio, cycle = solver.run(dist, Fraction(0), lambda D, d: D > d)
     assert ratio == Fraction(0, 1)
     assert cycle == []
@@ -44,9 +44,9 @@ def test_min_parametric_q_with_negative_cycle() -> None:
         "c": {"a": {"cost": 1, "time": 1}},
     }
     dist: Dict[str, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        str, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[str, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     ratio, cycle = solver.run(dist, Fraction(-10), lambda D, d: D > d)
     # The ratio should be at least the initial value
     assert ratio >= Fraction(-10)
@@ -60,9 +60,9 @@ def test_min_parametric_q_with_pick_one_only() -> None:
         "c": {"a": {"cost": -1, "time": 1}},
     }
     dist: Dict[str, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        str, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[str, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     ratio, cycle = solver.run(
         dist, Fraction(-5), lambda D, d: D > d, pick_one_only=True
     )
@@ -87,9 +87,9 @@ def test_min_parametric_q_with_float_ratio() -> None:
         "c": {"a": {"cost": 2, "time": 1}},
     }
     dist: Dict[str, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        str, Dict[str, int], float, float
-    ] = MinParametricSolver(digraph, FloatAPI())
+    solver: MinParametricSolver[str, Dict[str, int], float, float] = (
+        MinParametricSolver(digraph, FloatAPI())
+    )
     ratio, cycle = solver.run(dist, 0.0, lambda D, d: D > d)
     assert isinstance(ratio, float)
 
@@ -103,9 +103,9 @@ def test_min_parametric_q_complex_graph() -> None:
         3: {0: {"cost": 8, "time": 2}},
     }
     dist: Dict[int, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        int, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[int, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     ratio, cycle = solver.run(dist, Fraction(-5), lambda D, d: D > d)
     assert ratio >= Fraction(-5)
 
@@ -117,9 +117,9 @@ def test_min_parametric_q_with_self_loops() -> None:
         "b": {"a": {"cost": 3, "time": 1}},
     }
     dist: Dict[str, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        str, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[str, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     ratio, cycle = solver.run(dist, Fraction(-10), lambda D, d: D > d)
     assert ratio >= Fraction(-10)
 
@@ -145,9 +145,9 @@ def test_min_parametric_q_with_zero_time() -> None:
         "b": {"a": {"cost": 3, "time": 1}},
     }
     dist: Dict[str, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        str, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, ZeroTimeAPI())
+    solver: MinParametricSolver[str, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, ZeroTimeAPI())
+    )
     ratio, cycle = solver.run(dist, Fraction(0), lambda D, d: D > d)
     assert isinstance(ratio, Fraction)
 
@@ -163,9 +163,9 @@ def test_min_parametric_q_improving_ratio_multiple_cycles() -> None:
     }
     dist: Dict[int, float] = {vtx: float("inf") for vtx in digraph}
     dist[0] = 0.0
-    solver: MinParametricSolver[
-        int, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[int, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     ratio, cycle = solver.run(dist, Fraction(-10), lambda D, d: D > d)
     # Should find an optimal ratio
     assert ratio >= Fraction(-10)
@@ -180,9 +180,9 @@ def test_min_parametric_q_no_improvement_cycle() -> None:
         "c": {"a": {"cost": 1, "time": 1}},
     }
     dist: Dict[str, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        str, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[str, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     # Start with a high ratio that won't be improved
     # The solver returns the initial ratio when no improvement found
     ratio, cycle = solver.run(dist, Fraction(10), lambda D, d: D > d)
@@ -199,9 +199,9 @@ def test_min_parametric_q_alternate_directions() -> None:
         3: {0: {"cost": 1, "time": 1}},
     }
     dist: Dict[int, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        int, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[int, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     ratio, cycle = solver.run(dist, Fraction(-5), lambda D, d: D > d)
     assert ratio >= Fraction(-5)
 
@@ -214,9 +214,9 @@ def test_min_parametric_q_with_negative_weights() -> None:
         "c": {"a": {"cost": 1, "time": 1}},
     }
     dist: Dict[str, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        str, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[str, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     ratio, cycle = solver.run(dist, Fraction(-10), lambda D, d: D > d)
     # Should find a negative cycle
     assert ratio < Fraction(0, 1)
@@ -235,9 +235,9 @@ def test_min_parametric_q_single_node() -> None:
         "a": {"a": {"cost": 1, "time": 1}},
     }
     dist: Dict[str, float] = {"a": 0.0}
-    solver: MinParametricSolver[
-        str, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[str, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     ratio, cycle = solver.run(dist, Fraction(0), lambda D, d: D > d)
     assert isinstance(ratio, Fraction)
 
@@ -251,9 +251,9 @@ def test_min_parametric_q_disconnected_components() -> None:
         "d": {"c": {"cost": 2, "time": 1}},
     }
     dist: Dict[str, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        str, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[str, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     ratio, cycle = solver.run(dist, Fraction(-5), lambda D, d: D > d)
     assert ratio >= Fraction(-5)
 
@@ -269,9 +269,9 @@ def test_min_parametric_q_with_large_graph() -> None:
                 digraph[i][j] = {"cost": (i + j) % 5, "time": 1}
 
     dist: Dict[int, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        int, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[int, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     ratio, cycle = solver.run(dist, Fraction(-10), lambda D, d: D > d)
     assert ratio >= Fraction(-10)
 
@@ -284,9 +284,9 @@ def test_min_parametric_q_fraction_ratio_precision() -> None:
         "c": {"a": {"cost": 1, "time": 6}},
     }
     dist: Dict[str, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        str, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[str, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     ratio, cycle = solver.run(dist, Fraction(0), lambda D, d: D > d)
     assert isinstance(ratio, Fraction)
     # Check that ratio is exact (not approximate)
@@ -302,9 +302,9 @@ def test_min_parametric_q_pick_one_only_breaks() -> None:
         2: {0: {"cost": 2, "time": 1}},
     }
     dist: Dict[int, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        int, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[int, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     # With pick_one_only, should exit after first cycle found
     ratio, cycle = solver.run(
         dist, Fraction(-10), lambda D, d: D > d, pick_one_only=True
@@ -323,9 +323,9 @@ def test_min_parametric_q_multiple_iterations_reverse_toggle() -> None:
         "e": {"a": {"cost": -1, "time": 1}},
     }
     dist: Dict[str, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        str, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[str, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     # Start with low ratio to trigger multiple improvements
     ratio, cycle = solver.run(dist, Fraction(-5), lambda D, d: D > d)
     assert ratio >= Fraction(-5)
@@ -334,14 +334,14 @@ def test_min_parametric_q_multiple_iterations_reverse_toggle() -> None:
 def test_min_parametric_q_with_integer_ratio() -> None:
     """Test solver with integer-based ratio calculations."""
 
-    class IntAPI(MinParametricAPI[Node, Dict[str, int], int]):
-        def distance(self, ratio: int, edge: Dict[str, int]) -> int:
-            return edge["cost"] - ratio * edge["time"]
+    class IntAPI(MinParametricAPI[Node, Dict[str, int], float]):
+        def distance(self, ratio: float, edge: Dict[str, int]) -> float:
+            return float(edge["cost"] - ratio * edge["time"])
 
-        def zero_cancel(self, cycle: Cycle[Dict[str, int]]) -> int:
+        def zero_cancel(self, cycle: Cycle[Dict[str, int]]) -> float:
             total_cost = sum(edge["cost"] for edge in cycle)
             total_time = sum(edge["time"] for edge in cycle)
-            return total_cost // total_time if total_time != 0 else 0
+            return float(total_cost // total_time if total_time != 0 else 0)
 
     digraph: Dict[int, Dict[int, Dict[str, int]]] = {
         0: {1: {"cost": 4, "time": 2}},
@@ -349,11 +349,11 @@ def test_min_parametric_q_with_integer_ratio() -> None:
         2: {0: {"cost": 2, "time": 2}},
     }
     dist: Dict[int, int] = {vtx: 0 for vtx in digraph}
-    solver: MinParametricSolver[int, Dict[str, int], int, int] = MinParametricSolver(
+    solver: MinParametricSolver[int, Dict[str, int], float, int] = MinParametricSolver(
         digraph, IntAPI()
     )
-    ratio, cycle = solver.run(dist, 0, lambda D, d: D > d)
-    assert isinstance(ratio, int)
+    ratio, cycle = solver.run(dist, 0.0, lambda D, d: D > d)
+    assert isinstance(ratio, float)
 
 
 def test_min_parametric_q_cycle_with_multiple_edges() -> None:
@@ -365,9 +365,9 @@ def test_min_parametric_q_cycle_with_multiple_edges() -> None:
         "d": {"a": {"cost": 1, "time": 1}},
     }
     dist: Dict[str, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        str, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[str, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     ratio, cycle = solver.run(dist, Fraction(-5), lambda D, d: D > d)
     assert ratio >= Fraction(-5)
 
@@ -385,9 +385,9 @@ def test_min_parametric_q_with_networkx_cycle() -> None:
         digraph[i][next_node] = {"cost": weight, "time": 1}
 
     dist: Dict[int, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        int, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[int, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     ratio, cycle = solver.run(dist, Fraction(-10), lambda D, d: D > d)
     # Should find the negative cycle
     assert ratio < Fraction(0, 1)
@@ -403,9 +403,9 @@ def test_min_parametric_q_multiple_cycles_pick_one() -> None:
         3: {2: {"cost": 2, "time": 1}},
     }
     dist: Dict[int, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        int, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[int, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     # With pick_one_only, should exit after finding first cycle
     ratio, cycle = solver.run(
         dist, Fraction(-10), lambda D, d: D > d, pick_one_only=True
@@ -422,9 +422,9 @@ def test_min_parametric_q_high_initial_ratio() -> None:
         2: {0: {"cost": 1, "time": 1}},
     }
     dist: Dict[int, float] = {vtx: 0.0 for vtx in digraph}
-    solver: MinParametricSolver[
-        int, Dict[str, int], Fraction, float
-    ] = MinParametricSolver(digraph, MyAPI())
+    solver: MinParametricSolver[int, Dict[str, int], Fraction, float] = (
+        MinParametricSolver(digraph, MyAPI())
+    )
     # Start with very high ratio - should not find any improvement
     ratio, cycle = solver.run(dist, Fraction(1000), lambda D, d: D > d)
     # Should return initial ratio since no improvement found

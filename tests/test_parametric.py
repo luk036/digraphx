@@ -30,7 +30,7 @@ def test_max_parametric_solver_basic() -> None:
         "c": {"a": {"cost": -2, "time": 1}},
     }
 
-    omega = TestParametricAPI()
+    omega: TestParametricAPI = TestParametricAPI()
     solver = MaxParametricSolver(digraph, omega)
     dist: Dict[str, Fraction] = {node: Fraction(0) for node in digraph}
 
@@ -49,7 +49,7 @@ def test_max_parametric_solver_no_negative_cycles() -> None:
         "d": {"a": {"cost": 1, "time": 1}},  # Add edge to make it a complete graph
     }
 
-    omega = TestParametricAPI()
+    omega: TestParametricAPI = TestParametricAPI()
     solver = MaxParametricSolver(digraph, omega)
     dist: Dict[str, Fraction] = {node: Fraction(0) for node in digraph}
 
@@ -79,7 +79,7 @@ def test_max_parametric_solver_with_float_ratio() -> None:
         "c": {"a": {"cost": -2, "time": 1}},
     }
 
-    omega = FloatParametricAPI()
+    omega: FloatParametricAPI = FloatParametricAPI()
     solver = MaxParametricSolver(digraph, omega)
     dist: Dict[str, float] = {node: 0.0 for node in digraph}
 
@@ -98,7 +98,7 @@ def test_max_parametric_solver_complex_graph() -> None:
         3: {0: {"cost": -8, "time": 2}},
     }
 
-    omega = TestParametricAPI()
+    omega: TestParametricAPI = TestParametricAPI()
     solver = MaxParametricSolver(digraph, omega)
     dist: Dict[int, Fraction] = {node: Fraction(0) for node in digraph}
 
@@ -112,7 +112,7 @@ def test_max_parametric_solver_complex_graph() -> None:
 def test_max_parametric_solver_initialization() -> None:
     """Test that MaxParametricSolver initializes correctly."""
     digraph: Dict[str, Dict[str, Dict[str, int]]] = {"a": {"b": {"cost": 1, "time": 1}}}
-    omega = TestParametricAPI()
+    omega: TestParametricAPI = TestParametricAPI()
 
     solver = MaxParametricSolver(digraph, omega)
 

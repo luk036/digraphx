@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from fractions import Fraction
-from typing import Any, List
+from typing import Any, Dict, List
 
 import hypothesis.strategies as st
 import networkx as nx
@@ -42,7 +42,7 @@ def test_cycle_ratio_api_basic_functionality(graph: nx.DiGraph) -> None:
     assume(len(graph.edges()) > 0)
 
     # Create API
-    api = CycleRatioAPI(graph, Fraction)
+    api: CycleRatioAPI = CycleRatioAPI(graph, Fraction)
 
     # Should be able to create distance mapping
     dist = {node: Fraction(0) for node in graph.nodes()}
@@ -71,7 +71,7 @@ def test_cycle_ratio_calculation_property(graph: nx.DiGraph) -> None:
     """Test that cycle ratio calculations are mathematically correct."""
     assume(len(graph.edges()) > 0)
 
-    api = CycleRatioAPI(graph, Fraction)
+    api: CycleRatioAPI = CycleRatioAPI(graph, Fraction)
 
     # Get the cycle edges (should be a simple cycle)
     cycle_edges = list(graph.edges())
@@ -108,11 +108,12 @@ def test_min_cycle_ratio_with_uniform_cycle(
         v = (i + 1) % n_nodes
         graph.add_edge(u, v, cost=base_cost, time=base_time)
 
-    solver = MinCycleRatioSolver(graph)
+    solver: MinCycleRatioSolver = MinCycleRatioSolver(graph)
 
     # Run the solver
     try:
-        result = solver.run()
+        dist: Dict[int, Fraction] = {node: Fraction(0) for node in graph.nodes()}
+        result = solver.run(dist, Fraction(0))
         ratio, cycle = result
 
         # For a uniform cycle, the ratio should be base_cost/base_time
@@ -152,7 +153,7 @@ def test_cycle_ratio_with_specific_costs(
 
         graph.add_edge(u, v, cost=cost, time=time)
 
-    api = CycleRatioAPI(graph, Fraction)
+    api: CycleRatioAPI = CycleRatioAPI(graph, Fraction)
 
     # Calculate the cycle ratio manually
     total_cost = sum(cycle_costs)
@@ -176,7 +177,7 @@ def test_cycle_ratio_api_distance_properties(graph: nx.DiGraph) -> None:
     """Test properties of distance calculations."""
     assume(len(graph.edges()) > 0)
 
-    api = CycleRatioAPI(graph, Fraction)
+    api: CycleRatioAPI = CycleRatioAPI(graph, Fraction)
 
     # Test with different ratios
     for ratio in [Fraction(0), Fraction(1, 2), Fraction(1), Fraction(2)]:
