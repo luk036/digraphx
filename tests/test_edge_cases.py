@@ -2,7 +2,7 @@
 """Edge case and error handling tests."""
 
 from fractions import Fraction
-from typing import Dict
+from typing import Any, Dict
 
 import pytest
 
@@ -14,10 +14,10 @@ from digraphx.tiny_digraph import DiGraphAdapter, TinyDiGraph
 def test_empty_graph_neg_cycle():
     """Test negative cycle finder on completely empty graph."""
     graph = DiGraphAdapter()
-    dist: Dict = {}
+    dist: Dict[str, Fraction] = {}
 
-    finder = NegCycleFinder(graph)
-    cycles = list(finder.howard(dist, lambda edge: edge.get("weight", 1)))
+    finder: NegCycleFinder[str, Dict[str, Any], Fraction] = NegCycleFinder(graph)
+    cycles = list(finder.howard(dist, lambda edge: Fraction(edge.get("weight", 1))))
     assert len(cycles) == 0
 
 
@@ -100,8 +100,8 @@ def test_non_numeric_weights():
     graph.add_edge("c", "a", weight=Fraction(-1, 1))
 
     dist = {"a": Fraction(0), "b": Fraction(0), "c": Fraction(0)}
-    finder = NegCycleFinder(graph)
-    cycles = list(finder.howard(dist, lambda edge: edge["weight"]))
+    finder: NegCycleFinder[str, Dict[str, Any], Fraction] = NegCycleFinder(graph)
+    cycles = list(finder.howard(dist, lambda edge: Fraction(edge["weight"])))
     assert len(cycles) > 0
 
 
@@ -160,9 +160,11 @@ def test_digraph_adapter_mixed_edge_attributes():
 def test_min_cycle_ratio_empty_graph():
     """Test minimum cycle ratio solver on empty graph."""
     graph = DiGraphAdapter()
-    dist: Dict = {}
+    dist: Dict[str, Fraction] = {}
 
-    solver = MinCycleRatioSolver(graph)
+    solver: MinCycleRatioSolver[str, Dict[str, int], Fraction] = MinCycleRatioSolver(
+        graph
+    )
     ratio, cycle = solver.run(dist, Fraction(10))
     assert ratio == Fraction(10)  # No cycles found, returns initial ratio
     assert len(cycle) == 0
@@ -174,7 +176,9 @@ def test_min_cycle_ratio_single_node():
     graph.add_edge("a", "a", cost=5, time=1)
 
     dist = {"a": Fraction(0)}
-    solver = MinCycleRatioSolver(graph)
+    solver: MinCycleRatioSolver[str, Dict[str, int], Fraction] = MinCycleRatioSolver(
+        graph
+    )
     ratio, cycle = solver.run(dist, Fraction(10))
     assert isinstance(ratio, (Fraction, float))
 
@@ -224,9 +228,9 @@ def test_floating_point_weights():
     graph.add_edge(1, 2, weight=0.2)
     graph.add_edge(2, 0, weight=-0.5)
 
-    dist = {0: 0.0, 1: 0.0, 2: 0.0}
-    finder = NegCycleFinder(graph)
-    cycles = list(finder.howard(dist, lambda edge: edge.get("weight", 1)))
+    dist: Dict[int, float] = {0: 0.0, 1: 0.0, 2: 0.0}
+    finder: NegCycleFinder[int, Dict[str, Any], float] = NegCycleFinder(graph)
+    cycles = list(finder.howard(dist, lambda edge: edge.get("weight", 1.0)))
     assert len(cycles) > 0
 
 

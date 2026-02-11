@@ -3,6 +3,7 @@
 
 import time
 from fractions import Fraction
+from typing import Dict
 
 from digraphx.min_cycle_ratio import MinCycleRatioSolver, set_default
 from digraphx.neg_cycle import NegCycleFinder
@@ -105,7 +106,9 @@ def test_min_cycle_ratio_large_graph():
     set_default(graph, "cost", 0)
     set_default(graph, "time", 1)
 
-    solver = MinCycleRatioSolver(graph)
+    solver: MinCycleRatioSolver[int, Dict[str, int], Fraction] = MinCycleRatioSolver(
+        graph
+    )
     dist = {node: Fraction(0) for node in graph}
 
     # Should complete without errors
