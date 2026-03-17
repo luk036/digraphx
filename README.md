@@ -8,6 +8,8 @@
 
 digraphx is a Python library that provides high-performance implementations of directed graph algorithms, optimized for large-scale network optimization problems. It extends NetworkX with specialized data structures and algorithms for negative cycle detection, cycle ratio optimization, and parametric network analysis.
 
+Note that digraphx does not directly handle multi-edges (same as networkx)
+
 ## Features
 
 - **High-performance graph storage**: `TinyDiGraph` with memory-efficient `MapAdapter` backend
