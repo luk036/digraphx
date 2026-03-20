@@ -100,20 +100,20 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
         digraph: Mapping[Node, Mapping[Node, Edge]],
         omega: ParametricAPI[Node, Edge, Ratio],
     ) -> None:
-        """
-        The `__init__` function initializes an object with a graph and an omega parameter.
+        """Initialize the maximum parametric solver with a graph and parametric API.
 
-        :param digraph: digraph is a mapping of nodes to a mapping of nodes to edges. It represents a graph
-            where each node is connected to other nodes through edges. The edges are represented by the
-            mapping of nodes to edges. The graph structure is used for finding cycles and calculating distances.
+        Args:
+            digraph: A directed graph represented as a mapping where keys are source
+                nodes and values are mappings of {target_node: edge} pairs.
+            omega: A ParametricAPI instance that provides methods for calculating
+                edge distances and finding the ratio that zeroes out cycle costs.
 
-        :type digraph: Mapping[Node, Mapping[Node, Edge]]
-
-        :param omega: The `omega` parameter is an instance of the `ParametricAPI` class. It represents
-            some kind of parametric API that takes three type parameters: `Node`, `Edge`, and `Ratio`.
-            This object provides methods for distance calculation and cycle analysis.
-
-        :type omega: ParametricAPI[Node, Edge, Ratio]
+        Example:
+            >>> from fractions import Fraction
+            >>> from .min_cycle_ratio import CycleRatioAPI
+            >>> digraph = {'a': {'b': {'cost': 5, 'time': 1}}}
+            >>> omega = CycleRatioAPI(digraph, Fraction)
+            >>> solver = MaxParametricSolver(digraph, omega)
         """
         # self.ncf = NegCycleFinder(digraph)
         self.digraph = digraph

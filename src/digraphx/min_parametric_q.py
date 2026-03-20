@@ -104,18 +104,18 @@ class MinParametricSolver(Generic[Node, Edge, Ratio, Domain]):
         digraph: Mapping[Node, Mapping[Node, Edge]],
         omega: MinParametricAPI[Node, Edge, Ratio],
     ) -> None:
-        """
-        The `__init__` function initializes the solver with a graph and parametric
-        API.
+        """Initialize the minimum parametric solver with a graph and parametric API.
 
-        :param digraph: A mapping representing a directed graph where each node
-            maps to its neighbors and the edges connecting them. This defines the
-            network structure that the solver will work with.
-        :type digraph: Mapping[Node, Mapping[Node, Edge]]
-        :param omega: An instance of MinParametricAPI that provides the necessary
-            methods for distance calculation and cycle analysis. This
-            parameterizes the solver's behavior.
-        :type omega: MinParametricAPI[Node, Edge, Ratio]
+        Args:
+            digraph: A directed graph represented as a mapping where keys are source
+                nodes and values are mappings of {target_node: edge} pairs.
+            omega: A MinParametricAPI instance that provides methods for calculating
+                edge distances and finding the ratio that zeroes out cycle costs.
+
+        Example:
+            >>> from fractions import Fraction
+            >>> digraph = {'a': {'b': {'cost': 5, 'time': 1}}}
+            >>> omega = MinParametricAPI()  # Requires concrete implementation
         """
         # self.ncf = NegCycleFinderQ(digraph)
         self.digraph = digraph
