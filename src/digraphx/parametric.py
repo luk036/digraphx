@@ -48,22 +48,22 @@ from abc import abstractmethod
 from fractions import Fraction
 from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar
 
-from .neg_cycle import Cycle, Domain, Edge, NegCycleFinder, Node
+from .neg_cycle import Cycle, Domain, Arc, NegCycleFinder, Node
 
 # Define a type variable Ratio that can be either Fraction or float
 Ratio = TypeVar("Ratio", Fraction, float)
 
 
-class ParametricAPI(Generic[Node, Edge, Ratio]):
+class ParametricAPI(Generic[Node, Arc, Ratio]):
     @abstractmethod
-    def distance(self, ratio: Ratio, edge: Edge) -> Ratio:
+    def distance(self, ratio: Ratio, edge: Arc) -> Ratio:
         """
         The `distance` function calculates the distance between a given ratio and edge.
 
         :param ratio: The `ratio` parameter is of type `Ratio`. It represents a ratio or proportion
         :type ratio: Ratio
-        :param edge: The `edge` parameter represents an edge in a graph. It is of type `Edge`
-        :type edge: Edge
+        :param edge: The `edge` parameter represents an edge in a graph. It is of type `Arc`
+        :type edge: Arc
         :return: Returns the calculated distance as a Ratio type
         :rtype: Ratio
         """
@@ -81,7 +81,7 @@ class ParametricAPI(Generic[Node, Edge, Ratio]):
         """
 
 
-class MaxParametricSolver(Generic[Node, Edge, Ratio]):
+class MaxParametricSolver(Generic[Node, Arc, Ratio]):
     """Maximum Parametric Solver
 
     This class solves the following parametric network problem:
@@ -97,8 +97,8 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
 
     def __init__(
         self,
-        digraph: Mapping[Node, Mapping[Node, Edge]],
-        omega: ParametricAPI[Node, Edge, Ratio],
+        digraph: Mapping[Node, Mapping[Node, Arc]],
+        omega: ParametricAPI[Node, Arc, Ratio],
     ) -> None:
         """Initialize the maximum parametric solver with a graph and parametric API.
 
@@ -117,7 +117,7 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
         """
         # self.ncf = NegCycleFinder(digraph)
         self.digraph = digraph
-        self.omega: ParametricAPI[Node, Edge, Ratio] = omega
+        self.omega: ParametricAPI[Node, Arc, Ratio] = omega
 
     def run(
         self, dist: MutableMapping[Node, Domain], ratio: Ratio
@@ -168,7 +168,7 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
         DomainType = type(next(iter(dist.values())))
 
         # Define a weight function that calculates distance based on current ratio
-        def get_weight(e: Edge) -> Domain:
+        def get_weight(e: Arc) -> Domain:
             return DomainType(self.omega.distance(ratio, e))
 
         # Initialize minimum ratio and cycle
@@ -177,7 +177,7 @@ class MaxParametricSolver(Generic[Node, Edge, Ratio]):
         cycle = []
 
         # Create a negative cycle finder instance with the graph
-        ncf: NegCycleFinder[Node, Edge, Domain] = NegCycleFinder(self.digraph)
+        ncf: NegCycleFinder[Node, Arc, Domain] = NegCycleFinder(self.digraph)
 
         # Main algorithm loop
         while True:

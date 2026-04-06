@@ -50,7 +50,7 @@ from typing import Any, Generic, List, Mapping, MutableMapping, Tuple, TypeVar
 from .neg_cycle import Cycle, Domain, Node
 from .parametric import MaxParametricSolver, ParametricAPI
 
-EdgeDC = MutableMapping[str, Any]
+ArcDC = MutableMapping[str, Any]
 
 # Define type variables for generic programming
 Ratio = TypeVar("Ratio", Fraction, float)

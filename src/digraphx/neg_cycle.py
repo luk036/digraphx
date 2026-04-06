@@ -56,31 +56,31 @@ from typing import (
 
 # Type variables for generic graph components
 Node = TypeVar("Node")  # Hashable node type (must implement __hash__)
-Edge = TypeVar("Edge")  # Hashable edge type (must implement __hash__)
+Arc = TypeVar("Arc")  # Hashable edge type (must implement __hash__)
 Domain = TypeVar(
     "Domain", int, Fraction, float
 )  # Numeric type for weights (must support comparison and arithmetic)
-Cycle = List[Edge]  # Alias for a list of edges forming a cycle
+Cycle = List[Arc]  # Alias for a list of edges forming a cycle
 
 
-class NegCycleFinder(Generic[Node, Edge, Domain]):
+class NegCycleFinder(Generic[Node, Arc, Domain]):
     """Negative Cycle Finder by Howard's method
 
     This code defines a `NegCycleFinder` class, which is used to find negative
     cycles in a given directed graph. The `NegCycleFinder` class has the
     following methods:
 
-    1.  `__init__(self, digraph: MutableMapping[Node, List[Edge]])`:
+    1.  `__init__(self, digraph: MutableMapping[Node, List[Arc]])`:
         The constructor initializes an instance of the `NegCycleFinder` class
         with the given directed graph.
     2.  `relax(self, dist: MutableMapping[Node, Domain], get_weight:
-        Callable[[Edge], Domain]) -> bool`:
+        Callable[[Arc], Domain]) -> bool`:
         This method performs one iteration of Bellman-Ford algorithm to relax
         all edges in the graph and update the shortest distances to their
         neighbors. It returns a boolean value indicating if any changes were
         made during this iteration.
     3.  `howard(self, dist: MutableMapping[Node, Domain], get_weight:
-        Callable[[Edge], Domain]) -> Generator[Cycle, None, None]`:
+        Callable[[Arc], Domain]) -> Generator[Cycle, None, None]`:
         This method finds negative cycles in the graph using the Howard's
         algorithm and returns a generator that yields a list of edges for each
         cycle.
@@ -88,7 +88,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         This method returns a list of edges that form a cycle in the graph,
         starting from a given node.
     5.  `is_negative(self, handle: Node, dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Edge], Domain]) -> bool`:
+        get_weight: Callable[[Arc], Domain]) -> bool`:
         This method checks if a cycle is negative by comparing the distances
         between nodes and the weights of the edges.
 
@@ -103,9 +103,9 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
     """
 
     # Dictionary to store predecessor information (node -> (predecessor_node, edge))
-    pred: Dict[Node, Tuple[Node, Edge]]
+    pred: Dict[Node, Tuple[Node, Arc]]
 
-    def __init__(self, digraph: Mapping[Node, Mapping[Node, Edge]]) -> None:
+    def __init__(self, digraph: Mapping[Node, Mapping[Node, Arc]]) -> None:
         """Initialize the negative cycle finder with a directed graph.
 
         Args:
@@ -115,7 +115,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
                 Example: {u: {v: edge_uv, w: edge_uw}, v: {u: edge_vu}}
         """
         self.digraph = digraph
-        self.pred: Dict[Node, Tuple[Node, Edge]] = {}
+        self.pred: Dict[Node, Tuple[Node, Arc]] = {}
 
     def find_cycle(self) -> Generator[Node, None, None]:
         """Find cycles in the current predecessor graph using depth-first search.
@@ -155,7 +155,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
     def relax(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Edge], Domain],
+        get_weight: Callable[[Arc], Domain],
     ) -> bool:
         """Perform one relaxation pass of the Bellman-Ford algorithm.
 
@@ -234,7 +234,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
         self,
         handle: Node,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Edge], Domain],
+        get_weight: Callable[[Arc], Domain],
     ) -> bool:
         """Check if the cycle starting at 'handle' is negative.
 
@@ -280,7 +280,7 @@ class NegCycleFinder(Generic[Node, Edge, Domain]):
     def howard(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Edge], Domain],
+        get_weight: Callable[[Arc], Domain],
     ) -> Generator[Cycle, None, None]:
         """Main algorithm to find negative cycles using Howard's method.
 

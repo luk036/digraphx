@@ -43,16 +43,16 @@ from abc import abstractmethod
 from fractions import Fraction
 from typing import Callable, Generic, Mapping, MutableMapping, Tuple, TypeVar
 
-from .neg_cycle_q import Cycle, Edge, NegCycleFinderQ, Node
+from .neg_cycle_q import Cycle, Arc, NegCycleFinderQ, Node
 
 # Define type variables for domain (numeric types) and ratio (fraction or float)
 Domain = TypeVar("Domain", int, Fraction, float)  # Comparable Ring
 Ratio = TypeVar("Ratio", Fraction, float)
 
 
-class MinParametricAPI(Generic[Node, Edge, Ratio]):
+class MinParametricAPI(Generic[Node, Arc, Ratio]):
     @abstractmethod
-    def distance(self, ratio: Ratio, edge: Edge) -> Ratio:
+    def distance(self, ratio: Ratio, edge: Arc) -> Ratio:
         """
         The `distance` function calculates the distance between a given ratio and
         edge. This is an abstract method that must be implemented by concrete
@@ -62,8 +62,8 @@ class MinParametricAPI(Generic[Node, Edge, Ratio]):
             ratio or proportion that affects the distance calculation.
         :type ratio: Ratio
         :param edge: The `edge` parameter represents an edge in a graph. It is of
-            type `Edge`
-        :type edge: Edge
+            type `Arc`
+        :type edge: Arc
         :return: The calculated distance based on the given ratio and edge
         :rtype: Ratio
         """
@@ -85,7 +85,7 @@ class MinParametricAPI(Generic[Node, Edge, Ratio]):
         pass
 
 
-class MinParametricSolver(Generic[Node, Edge, Ratio, Domain]):
+class MinParametricSolver(Generic[Node, Arc, Ratio, Domain]):
     """Minimum Parametric Solver with constraints
 
     This class solves the following parametric network problem:
@@ -101,8 +101,8 @@ class MinParametricSolver(Generic[Node, Edge, Ratio, Domain]):
 
     def __init__(
         self,
-        digraph: Mapping[Node, Mapping[Node, Edge]],
-        omega: MinParametricAPI[Node, Edge, Ratio],
+        digraph: Mapping[Node, Mapping[Node, Arc]],
+        omega: MinParametricAPI[Node, Arc, Ratio],
     ) -> None:
         """Initialize the minimum parametric solver with a graph and parametric API.
 
@@ -119,7 +119,7 @@ class MinParametricSolver(Generic[Node, Edge, Ratio, Domain]):
         """
         # self.ncf = NegCycleFinderQ(digraph)
         self.digraph = digraph
-        self.omega: MinParametricAPI[Node, Edge, Ratio] = omega
+        self.omega: MinParametricAPI[Node, Arc, Ratio] = omega
 
     def run(
         self,
@@ -153,7 +153,7 @@ class MinParametricSolver(Generic[Node, Edge, Ratio, Domain]):
         DomainType = type(next(iter(dist.values())))
 
         # Helper function to calculate edge weights based on current ratio
-        def get_weight(e: Edge) -> Domain:
+        def get_weight(e: Arc) -> Domain:
             return DomainType(self.omega.distance(ratio, e))
 
         # Initialize tracking variables for minimum ratio and corresponding cycle
@@ -163,7 +163,7 @@ class MinParametricSolver(Generic[Node, Edge, Ratio, Domain]):
         reverse: bool = True  # Flag to alternate search direction
 
         # Initialize the negative cycle finder with our graph
-        ncf: NegCycleFinderQ[Node, Edge, Domain] = NegCycleFinderQ(self.digraph)
+        ncf: NegCycleFinderQ[Node, Arc, Domain] = NegCycleFinderQ(self.digraph)
 
         # Main optimization loop
         while True:

@@ -58,15 +58,15 @@ from typing import (
 
 # Type variables for generic graph implementation:
 # Node must be hashable (used as dictionary keys)
-# Edge can be any type (but typically hashable)
+# Arc can be any type (but typically hashable)
 # Domain must support comparison and arithmetic operations (int, Fraction, float)
 Node = TypeVar("Node")  # Hashable
-Edge = TypeVar("Edge")  # Hashable
+Arc = TypeVar("Arc")  # Hashable
 Domain = TypeVar("Domain", int, Fraction, float)  # Comparable Ring
-Cycle = List[Edge]  # List of Edges
+Cycle = List[Arc]  # List of Arcs
 
 
-class NegCycleFinderQ(Generic[Node, Edge, Domain]):
+class NegCycleFinderQ(Generic[Node, Arc, Domain]):
     """Negative Cycle Finder with constraints by Howard's method
 
     Howard's method is a minimum cycle ratio (MCR) algorithm that uses a policy
@@ -85,12 +85,12 @@ class NegCycleFinderQ(Generic[Node, Edge, Domain]):
     """
 
     # Predecessor dictionary: maps each node to (predecessor_node, connecting_edge)
-    pred: Dict[Node, Tuple[Node, Edge]]
+    pred: Dict[Node, Tuple[Node, Arc]]
 
     # Successor dictionary: maps each node to (successor_node, connecting_edge)
-    succ: Dict[Node, Tuple[Node, Edge]]
+    succ: Dict[Node, Tuple[Node, Arc]]
 
-    def __init__(self, digraph: Mapping[Node, Mapping[Node, Edge]]) -> None:
+    def __init__(self, digraph: Mapping[Node, Mapping[Node, Arc]]) -> None:
         """Initialize the negative cycle finder with a directed graph.
 
         Args:
@@ -100,11 +100,11 @@ class NegCycleFinderQ(Generic[Node, Edge, Domain]):
                 Example: {u: {v: edge_uv, w: edge_uw}, v: {u: edge_vu}}
         """
         self.digraph = digraph
-        self.pred: Dict[Node, Tuple[Node, Edge]] = {}
-        self.succ: Dict[Node, Tuple[Node, Edge]] = {}
+        self.pred: Dict[Node, Tuple[Node, Arc]] = {}
+        self.succ: Dict[Node, Tuple[Node, Arc]] = {}
 
     def find_cycle(
-        self, point_to: Dict[Node, Tuple[Node, Edge]]
+        self, point_to: Dict[Node, Tuple[Node, Arc]]
     ) -> Generator[Node, None, None]:
         """Detect cycles in the current predecessor/successor graph using depth-first search.
 
@@ -147,7 +147,7 @@ class NegCycleFinderQ(Generic[Node, Edge, Domain]):
     def relax_pred(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Edge], Domain],
+        get_weight: Callable[[Arc], Domain],
         update_ok: Callable[[Domain, Domain], bool],
     ) -> bool:
         """Perform predecessor relaxation step (Bellman-Ford style).
@@ -192,7 +192,7 @@ class NegCycleFinderQ(Generic[Node, Edge, Domain]):
     def relax_succ(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Edge], Domain],
+        get_weight: Callable[[Arc], Domain],
         update_ok: Callable[[Domain, Domain], bool],
     ) -> bool:
         """Perform successor relaxation step (reverse Bellman-Ford style).
@@ -234,7 +234,7 @@ class NegCycleFinderQ(Generic[Node, Edge, Domain]):
     def howard_pred(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Edge], Domain],
+        get_weight: Callable[[Arc], Domain],
         update_ok: Callable[[Domain, Domain], bool],
     ) -> Generator[Cycle, None, None]:
         """Find negative cycles using predecessor-based Howard's algorithm.
@@ -282,7 +282,7 @@ class NegCycleFinderQ(Generic[Node, Edge, Domain]):
     def howard_succ(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Edge], Domain],
+        get_weight: Callable[[Arc], Domain],
         update_ok: Callable[[Domain, Domain], bool],
     ) -> Generator[Cycle, None, None]:
         """Find negative cycles using successor-based Howard's algorithm.
@@ -325,9 +325,7 @@ class NegCycleFinderQ(Generic[Node, Edge, Domain]):
                 found = True
                 yield self.cycle_list(v_node, self.succ)
 
-    def cycle_list(
-        self, handle: Node, point_to: Dict[Node, Tuple[Node, Edge]]
-    ) -> Cycle:
+    def cycle_list(self, handle: Node, point_to: Dict[Node, Tuple[Node, Arc]]) -> Cycle:
         """Reconstruct the cycle starting from the given node.
 
         Args:
@@ -365,7 +363,7 @@ class NegCycleFinderQ(Generic[Node, Edge, Domain]):
         self,
         handle: Node,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Edge], Domain],
+        get_weight: Callable[[Arc], Domain],
     ) -> bool:
         """Verify if the cycle starting at handle is negative.
 
