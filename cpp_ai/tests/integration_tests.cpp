@@ -10,19 +10,19 @@ TEST_CASE("Integration tests for digraphx library") {
 
     SUBCASE("TinyDiGraph and NegCycleFinder integration") {
         // Create a graph using TinyDiGraph
-        TinyDiGraph<int, int> gr;
-        gr.init_nodes({0, 1, 2, 3});
+        TinyDiGraph<int, int> digraph;
+        digraph.init_nodes({0, 1, 2, 3});
 
         // Add edges with weights
-        gr.add_edge(0, 1, 2);   // weight 2
-        gr.add_edge(1, 2, 3);   // weight 3
-        gr.add_edge(2, 3, 1);   // weight 1
-        gr.add_edge(3, 0, -7);  // weight -7 (creates negative cycle)
+        digraph.add_edge(0, 1, 2);   // weight 2
+        digraph.add_edge(1, 2, 3);   // weight 3
+        digraph.add_edge(2, 3, 1);   // weight 1
+        digraph.add_edge(3, 0, -7);  // weight -7 (creates negative cycle)
 
         // Convert TinyDiGraph to Digraph format for NegCycleFinder
         Digraph<int, int> digraph;
-        for (const auto& node : gr.nodes()) {
-            for (const auto& [neighbor, edge] : gr.neighbors(node)) {
+        for (const auto& node : digraph.nodes()) {
+            for (const auto& [neighbor, edge] : digraph.neighbors(node)) {
                 digraph[node][neighbor] = edge;
             }
         }
@@ -57,23 +57,23 @@ TEST_CASE("Integration tests for digraphx library") {
     }
 
     SUBCASE("Complex graph with multiple cycles") {
-        TinyDiGraph<std::string, double> gr;
-        gr.init_nodes({"A", "B", "C", "D", "E"});
+        TinyDiGraph<std::string, double> digraph;
+        digraph.init_nodes({"A", "B", "C", "D", "E"});
 
         // Create a more complex graph
-        gr.add_edge("A", "B", 1.5);
-        gr.add_edge("B", "C", 2.0);
-        gr.add_edge("C", "D", 1.0);
-        gr.add_edge("D", "E", 3.0);
-        gr.add_edge("E", "A", -8.0);  // Negative cycle A->B->C->D->E->A
+        digraph.add_edge("A", "B", 1.5);
+        digraph.add_edge("B", "C", 2.0);
+        digraph.add_edge("C", "D", 1.0);
+        digraph.add_edge("D", "E", 3.0);
+        digraph.add_edge("E", "A", -8.0);  // Negative cycle A->B->C->D->E->A
 
         // Also add another cycle
-        gr.add_edge("C", "A", -4.0);  // Another negative edge
+        digraph.add_edge("C", "A", -4.0);  // Another negative edge
 
         // Convert to Digraph
         Digraph<std::string, double> digraph;
-        for (const auto& node : gr.nodes()) {
-            for (const auto& [neighbor, edge] : gr.neighbors(node)) {
+        for (const auto& node : digraph.nodes()) {
+            for (const auto& [neighbor, edge] : digraph.neighbors(node)) {
                 digraph[node][neighbor] = edge;
             }
         }
@@ -81,7 +81,7 @@ TEST_CASE("Integration tests for digraphx library") {
         // Create NegCycleFinder
         NegCycleFinder<std::string, double, double> finder(digraph);
         DistanceMap<std::string, double> dist;
-        for (const auto& node : gr.nodes()) {
+        for (const auto& node : digraph.nodes()) {
             dist[node] = 0.0;
         }
 
@@ -107,18 +107,18 @@ TEST_CASE("Integration tests for digraphx library") {
     }
 
     SUBCASE("Graph with no negative cycles") {
-        TinyDiGraph<int, int> gr;
-        gr.init_nodes({0, 1, 2});
+        TinyDiGraph<int, int> digraph;
+        digraph.init_nodes({0, 1, 2});
 
         // All positive edges - no negative cycles
-        gr.add_edge(0, 1, 1);
-        gr.add_edge(1, 2, 2);
-        gr.add_edge(2, 0, 3);  // Cycle sum: 1+2+3 = 6 (positive)
+        digraph.add_edge(0, 1, 1);
+        digraph.add_edge(1, 2, 2);
+        digraph.add_edge(2, 0, 3);  // Cycle sum: 1+2+3 = 6 (positive)
 
         // Convert to Digraph
         Digraph<int, int> digraph;
-        for (const auto& node : gr.nodes()) {
-            for (const auto& [neighbor, edge] : gr.neighbors(node)) {
+        for (const auto& node : digraph.nodes()) {
+            for (const auto& [neighbor, edge] : digraph.neighbors(node)) {
                 digraph[node][neighbor] = edge;
             }
         }

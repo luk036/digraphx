@@ -92,16 +92,16 @@ int main() {
     using namespace digraphx;
 
     // Create a graph
-    TinyDiGraph<int, std::string> gr;
-    gr.init_nodes({0, 1, 2, 3, 4});
+    TinyDiGraph<int, std::string> digraph;
+    digraph.init_nodes({0, 1, 2, 3, 4});
 
     // Add edges
-    gr.add_edge(0, 1, "edge_0_1");
-    gr.add_edge(1, 2, "edge_1_2");
-    gr.add_edge(2, 0, "edge_2_0");  // Creates a cycle
+    digraph.add_edge(0, 1, "edge_0_1");
+    digraph.add_edge(1, 2, "edge_1_2");
+    digraph.add_edge(2, 0, "edge_2_0");  // Creates a cycle
 
-    std::cout << "Graph has " << gr.number_of_nodes() << " nodes\n";
-    std::cout << "Graph has " << gr.number_of_edges() << " edges\n";
+    std::cout << "Graph has " << digraph.number_of_nodes() << " nodes\n";
+    std::cout << "Graph has " << digraph.number_of_edges() << " edges\n";
 
     // Find negative cycles (with weights)
     TinyDiGraph<std::string, int> weighted_graph;

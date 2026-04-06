@@ -87,9 +87,9 @@ tests/ - 测试目录
 ```python
 from digraphx.tiny_digraph import TinyDiGraph
 
-gr = TinyDiGraph()
-gr.init_nodes(1000)  # 初始化 1000 个节点
-gr.add_edge(2, 1)    # 添加从节点 2 到节点 1 的边
+digraph = TinyDiGraph()
+digraph.init_nodes(1000)  # 初始化 1000 个节点
+digraph.add_edge(2, 1)    # 添加从节点 2 到节点 1 的边
 ```
 
 ## 项目状态

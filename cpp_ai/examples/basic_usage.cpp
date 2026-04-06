@@ -11,57 +11,57 @@ int main() {
     std::cout << "=== TinyDiGraph Example ===\n";
 
     // Create a new TinyDiGraph
-    TinyDiGraph<int, std::string> gr;
+    TinyDiGraph<int, std::string> digraph;
 
     // Initialize with 5 nodes
-    gr.init_nodes({0, 1, 2, 3, 4});
-    std::cout << "Created graph with " << gr.number_of_nodes() << " nodes\n";
+    digraph.init_nodes({0, 1, 2, 3, 4});
+    std::cout << "Created graph with " << digraph.number_of_nodes() << " nodes\n";
 
     // Add some edges
-    gr.add_edge(0, 1, "edge_0_1");
-    gr.add_edge(1, 2, "edge_1_2");
-    gr.add_edge(2, 3, "edge_2_3");
-    gr.add_edge(3, 4, "edge_3_4");
-    gr.add_edge(4, 0, "edge_4_0");
+    digraph.add_edge(0, 1, "edge_0_1");
+    digraph.add_edge(1, 2, "edge_1_2");
+    digraph.add_edge(2, 3, "edge_2_3");
+    digraph.add_edge(3, 4, "edge_3_4");
+    digraph.add_edge(4, 0, "edge_4_0");
 
-    std::cout << "Added " << gr.number_of_edges() << " edges\n";
+    std::cout << "Added " << digraph.number_of_edges() << " edges\n";
 
     // List all nodes
     std::cout << "\nNodes:\n";
-    for (const auto& node : gr.nodes()) {
+    for (const auto& node : digraph.nodes()) {
         std::cout << "  " << node << "\n";
     }
 
     // List all edges
     std::cout << "\nEdges:\n";
-    for (const auto& [u, v, edge] : gr.edges()) {
+    for (const auto& [u, v, edge] : digraph.edges()) {
         std::cout << "  " << u << " -> " << v << ": " << edge << "\n";
     }
 
     // Show neighbors of node 0
     std::cout << "\nNeighbors of node 0:\n";
-    for (const auto& [neighbor, edge] : gr.neighbors(0)) {
+    for (const auto& [neighbor, edge] : digraph.neighbors(0)) {
         std::cout << "  -> " << neighbor << " via " << edge << "\n";
     }
 
     // Show predecessors of node 0
     std::cout << "\nPredecessors of node 0:\n";
-    for (const auto& [predecessor, edge] : gr.predecessors(0)) {
+    for (const auto& [predecessor, edge] : digraph.predecessors(0)) {
         std::cout << "  <- " << predecessor << " via " << edge << "\n";
     }
 
     // Add node attributes
     std::cout << "\nAdding node attributes...\n";
-    auto& attrs0 = gr.node_attributes_mut(0);
+    auto& attrs0 = digraph.node_attributes_mut(0);
     attrs0["color"] = "red";
     attrs0["weight"] = "10";
 
-    auto& attrs1 = gr.node_attributes_mut(1);
+    auto& attrs1 = digraph.node_attributes_mut(1);
     attrs1["color"] = "blue";
 
     // Show node attributes
     std::cout << "Node 0 attributes:\n";
-    for (const auto& [key, value] : gr.node_attributes(0)) {
+    for (const auto& [key, value] : digraph.node_attributes(0)) {
         std::cout << "  " << key << ": " << value << "\n";
     }
 

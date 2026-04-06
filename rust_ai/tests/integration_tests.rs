@@ -5,17 +5,17 @@ use std::collections::HashMap;
 
 #[test]
 fn test_tiny_digraph_basic() {
-    let mut gr: TinyDiGraph<i32, &str> = TinyDiGraph::new();
-    gr.init_nodes(0..5);
+    let mut digraph: TinyDiGraph<i32, &str> = TinyDiGraph::new();
+    digraph.init_nodes(0..5);
 
-    assert_eq!(gr.number_of_nodes(), 5);
-    assert_eq!(gr.number_of_edges(), 0);
+    assert_eq!(digraph.number_of_nodes(), 5);
+    assert_eq!(digraph.number_of_edges(), 0);
 
-    gr.add_edge(&0, &1, "edge01");
-    gr.add_edge(&1, &2, "edge12");
-    gr.add_edge(&2, &0, "edge20");
+    digraph.add_edge(&0, &1, "edge01");
+    digraph.add_edge(&1, &2, "edge12");
+    digraph.add_edge(&2, &0, "edge20");
 
-    assert_eq!(gr.number_of_edges(), 3);
+    assert_eq!(digraph.number_of_edges(), 3);
 }
 
 #[test]

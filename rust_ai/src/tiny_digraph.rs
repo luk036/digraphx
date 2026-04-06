@@ -65,9 +65,9 @@ where
     /// ```
     /// use digraphx::tiny_digraph::TinyDiGraph;
     ///
-    /// let mut gr: TinyDiGraph<i32, ()> = TinyDiGraph::new();
-    /// gr.init_nodes(vec![0, 1, 2, 3, 4]);
-    /// assert_eq!(gr.number_of_nodes(), 5);
+    /// let mut digraph: TinyDiGraph<i32, ()> = TinyDiGraph::new();
+    /// digraph.init_nodes(vec![0, 1, 2, 3, 4]);
+    /// assert_eq!(digraph.number_of_nodes(), 5);
     /// ```
     pub fn init_nodes<I>(&mut self, nodes: I)
     where
@@ -207,31 +207,31 @@ mod tests {
 
     #[test]
     fn test_init_nodes() {
-        let mut gr: TinyDiGraph<i32, ()> = TinyDiGraph::new();
-        gr.init_nodes(0..5);
-        assert_eq!(gr.number_of_nodes(), 5);
+        let mut digraph: TinyDiGraph<i32, ()> = TinyDiGraph::new();
+        digraph.init_nodes(0..5);
+        assert_eq!(digraph.number_of_nodes(), 5);
     }
 
     #[test]
     fn test_add_edge() {
-        let mut gr: TinyDiGraph<i32, &str> = TinyDiGraph::new();
-        gr.init_nodes(0..3);
-        gr.add_edge(&0, &1, "edge01");
-        gr.add_edge(&1, &2, "edge12");
-        gr.add_edge(&2, &0, "edge20");
+        let mut digraph: TinyDiGraph<i32, &str> = TinyDiGraph::new();
+        digraph.init_nodes(0..3);
+        digraph.add_edge(&0, &1, "edge01");
+        digraph.add_edge(&1, &2, "edge12");
+        digraph.add_edge(&2, &0, "edge20");
 
-        assert_eq!(gr.number_of_edges(), 3);
+        assert_eq!(digraph.number_of_edges(), 3);
     }
 
     #[test]
     fn test_neighbors() {
-        let mut gr = TinyDiGraph::new();
-        gr.init_nodes(vec![0, 1, 2, 3]);
-        gr.add_edge(&0, &1, "edge01");
-        gr.add_edge(&0, &2, "edge02");
-        gr.add_edge(&0, &3, "edge03");
+        let mut digraph = TinyDiGraph::new();
+        digraph.init_nodes(vec![0, 1, 2, 3]);
+        digraph.add_edge(&0, &1, "edge01");
+        digraph.add_edge(&0, &2, "edge02");
+        digraph.add_edge(&0, &3, "edge03");
 
-        let neighbors: Vec<_> = gr.neighbors(&0).collect();
+        let neighbors: Vec<_> = digraph.neighbors(&0).collect();
         assert_eq!(neighbors.len(), 3);
         assert!(neighbors.contains(&(&1, &"edge01")));
         assert!(neighbors.contains(&(&2, &"edge02")));
@@ -240,13 +240,13 @@ mod tests {
 
     #[test]
     fn test_predecessors() {
-        let mut gr = TinyDiGraph::new();
-        gr.init_nodes(vec![0, 1, 2, 3]);
-        gr.add_edge(&1, &0, "edge10");
-        gr.add_edge(&2, &0, "edge20");
-        gr.add_edge(&3, &0, "edge30");
+        let mut digraph = TinyDiGraph::new();
+        digraph.init_nodes(vec![0, 1, 2, 3]);
+        digraph.add_edge(&1, &0, "edge10");
+        digraph.add_edge(&2, &0, "edge20");
+        digraph.add_edge(&3, &0, "edge30");
 
-        let predecessors: Vec<_> = gr.predecessors(&0).collect();
+        let predecessors: Vec<_> = digraph.predecessors(&0).collect();
         assert_eq!(predecessors.len(), 3);
         assert!(predecessors.contains(&(&1, &"edge10")));
         assert!(predecessors.contains(&(&2, &"edge20")));
