@@ -48,7 +48,7 @@ from abc import abstractmethod
 from fractions import Fraction
 from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar
 
-from .neg_cycle import Cycle, Domain, Arc, NegCycleFinder, Node
+from .neg_cycle import Arc, Cycle, Domain, NegCycleFinder, Node
 
 # Define a type variable Ratio that can be either Fraction or float
 Ratio = TypeVar("Ratio", Fraction, float)

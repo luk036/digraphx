@@ -43,7 +43,7 @@ from abc import abstractmethod
 from fractions import Fraction
 from typing import Callable, Generic, Mapping, MutableMapping, Tuple, TypeVar
 
-from .neg_cycle_q import Cycle, Arc, NegCycleFinderQ, Node
+from .neg_cycle_q import Arc, Cycle, NegCycleFinderQ, Node
 
 # Define type variables for domain (numeric types) and ratio (fraction or float)
 Domain = TypeVar("Domain", int, Fraction, float)  # Comparable Ring
