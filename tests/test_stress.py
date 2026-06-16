@@ -10,7 +10,7 @@ from digraphx.neg_cycle import NegCycleFinder
 from digraphx.tiny_digraph import DiGraphAdapter, TinyDiGraph
 
 
-def test_tiny_digraph_large_graph():
+def test_tiny_digraph_large_graph() -> None:
     """Test TinyDiGraph with a large graph (10000 nodes, 100000 edges)."""
     graph = TinyDiGraph()
     num_nodes = 10000
@@ -40,7 +40,7 @@ def test_tiny_digraph_large_graph():
     assert edge_count == num_nodes * num_edges_per_node
 
 
-def test_neg_cycle_finder_large_graph():
+def test_neg_cycle_finder_large_graph() -> None:
     """Test negative cycle detection on large graph without negative cycles."""
     graph = DiGraphAdapter()
     num_nodes = 1000
@@ -61,7 +61,7 @@ def test_neg_cycle_finder_large_graph():
     assert len(cycles_found) == 0
 
 
-def test_neg_cycle_finder_large_graph_with_negative_cycle():
+def test_neg_cycle_finder_large_graph_with_negative_cycle() -> None:
     """Test negative cycle detection on large graph with a negative cycle."""
     graph = DiGraphAdapter()
     num_nodes = 1000
@@ -90,7 +90,7 @@ def test_neg_cycle_finder_large_graph_with_negative_cycle():
     assert len(cycles_found) > 0
 
 
-def test_min_cycle_ratio_large_graph():
+def test_min_cycle_ratio_large_graph() -> None:
     """Test minimum cycle ratio solver on large graph."""
     graph = DiGraphAdapter()
     num_nodes = 500
@@ -116,7 +116,7 @@ def test_min_cycle_ratio_large_graph():
     assert isinstance(ratio, (Fraction, float))
 
 
-def test_performance_comparison_tiny_vs_adapter():
+def test_performance_comparison_tiny_vs_adapter() -> None:
     """Compare performance between TinyDiGraph and DiGraphAdapter."""
     num_nodes = 5000
     edges_per_node = 5
@@ -149,7 +149,7 @@ def test_performance_comparison_tiny_vs_adapter():
     print(f"DiGraphAdapter build time: {adapter_build_time:.4f}s")
 
 
-def test_memory_efficiency_tiny_digraph():
+def test_memory_efficiency_tiny_digraph() -> None:
     """Test that TinyDiGraph is initialized correctly for memory efficiency."""
     graph = TinyDiGraph()
     num_nodes = 10000
@@ -168,7 +168,7 @@ def test_memory_efficiency_tiny_digraph():
     assert graph.number_of_edges() == 100
 
 
-def test_large_negative_cycle_multiple():
+def test_large_negative_cycle_multiple() -> None:
     """Test finding multiple negative cycles in a large graph."""
     graph = DiGraphAdapter()
     num_nodes = 2000
@@ -191,7 +191,7 @@ def test_large_negative_cycle_multiple():
     assert len(cycles_found) > 0
 
 
-def test_stress_edge_iteration():
+def test_stress_edge_iteration() -> None:
     """Test edge iteration on very large graph."""
     graph = TinyDiGraph()
     num_nodes = 2000
