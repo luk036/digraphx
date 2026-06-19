@@ -44,7 +44,9 @@ inconsistencies in systems modeled as graphs.
 """
 
 from fractions import Fraction
+from math import floor
 from typing import (
+    Any,
     Callable,
     Dict,
     Generator,
@@ -147,7 +149,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
     def relax_pred(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Arc], Domain],
+        get_weight: Callable[[Arc], Any],
         update_ok: Callable[[Domain, Domain], bool],
     ) -> bool:
         """Perform predecessor relaxation step (Bellman-Ford style).
@@ -182,7 +184,10 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
         changed = False
         for u_node, neighbors in self.digraph.items():
             for v_node, edge in neighbors.items():
-                distance = dist[u_node] + get_weight(edge)
+                tmp = dist[u_node] + get_weight(edge)
+                if isinstance(dist[u_node], int) and isinstance(tmp, float):
+                    tmp = int(floor(tmp))
+                distance = tmp
                 if dist[v_node] > distance and update_ok(dist[v_node], distance):
                     dist[v_node] = distance
                     self.pred[v_node] = (u_node, edge)  # Update predecessor
@@ -192,7 +197,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
     def relax_succ(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Arc], Domain],
+        get_weight: Callable[[Arc], Any],
         update_ok: Callable[[Domain, Domain], bool],
     ) -> bool:
         """Perform successor relaxation step (reverse Bellman-Ford style).
@@ -224,7 +229,10 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
         changed = False
         for u_node, neighbors in self.digraph.items():
             for v_node, edge in neighbors.items():
-                distance = dist[v_node] - get_weight(edge)
+                tmp = dist[v_node] - get_weight(edge)
+                if isinstance(dist[v_node], int) and isinstance(tmp, float):
+                    tmp = int(floor(tmp))
+                distance = tmp
                 if dist[u_node] < distance and update_ok(dist[u_node], distance):
                     dist[u_node] = distance
                     self.succ[u_node] = (v_node, edge)  # Update successor
@@ -234,7 +242,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
     def howard_pred(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Arc], Domain],
+        get_weight: Callable[[Arc], Any],
         update_ok: Callable[[Domain, Domain], bool],
     ) -> Generator[Cycle, None, None]:
         """Find negative cycles using predecessor-based Howard's algorithm.
@@ -282,7 +290,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
     def howard_succ(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Arc], Domain],
+        get_weight: Callable[[Arc], Any],
         update_ok: Callable[[Domain, Domain], bool],
     ) -> Generator[Cycle, None, None]:
         """Find negative cycles using successor-based Howard's algorithm.
@@ -363,7 +371,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
         self,
         handle: Node,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Arc], Domain],
+        get_weight: Callable[[Arc], Any],
     ) -> bool:
         """Verify if the cycle starting at handle is negative.
 
@@ -396,8 +404,11 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
         # C-style do-while loop
         while True:
             u_node, edge = self.pred[v_node]
-            if dist[v_node] > dist[u_node] + get_weight(edge):
-                return True  # Found negative cycle
+            tmp = dist[u_node] + get_weight(edge)
+            if isinstance(dist[u_node], int) and isinstance(tmp, float):
+                tmp = int(floor(tmp))
+            if dist[v_node] > tmp:  # Found negative cycle
+                return True
             v_node = u_node
             if v_node == handle:  # Completed full cycle
                 break

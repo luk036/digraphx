@@ -64,6 +64,18 @@ Domain = TypeVar(
 )  # Numeric type for weights (must support comparison and arithmetic)
 Cycle = List[Arc]  # Alias for a list of edges forming a cycle
 
+# NOTE: get_weight return type is `Any` (not `Domain`) to match C++ template
+# semantics where the Callable return type is independent from the dist value
+# type (Mapping). C++ `digraphx-cpp` uses unconstrained template parameters:
+#
+#   template <typename Mapping, typename Callable>
+#   auto howard(Mapping& dist, Callable get_weight);
+#
+# The `Domain` TypeVar only constrains dist values; get_weight may return a
+# different numeric type (e.g., float weight with int dist). When dist[u] is
+# int and the sum is float, int(floor(...)) truncates like C++ implicit
+# double→int conversion on assignment.
+
 
 class NegCycleFinder(Generic[Node, Arc, Domain]):
     """Negative Cycle Finder by Howard's method
