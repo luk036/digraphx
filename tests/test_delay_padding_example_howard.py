@@ -83,7 +83,7 @@ def test_even1() -> None:
         "v2": {"v1": {"type": "h", "delay": 4}, "v3": {"type": "p", "delay": 0}},
         "v3": {"v1": {"type": "s", "delay": TCP - 3}},
     }
-    dist: Dict[str, float] = {"v1": 0, "v2": 0, "v3": 0}
+    dist: Dict[str, float] = {"v1": 0.0, "v2": 0.0, "v3": 0.0}
     beta, num_iter, _ = even(digraph, 10, dist)
     assert num_iter < 10
     assert beta == approx(1.5)
@@ -108,7 +108,7 @@ def test_even2() -> None:
         "v4": {"v3": {"type": "s", "delay": TCP - 8}, "v5": {"type": "h", "delay": 3}},
         "v5": {"v4": {"type": "s", "delay": TCP - 3}},
     }
-    dist: Dict[str, float] = {"v0": 0, "v1": 0, "v2": 0, "v3": 0, "v4": 0, "v5": 0}
+    dist: Dict[str, float] = {"v0": 0.0, "v1": 0.0, "v2": 0.0, "v3": 0.0, "v4": 0.0, "v5": 0.0}
     beta, num_iter, _ = even(digraph, 10, dist)
     print("slack02(s) = {}".format(TCP - 7 + dist["v2"] - dist["v0"]))
     print("slack02(h) = {}".format(6 + dist["v0"] - dist["v2"]))

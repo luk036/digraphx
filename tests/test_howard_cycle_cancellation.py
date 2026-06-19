@@ -31,7 +31,7 @@ def test_even() -> None:
         "v2": {"v3": TCP - 3.0, "v1": 2.0},
         "v3": {"v1": TCP - 4.0, "v2": 3.0},
     }
-    dist: Dict[str, float] = {"v1": 0, "v2": 0, "v3": 0}
+    dist: Dict[str, float] = {"v1": 0.0, "v2": 0.0, "v3": 0.0}
     beta, num_iter = even(digraph, 10, dist)
     assert num_iter < 4
     assert beta == approx(1.0)
@@ -76,7 +76,7 @@ def test_prop() -> None:
             "v2": {"cost": 3.0, "time": 1.5},
         },
     }
-    dist: Dict[str, float] = {"v1": 0, "v2": 0, "v3": 0}
+    dist: Dict[str, float] = {"v1": 0.0, "v2": 0.0, "v3": 0.0}
     beta, num_iter = prop(digraph, 10, dist)
     assert num_iter < 5
     assert beta == approx(0.3448275862068966)

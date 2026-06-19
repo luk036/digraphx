@@ -82,7 +82,7 @@ def test_even() -> None:
         "v3": {"v4": 8, "v2": TCP - 6, "v0": TCP - 6},
         "v4": {"v3": TCP - 8, "v1": 3},
     }
-    dist: Dict[str, float] = {"v0": 0, "v1": 0, "v2": 0, "v3": 0, "v4": 0}
+    dist: Dict[str, float] = {"v0": 0.0, "v1": 0.0, "v2": 0.0, "v3": 0.0, "v4": 0.0}
     beta, num_iter, _ = even(digraph, 10, dist)
     print("slack02(s) = {}".format(TCP - 7 + dist["v2"] - dist["v0"]))
     print("slack02(h) = {}".format(6 + dist["v0"] - dist["v2"]))

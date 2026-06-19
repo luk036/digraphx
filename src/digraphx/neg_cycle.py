@@ -41,8 +41,10 @@ reusable tool for finding negative cycles in any directed graph, which can be
 useful in many different applications.
 """
 
+from math import floor
 from fractions import Fraction
 from typing import (
+    Any,
     Callable,
     Dict,
     Generator,
@@ -155,7 +157,7 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
     def relax(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Arc], Domain],
+        get_weight: Callable[[Arc], Any],
     ) -> bool:
         """Perform one relaxation pass of the Bellman-Ford algorithm.
 
@@ -190,7 +192,10 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
         changed = False
         for u_node, neighbors in self.digraph.items():
             for v_node, edge in neighbors.items():
-                distance = dist[u_node] + get_weight(edge)
+                tmp = dist[u_node] + get_weight(edge)
+                if isinstance(dist[u_node], int) and isinstance(tmp, float):
+                    tmp = int(floor(tmp))
+                distance = tmp
                 if dist[v_node] > distance:  # Found a shorter path
                     dist[v_node] = distance
                     self.pred[v_node] = (u_node, edge)  # Update predecessor
@@ -234,7 +239,7 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
         self,
         handle: Node,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Arc], Domain],
+        get_weight: Callable[[Arc], Any],
     ) -> bool:
         """Check if the cycle starting at 'handle' is negative.
 
@@ -268,9 +273,10 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
         # do while loop in C++
         while True:
             u_node, edge = self.pred[v_node]
-            if dist[v_node] > dist[u_node] + get_weight(
-                edge
-            ):  # Triangle inequality violated
+            tmp = dist[u_node] + get_weight(edge)
+            if isinstance(dist[u_node], int) and isinstance(tmp, float):
+                tmp = int(floor(tmp))
+            if dist[v_node] > tmp:  # Triangle inequality violated
                 return True
             v_node = u_node
             if v_node == handle:  # Completed full cycle
@@ -280,7 +286,7 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
     def howard(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Arc], Domain],
+        get_weight: Callable[[Arc], Any],
     ) -> Generator[Cycle, None, None]:
         """Main algorithm to find negative cycles using Howard's method.
 
