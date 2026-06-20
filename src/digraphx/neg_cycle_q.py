@@ -51,6 +51,7 @@ from typing import (
     Dict,
     Generator,
     Generic,
+    Iterable,
     List,
     Mapping,
     MutableMapping,
@@ -66,6 +67,18 @@ Node = TypeVar("Node")  # Hashable
 Arc = TypeVar("Arc")  # Hashable
 Domain = TypeVar("Domain", int, Fraction, float)  # Comparable Ring
 Cycle = List[Arc]  # List of Arcs
+
+
+def _view_items(container: Iterable[Tuple[Node, Arc]]) -> Iterable[Tuple[Node, Arc]]:
+    """Get a pair-iterable view of a neighbor container.
+
+    Mirrors C++ `_view_items` in digraphx-cpp/neg_cycle_q.hpp:
+    - For dict-like containers, use .items() to get (key, value) pairs
+    - For list-like containers, iterate directly (each element is a pair)
+    """
+    if isinstance(container, dict):
+        return container.items()
+    return container
 
 
 class NegCycleFinderQ(Generic[Node, Arc, Domain]):
@@ -92,14 +105,14 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
     # Successor dictionary: maps each node to (successor_node, connecting_edge)
     succ: Dict[Node, Tuple[Node, Arc]]
 
-    def __init__(self, digraph: Mapping[Node, Mapping[Node, Arc]]) -> None:
+    def __init__(self, digraph: Mapping[Node, Iterable[Tuple[Node, Arc]]]) -> None:
         """Initialize the negative cycle finder with a directed graph.
 
         Args:
             digraph: A directed graph represented as a nested mapping:
                 - Outer keys: source nodes
-                - Inner mappings: {target_node: edge} pairs
-                Example: {u: {v: edge_uv, w: edge_uw}, v: {u: edge_vu}}
+                - Inner values: iterables of (target_node, edge) pairs
+                Example: {u: [(v, edge_uv), (w, edge_uw)], v: [(u, edge_vu)]}
         """
         self.digraph = digraph
         self.pred: Dict[Node, Tuple[Node, Arc]] = {}
@@ -183,7 +196,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
         """
         changed = False
         for u_node, neighbors in self.digraph.items():
-            for v_node, edge in neighbors.items():
+            for v_node, edge in _view_items(neighbors):
                 tmp = dist[u_node] + get_weight(edge)
                 if isinstance(dist[u_node], int) and isinstance(tmp, float):
                     tmp = int(floor(tmp))
@@ -228,7 +241,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
         """
         changed = False
         for u_node, neighbors in self.digraph.items():
-            for v_node, edge in neighbors.items():
+            for v_node, edge in _view_items(neighbors):
                 tmp = dist[v_node] - get_weight(edge)
                 if isinstance(dist[v_node], int) and isinstance(tmp, float):
                     tmp = int(floor(tmp))

@@ -49,6 +49,7 @@ from typing import (
     Dict,
     Generator,
     Generic,
+    Iterable,
     List,
     Mapping,
     MutableMapping,
@@ -75,6 +76,18 @@ Cycle = List[Arc]  # Alias for a list of edges forming a cycle
 # different numeric type (e.g., float weight with int dist). When dist[u] is
 # int and the sum is float, int(floor(...)) truncates like C++ implicit
 # double→int conversion on assignment.
+
+
+def _view_items(container: Iterable[Tuple[Node, Arc]]) -> Iterable[Tuple[Node, Arc]]:
+    """Get a pair-iterable view of a neighbor container.
+
+    Mirrors C++ `_view_items` in digraphx-cpp/neg_cycle.hpp:
+    - For dict-like containers, use .items() to get (key, value) pairs
+    - For list-like containers, iterate directly (each element is a pair)
+    """
+    if isinstance(container, dict):
+        return container.items()
+    return container
 
 
 class NegCycleFinder(Generic[Node, Arc, Domain]):
@@ -119,14 +132,14 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
     # Dictionary to store predecessor information (node -> (predecessor_node, edge))
     pred: Dict[Node, Tuple[Node, Arc]]
 
-    def __init__(self, digraph: Mapping[Node, Mapping[Node, Arc]]) -> None:
+    def __init__(self, digraph: Mapping[Node, Iterable[Tuple[Node, Arc]]]) -> None:
         """Initialize the negative cycle finder with a directed graph.
 
         Args:
             digraph: A mapping representing a directed graph where:
                 - Keys are source nodes
-                - Values are mappings of destination nodes to edges
-                Example: {u: {v: edge_uv, w: edge_uw}, v: {u: edge_vu}}
+                - Values are iterables of (target_node, edge) pairs
+                Example: {u: [(v, edge_uv), (w, edge_uw)], v: [(u, edge_vu)]}
         """
         self.digraph = digraph
         self.pred: Dict[Node, Tuple[Node, Arc]] = {}
@@ -203,7 +216,7 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
         """
         changed = False
         for u_node, neighbors in self.digraph.items():
-            for v_node, edge in neighbors.items():
+            for v_node, edge in _view_items(neighbors):
                 tmp = dist[u_node] + get_weight(edge)
                 if isinstance(dist[u_node], int) and isinstance(tmp, float):
                     tmp = int(floor(tmp))
