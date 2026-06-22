@@ -41,8 +41,8 @@ reusable tool for finding negative cycles in any directed graph, which can be
 useful in many different applications.
 """
 
-from math import floor
 from fractions import Fraction
+from math import floor
 from typing import (
     Any,
     Callable,
