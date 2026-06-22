@@ -44,7 +44,6 @@ inconsistencies in systems modeled as graphs.
 """
 
 from fractions import Fraction
-from math import floor
 from typing import (
     Any,
     Callable,
@@ -197,10 +196,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
         changed = False
         for u_node, neighbors in self.digraph.items():
             for v_node, edge in _view_items(neighbors):
-                tmp = dist[u_node] + get_weight(edge)
-                if isinstance(dist[u_node], int) and isinstance(tmp, float):
-                    tmp = int(floor(tmp))
-                distance = tmp
+                distance = dist[u_node] + get_weight(edge)
                 if dist[v_node] > distance and update_ok(dist[v_node], distance):
                     dist[v_node] = distance
                     self.pred[v_node] = (u_node, edge)  # Update predecessor
@@ -242,10 +238,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
         changed = False
         for u_node, neighbors in self.digraph.items():
             for v_node, edge in _view_items(neighbors):
-                tmp = dist[v_node] - get_weight(edge)
-                if isinstance(dist[v_node], int) and isinstance(tmp, float):
-                    tmp = int(floor(tmp))
-                distance = tmp
+                distance = dist[v_node] - get_weight(edge)
                 if dist[u_node] < distance and update_ok(dist[u_node], distance):
                     dist[u_node] = distance
                     self.succ[u_node] = (v_node, edge)  # Update successor
