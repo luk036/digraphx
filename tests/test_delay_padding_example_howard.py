@@ -79,7 +79,10 @@ def even(
 def test_even1() -> None:
     TCP: float = 6.5
     digraph: Dict[str, Dict[str, Dict[str, Any]]] = {
-        "v1": {"v2": {"type": "s", "delay": TCP - 7.0}, "v3": {"type": "h", "delay": 2.0}},
+        "v1": {
+            "v2": {"type": "s", "delay": TCP - 7.0},
+            "v3": {"type": "h", "delay": 2.0},
+        },
         "v2": {"v1": {"type": "h", "delay": 4.0}, "v3": {"type": "p", "delay": 0.0}},
         "v3": {"v1": {"type": "s", "delay": TCP - 3.0}},
     }
@@ -105,7 +108,10 @@ def test_even2() -> None:
             "v2": {"type": "s", "delay": TCP - 6.0},
             "v0": {"type": "s", "delay": TCP - 6.0},
         },
-        "v4": {"v3": {"type": "s", "delay": TCP - 8.0}, "v5": {"type": "h", "delay": 3.0}},
+        "v4": {
+            "v3": {"type": "s", "delay": TCP - 8.0},
+            "v5": {"type": "h", "delay": 3.0},
+        },
         "v5": {"v4": {"type": "s", "delay": TCP - 3.0}},
     }
     dist: Dict[str, float] = {

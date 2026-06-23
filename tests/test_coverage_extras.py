@@ -16,6 +16,7 @@ class TestMinParametricQ:
     def test_min_parametric_solver_run(self) -> None:
         """Test solver with pick_one_only flag on simple graph."""
         from fractions import Fraction
+
         from digraphx.min_parametric_q import MinParametricSolver
 
         class DummyDistance:
