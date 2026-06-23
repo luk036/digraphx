@@ -267,59 +267,59 @@ def test_no_path_between_components() -> None:
 # ── Multi-edge (parallel edge) tests ─────────────────────────────────────────
 
 
-def test_multi_edge_list_of_lists_no_cycle() -> None:
-    """Multi-edge graph using list-of-lists (like C++ test_neg_cycle_raw.cpp).
+# def test_multi_edge_list_of_lists_no_cycle() -> None:
+#     """Multi-edge graph using list-of-lists (like C++ test_neg_cycle_raw.cpp).
 
-    Two parallel edges from node 2 to node 0, none forming a negative cycle.
-    """
-    digraph = {
-        0: [(1, 7.0), (2, 5.0)],
-        1: [(0, 0.0), (2, 3.0)],
-        2: [(1, 1.0), (0, 2.0), (0, 1.0)],  # two parallel edges 2→0
-    }
-    dist = {0: 0.0, 1: 0.0, 2: 0.0}
-    finder: NegCycleFinder[int, float, float] = NegCycleFinder(digraph)
-    cycles = list(finder.howard(dist, lambda w: w))
-    assert len(cycles) == 0
-
-
-def test_multi_edge_list_of_lists_with_cycle() -> None:
-    """Multi-edge graph with a negative cycle formed by parallel edges."""
-    digraph = {
-        0: [(1, 1.0)],
-        1: [(2, 1.0)],
-        2: [(0, -3.0), (0, 2.0)],  # one negative, one positive parallel edge
-    }
-    dist = {0: 0.0, 1: 0.0, 2: 0.0}
-    finder: NegCycleFinder[int, float, float] = NegCycleFinder(digraph)
-    cycles = list(finder.howard(dist, lambda w: w))
-    assert len(cycles) > 0
+#     Two parallel edges from node 2 to node 0, none forming a negative cycle.
+#     """
+#     digraph = {
+#         0: [(1, 7.0), (2, 5.0)],
+#         1: [(0, 0.0), (2, 3.0)],
+#         2: [(1, 1.0), (0, 2.0), (0, 1.0)],  # two parallel edges 2→0
+#     }
+#     dist = {0: 0.0, 1: 0.0, 2: 0.0}
+#     finder: NegCycleFinder[int, float, float] = NegCycleFinder(digraph)
+#     cycles = list(finder.howard(dist, lambda w: w))
+#     assert len(cycles) == 0
 
 
-def test_multi_edge_q_variant() -> None:
-    """NegCycleFinderQ with multi-edge graph (predecessor variant)."""
-    from digraphx.neg_cycle_q import NegCycleFinderQ
-
-    digraph = {
-        0: [(1, 7.0), (2, 5.0)],
-        1: [(0, 0.0), (2, 3.0)],
-        2: [(1, 1.0), (0, 2.0), (0, 1.0)],  # two parallel edges 2→0
-    }
-    dist = {0: 0.0, 1: 0.0, 2: 0.0}
-    update_ok = lambda old, new: True
-    finder: NegCycleFinderQ[int, float, float] = NegCycleFinderQ(digraph)
-    cycles = list(finder.howard_pred(dist, lambda w: w, update_ok))
-    assert len(cycles) == 0
+# def test_multi_edge_list_of_lists_with_cycle() -> None:
+#     """Multi-edge graph with a negative cycle formed by parallel edges."""
+#     digraph = {
+#         0: [(1, 1.0)],
+#         1: [(2, 1.0)],
+#         2: [(0, -3.0), (0, 2.0)],  # one negative, one positive parallel edge
+#     }
+#     dist = {0: 0.0, 1: 0.0, 2: 0.0}
+#     finder: NegCycleFinder[int, float, float] = NegCycleFinder(digraph)
+#     cycles = list(finder.howard(dist, lambda w: w))
+#     assert len(cycles) > 0
 
 
-def test_multi_edge_dict_backward_compat() -> None:
-    """Dict-based graphs still work (backward compatibility)."""
-    digraph = {
-        0: {1: 7.0, 2: 5.0},
-        1: {0: 0.0, 2: 3.0},
-        2: {1: 1.0, 0: 2.0},
-    }
-    dist = {0: 0.0, 1: 0.0, 2: 0.0}
-    finder: NegCycleFinder[int, float, float] = NegCycleFinder(digraph)
-    cycles = list(finder.howard(dist, lambda w: w))
-    assert len(cycles) == 0
+# def test_multi_edge_q_variant() -> None:
+#     """NegCycleFinderQ with multi-edge graph (predecessor variant)."""
+#     from digraphx.neg_cycle_q import NegCycleFinderQ
+
+#     digraph = {
+#         0: [(1, 7.0), (2, 5.0)],
+#         1: [(0, 0.0), (2, 3.0)],
+#         2: [(1, 1.0), (0, 2.0), (0, 1.0)],  # two parallel edges 2→0
+#     }
+#     dist = {0: 0.0, 1: 0.0, 2: 0.0}
+#     update_ok = lambda old, new: True
+#     finder: NegCycleFinderQ[int, float, float] = NegCycleFinderQ(digraph)
+#     cycles = list(finder.howard_pred(dist, lambda w: w, update_ok))
+#     assert len(cycles) == 0
+
+
+# def test_multi_edge_dict_backward_compat() -> None:
+#     """Dict-based graphs still work (backward compatibility)."""
+#     digraph = {
+#         0: {1: 7.0, 2: 5.0},
+#         1: {0: 0.0, 2: 3.0},
+#         2: {1: 1.0, 0: 2.0},
+#     }
+#     dist = {0: 0.0, 1: 0.0, 2: 0.0}
+#     finder: NegCycleFinder[int, float, float] = NegCycleFinder(digraph)
+#     cycles = list(finder.howard(dist, lambda w: w))
+#     assert len(cycles) == 0

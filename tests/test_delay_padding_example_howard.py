@@ -79,9 +79,9 @@ def even(
 def test_even1() -> None:
     TCP: float = 6.5
     digraph: Dict[str, Dict[str, Dict[str, Any]]] = {
-        "v1": {"v2": {"type": "s", "delay": TCP - 7}, "v3": {"type": "h", "delay": 2}},
-        "v2": {"v1": {"type": "h", "delay": 4}, "v3": {"type": "p", "delay": 0}},
-        "v3": {"v1": {"type": "s", "delay": TCP - 3}},
+        "v1": {"v2": {"type": "s", "delay": TCP - 7.0}, "v3": {"type": "h", "delay": 2.0}},
+        "v2": {"v1": {"type": "h", "delay": 4.0}, "v3": {"type": "p", "delay": 0.0}},
+        "v3": {"v1": {"type": "s", "delay": TCP - 3.0}},
     }
     dist: Dict[str, float] = {"v1": 0.0, "v2": 0.0, "v3": 0.0}
     beta, num_iter, _ = even(digraph, 10, dist)
@@ -93,20 +93,20 @@ def test_even1() -> None:
 def test_even2() -> None:
     TCP: float = 7.5
     digraph: Dict[str, Dict[str, Dict[str, Any]]] = {
-        "v0": {"v2": {"type": "h", "delay": 6}, "v3": {"type": "h", "delay": 6}},
-        "v1": {"v2": {"type": "h", "delay": 6}, "v5": {"type": "p", "delay": 0}},
+        "v0": {"v2": {"type": "h", "delay": 6.0}, "v3": {"type": "h", "delay": 6.0}},
+        "v1": {"v2": {"type": "h", "delay": 6.0}, "v5": {"type": "p", "delay": 0.0}},
         "v2": {
-            "v0": {"type": "s", "delay": TCP - 7},
-            "v1": {"type": "s", "delay": TCP - 9},
-            "v3": {"type": "s", "delay": 6},
+            "v0": {"type": "s", "delay": TCP - 7.0},
+            "v1": {"type": "s", "delay": TCP - 9.0},
+            "v3": {"type": "s", "delay": 6.0},
         },
         "v3": {
-            "v4": {"type": "h", "delay": 8},
-            "v2": {"type": "s", "delay": TCP - 6},
-            "v0": {"type": "s", "delay": TCP - 6},
+            "v4": {"type": "h", "delay": 8.0},
+            "v2": {"type": "s", "delay": TCP - 6.0},
+            "v0": {"type": "s", "delay": TCP - 6.0},
         },
-        "v4": {"v3": {"type": "s", "delay": TCP - 8}, "v5": {"type": "h", "delay": 3}},
-        "v5": {"v4": {"type": "s", "delay": TCP - 3}},
+        "v4": {"v3": {"type": "s", "delay": TCP - 8.0}, "v5": {"type": "h", "delay": 3.0}},
+        "v5": {"v4": {"type": "s", "delay": TCP - 3.0}},
     }
     dist: Dict[str, float] = {
         "v0": 0.0,

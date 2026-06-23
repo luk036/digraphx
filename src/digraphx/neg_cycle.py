@@ -42,19 +42,17 @@ useful in many different applications.
 """
 
 from fractions import Fraction
-from math import floor
 from typing import (
-    Any,
     Callable,
     Dict,
     Generator,
     Generic,
-    Iterable,
     List,
     Mapping,
     MutableMapping,
     Tuple,
     TypeVar,
+    Union,
 )
 
 # Type variables for generic graph components
@@ -65,29 +63,19 @@ Domain = TypeVar(
 )  # Numeric type for weights (must support comparison and arithmetic)
 Cycle = List[Arc]  # Alias for a list of edges forming a cycle
 
-# NOTE: get_weight return type is `Any` (not `Domain`) to match C++ template
-# semantics where the Callable return type is independent from the dist value
-# type (Mapping). C++ `digraphx-cpp` uses unconstrained template parameters:
-#
-#   template <typename Mapping, typename Callable>
-#   auto howard(Mapping& dist, Callable get_weight);
-#
-# The `Domain` TypeVar only constrains dist values; get_weight may return a
-# different numeric type (e.g., float weight with int dist). When dist[u] is
-# int and the sum is float, int(floor(...)) truncates like C++ implicit
-# double→int conversion on assignment.
 
+# def _view_items(
+#     container: Union[Mapping[Node, Arc], Mapping[Node, Arc]]]
+# ) -> Mapping[Node, Arc]]:
+#     """Get a pair-iterable view of a neighbor container.
 
-def _view_items(container: Iterable[Tuple[Node, Arc]]) -> Iterable[Tuple[Node, Arc]]:
-    """Get a pair-iterable view of a neighbor container.
-
-    Mirrors C++ `_view_items` in digraphx-cpp/neg_cycle.hpp:
-    - For dict-like containers, use .items() to get (key, value) pairs
-    - For list-like containers, iterate directly (each element is a pair)
-    """
-    if isinstance(container, dict):
-        return container.items()
-    return container
+#     Mirrors C++ `_view_items` in digraphx-cpp/neg_cycle.hpp:
+#     - For dict-like containers, use .items() to get (key, value) pairs
+#     - For list-like containers, iterate directly (each element is a pair)
+#     """
+#     if isinstance(container, Mapping):
+#         return container.items()
+#     return container
 
 
 class NegCycleFinder(Generic[Node, Arc, Domain]):
@@ -132,7 +120,9 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
     # Dictionary to store predecessor information (node -> (predecessor_node, edge))
     pred: Dict[Node, Tuple[Node, Arc]]
 
-    def __init__(self, digraph: Mapping[Node, Iterable[Tuple[Node, Arc]]]) -> None:
+    def __init__(
+        self, digraph: Mapping[Node, Union[Mapping[Node, Arc], Mapping[Node, Arc]]]
+    ) -> None:
         """Initialize the negative cycle finder with a directed graph.
 
         Args:
@@ -182,7 +172,7 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
     def relax(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Arc], Any],
+        get_weight: Callable[[Arc], Domain],
     ) -> bool:
         """Perform one relaxation pass of the Bellman-Ford algorithm.
 
@@ -216,11 +206,8 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
         """
         changed = False
         for u_node, neighbors in self.digraph.items():
-            for v_node, edge in _view_items(neighbors):
-                tmp = dist[u_node] + get_weight(edge)
-                if isinstance(dist[u_node], int) and isinstance(tmp, float):
-                    tmp = int(floor(tmp))
-                distance = tmp
+            for v_node, edge in neighbors.items():
+                distance = dist[u_node] + get_weight(edge)
                 if dist[v_node] > distance:  # Found a shorter path
                     dist[v_node] = distance
                     self.pred[v_node] = (u_node, edge)  # Update predecessor
@@ -264,7 +251,7 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
         self,
         handle: Node,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Arc], Any],
+        get_weight: Callable[[Arc], Domain],
     ) -> bool:
         """Check if the cycle starting at 'handle' is negative.
 
@@ -298,10 +285,7 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
         # do while loop in C++
         while True:
             u_node, edge = self.pred[v_node]
-            tmp = dist[u_node] + get_weight(edge)
-            if isinstance(dist[u_node], int) and isinstance(tmp, float):
-                tmp = int(floor(tmp))
-            if dist[v_node] > tmp:  # Triangle inequality violated
+            if dist[v_node] > dist[u_node] + get_weight(edge):
                 return True
             v_node = u_node
             if v_node == handle:  # Completed full cycle
@@ -311,7 +295,7 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
     def howard(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Arc], Any],
+        get_weight: Callable[[Arc], Domain],
     ) -> Generator[Cycle, None, None]:
         """Main algorithm to find negative cycles using Howard's method.
 

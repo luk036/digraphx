@@ -45,17 +45,16 @@ inconsistencies in systems modeled as graphs.
 
 from fractions import Fraction
 from typing import (
-    Any,
     Callable,
     Dict,
     Generator,
     Generic,
-    Iterable,
     List,
     Mapping,
     MutableMapping,
     Tuple,
     TypeVar,
+    Union,
 )
 
 # Type variables for generic graph implementation:
@@ -68,16 +67,18 @@ Domain = TypeVar("Domain", int, Fraction, float)  # Comparable Ring
 Cycle = List[Arc]  # List of Arcs
 
 
-def _view_items(container: Iterable[Tuple[Node, Arc]]) -> Iterable[Tuple[Node, Arc]]:
-    """Get a pair-iterable view of a neighbor container.
+# def _view_items(
+#     container: Union[Mapping[Node, Arc], Mapping[Node, Arc]]]
+# ) -> Mapping[Node, Arc]]:
+#     """Get a pair-iterable view of a neighbor container.
 
-    Mirrors C++ `_view_items` in digraphx-cpp/neg_cycle_q.hpp:
-    - For dict-like containers, use .items() to get (key, value) pairs
-    - For list-like containers, iterate directly (each element is a pair)
-    """
-    if isinstance(container, dict):
-        return container.items()
-    return container
+#     Mirrors C++ `_view_items` in digraphx-cpp/neg_cycle_q.hpp:
+#     - For dict-like containers, use .items() to get (key, value) pairs
+#     - For list-like containers, iterate directly (each element is a pair)
+#     """
+#     if isinstance(container, Mapping):
+#         return container.items()
+#     return container
 
 
 class NegCycleFinderQ(Generic[Node, Arc, Domain]):
@@ -104,7 +105,9 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
     # Successor dictionary: maps each node to (successor_node, connecting_edge)
     succ: Dict[Node, Tuple[Node, Arc]]
 
-    def __init__(self, digraph: Mapping[Node, Iterable[Tuple[Node, Arc]]]) -> None:
+    def __init__(
+        self, digraph: Mapping[Node, Union[Mapping[Node, Arc], Mapping[Node, Arc]]]
+    ) -> None:
         """Initialize the negative cycle finder with a directed graph.
 
         Args:
@@ -161,7 +164,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
     def relax_pred(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Arc], Any],
+        get_weight: Callable[[Arc], Domain],
         update_ok: Callable[[Domain, Domain], bool],
     ) -> bool:
         """Perform predecessor relaxation step (Bellman-Ford style).
@@ -195,7 +198,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
         """
         changed = False
         for u_node, neighbors in self.digraph.items():
-            for v_node, edge in _view_items(neighbors):
+            for v_node, edge in neighbors.items():
                 distance = dist[u_node] + get_weight(edge)
                 if dist[v_node] > distance and update_ok(dist[v_node], distance):
                     dist[v_node] = distance
@@ -206,7 +209,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
     def relax_succ(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Arc], Any],
+        get_weight: Callable[[Arc], Domain],
         update_ok: Callable[[Domain, Domain], bool],
     ) -> bool:
         """Perform successor relaxation step (reverse Bellman-Ford style).
@@ -237,7 +240,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
         """
         changed = False
         for u_node, neighbors in self.digraph.items():
-            for v_node, edge in _view_items(neighbors):
+            for v_node, edge in neighbors.items():
                 distance = dist[v_node] - get_weight(edge)
                 if dist[u_node] < distance and update_ok(dist[u_node], distance):
                     dist[u_node] = distance
@@ -248,7 +251,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
     def howard_pred(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Arc], Any],
+        get_weight: Callable[[Arc], Domain],
         update_ok: Callable[[Domain, Domain], bool],
     ) -> Generator[Cycle, None, None]:
         """Find negative cycles using predecessor-based Howard's algorithm.
@@ -296,7 +299,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
     def howard_succ(
         self,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Arc], Any],
+        get_weight: Callable[[Arc], Domain],
         update_ok: Callable[[Domain, Domain], bool],
     ) -> Generator[Cycle, None, None]:
         """Find negative cycles using successor-based Howard's algorithm.
@@ -377,7 +380,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
         self,
         handle: Node,
         dist: MutableMapping[Node, Domain],
-        get_weight: Callable[[Arc], Any],
+        get_weight: Callable[[Arc], Domain],
     ) -> bool:
         """Verify if the cycle starting at handle is negative.
 
@@ -410,10 +413,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
         # C-style do-while loop
         while True:
             u_node, edge = self.pred[v_node]
-            tmp = dist[u_node] + get_weight(edge)
-            if isinstance(dist[u_node], int) and isinstance(tmp, float):
-                tmp = int(floor(tmp))
-            if dist[v_node] > tmp:  # Found negative cycle
+            if dist[v_node] > dist[u_node] + get_weight(edge):  # Found negative cycle
                 return True
             v_node = u_node
             if v_node == handle:  # Completed full cycle
