@@ -55,7 +55,7 @@ pytest --cov digraphx --cov-report term-missing
 
 ## 开发规范
 
-- 代码使用 Python 3.9+ 编写
+- 代码使用 Python 3.10+ 编写
 - 遵循 PEP 8 代码风格
 - 使用 type hints 提供类型信息
 - 测试使用 pytest 框架
