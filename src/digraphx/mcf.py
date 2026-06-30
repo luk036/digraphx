@@ -1,71 +1,46 @@
 """Min-cost flow via cycle-cancellation descent.
 
-Uses Howard's negative cycle finding (NegCycleFinderQ) with a vertex-filter
-callback to enforce the constraint that each non-sink node may have at most
-one outgoing flow edge.
+Uses Bellman-Ford to find negative-cost cycles in the residual graph
+(replacing Howard's algorithm which had detection gaps on certain
+graph structures).  Optional vertex-disjoint constraint via VertexFilter.
 """
 
 from collections import deque
 from typing import Dict, Hashable, List, Optional, Set, Tuple, TypeVar
 
-from .neg_cycle_q import NegCycleFinderQ
-
 Node = TypeVar("Node", bound=Hashable)
 
 
-class TrackedDist(dict):
-    """Dict that remembers the last key accessed via __getitem__."""
-
-    __slots__ = ("last_key",)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.last_key: Optional[Hashable] = None
-
-    def __getitem__(self, key):
-        self.last_key = key
-        return super().__getitem__(key)
-
-
 class VertexFilter:
-    """Functor for update_ok that rejects distance updates to 'used' nodes.
+    """Tracks used nodes for vertex-disjoint constraint enforcement.
 
-    A node is 'used' when it already has outgoing flow in the current
-    solution (at most one outgoing edge per non-sink node).
+    A node is 'used' when it has outgoing flow.  The used set persists
+    across the entire cycle-cancellation loop.
     """
 
-    def __init__(self, tracked_dist: TrackedDist, sink: Hashable):
-        self.dist = tracked_dist
+    def __init__(self, sink: Hashable):
         self.sink = sink
         self.used: Set[Hashable] = set()
 
-    def _rebuild_used(self, flow):
-        """Rebuild used set from current flow state."""
-        self.used.clear()
-        for u, neighbors in flow.items():
-            if u == self.sink:
-                continue
-            for v, f in neighbors.items():
-                if f > 0:
-                    self.used.add(u)
-                    break  # at most one outgoing edge, but break on first
-
-    def __call__(self, old_dist, new_dist) -> bool:
-        """Always allow relaxation.  Constraint-checking happens at cycle level."""
-        return True
-
     def cycle_uses_used_node(self, cycle_edges) -> bool:
-        """Check whether any forward edge source in the cycle is already used."""
+        """Reject if a used node gains outflow without offsetting reduction."""
+        fwd_nodes = set()
+        bwd_nodes = set()
         for e in cycle_edges:
-            if not e["forward"]:
-                continue
             u_orig, _ = e["orig"]
-            if u_orig != self.sink and u_orig in self.used:
+            if u_orig == self.sink:
+                continue
+            if e["forward"]:
+                fwd_nodes.add(u_orig)
+            else:
+                bwd_nodes.add(u_orig)
+        for u in fwd_nodes - bwd_nodes:
+            if u in self.used:
                 return True
         return False
 
     def accept_cycle(self, cycle_edges, flow, bottleneck):
-        """Apply cycle cancellation and mark newly-used nodes."""
+        """Apply cycle cancellation and update used set."""
         for e in cycle_edges:
             u_orig, v_orig = e["orig"]
             if e["forward"]:
@@ -75,7 +50,6 @@ class VertexFilter:
             else:
                 old = flow[u_orig].get(v_orig, 0)
                 flow[u_orig][v_orig] = old - bottleneck
-        # After all edges processed, remove nodes that lost all outgoing flow
         for e in cycle_edges:
             u_orig, _ = e["orig"]
             if not e["forward"] and u_orig in self.used:
@@ -122,6 +96,61 @@ def _build_residual(g, flow):
                     residual[v][u] = edge
 
     return residual
+
+
+def _find_all_neg_cycles_bf(residual, all_nodes):
+    """Find all negative-cost cycles in a single Bellman-Ford pass.
+
+    Runs |V| passes; in the V-th pass, every node whose distance still
+    improves is part of a negative cycle.  Yields each cycle as a list
+    of residual edge dicts.
+    """
+    n = len(all_nodes)
+    dist = {node: 0 for node in all_nodes}
+    pred = {}  # node → (prev_node, residual_edge)
+    updated_in_last = set()
+
+    for i in range(n):
+        changed = False
+        for u, neighbors in residual.items():
+            du = dist.get(u, 0)
+            for v, edge in neighbors.items():
+                nd = du + edge["cost"]
+                if nd < dist.get(v, 0):
+                    dist[v] = nd
+                    pred[v] = (u, edge)
+                    changed = True
+                    if i == n - 1:
+                        updated_in_last.add(v)
+        if not changed and i < n - 1:
+            return  # converged before V passes
+
+    if not updated_in_last:
+        return
+
+    yielded_nodes = set()
+    for start_node in sorted(updated_in_last):
+        if start_node in yielded_nodes:
+            continue
+        # Trace back to find cycle start
+        visited = set()
+        u = start_node
+        while u not in visited:
+            visited.add(u)
+            u = pred[u][0]
+        cycle_start = u
+        # Reconstruct cycle
+        cycle = []
+        u = cycle_start
+        while True:
+            prev_node, edge = pred[u]
+            cycle.append(edge)
+            u = prev_node
+            if u == cycle_start:
+                break
+        cycle.reverse()
+        yielded_nodes.update(e["orig"][0] for e in cycle)
+        yield cycle
 
 
 def _bfs_path(g, flow, src, demand_nodes, remaining):
@@ -202,6 +231,9 @@ def _find_feasible_flow(g, demands):
 def cycle_canceling_mcf(g, demands, sink=None):
     """Solve min-cost flow using cycle-cancellation descent.
 
+    Uses Bellman-Ford for negative-cycle detection (no Howard gap).
+    Optional vertex-disjoint constraint via VertexFilter.
+
     Args:
         g: {u: {v: {'weight': cost, 'capacity': cap}}}
         demands: {node: demand} (negative = supply, positive = demand)
@@ -217,32 +249,21 @@ def cycle_canceling_mcf(g, demands, sink=None):
     if flow is None:
         return None
 
-    # Stage 2: cancel negative-cost residual cycles
+    # Stage 2: cancel negative-cost residual cycles (Bellman-Ford)
     use_constraint = sink is not None
-    vf = VertexFilter(TrackedDist({}), sink) if use_constraint else None
+    vf = VertexFilter(sink) if use_constraint else None
 
     while True:
         residual = _build_residual(g, flow)
         if not residual:
             break
 
-        # Collect all nodes from residual
         all_nodes = set(residual)
         for neighbors in residual.values():
             all_nodes.update(neighbors)
 
-        tracked_dist = TrackedDist({node: 0 for node in all_nodes})
-        if vf is not None:
-            vf.dist = tracked_dist
-            update_ok = vf
-        else:
-            update_ok = lambda old, new: True
-
-        finder = NegCycleFinderQ(residual)
-        get_w = lambda e: e["cost"]
-
         cancelled = False
-        for cycle_edges in finder.howard_pred(tracked_dist, get_w, update_ok):
+        for cycle_edges in _find_all_neg_cycles_bf(residual, all_nodes):
             # When constraint is active, reject cycles that use already-used nodes
             if use_constraint and vf.cycle_uses_used_node(cycle_edges):
                 continue
