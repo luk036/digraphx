@@ -1,16 +1,86 @@
 """Min-cost flow via cycle-cancellation descent.
 
-Uses Bellman-Ford to find any negative-cost cycle in the residual graph,
-then cancels it.  Repeats until no negative cycles remain — at which
-point the flow is optimal.
+Uses Howard's negative cycle finding (NegCycleFinderQ) with a vertex-filter
+callback to enforce the constraint that each non-sink node may have at most
+one outgoing flow edge.
 """
 
 from collections import deque
-from typing import Dict, Hashable, List, Optional, Tuple, TypeVar
+from typing import Dict, Hashable, List, Optional, Set, Tuple, TypeVar
 
-from .neg_cycle import NegCycleFinder
+from .neg_cycle_q import NegCycleFinderQ
 
 Node = TypeVar("Node", bound=Hashable)
+
+
+class TrackedDist(dict):
+    """Dict that remembers the last key accessed via __getitem__."""
+
+    __slots__ = ("last_key",)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.last_key: Optional[Hashable] = None
+
+    def __getitem__(self, key):
+        self.last_key = key
+        return super().__getitem__(key)
+
+
+class VertexFilter:
+    """Functor for update_ok that rejects distance updates to 'used' nodes.
+
+    A node is 'used' when it already has outgoing flow in the current
+    solution (at most one outgoing edge per non-sink node).
+    """
+
+    def __init__(self, tracked_dist: TrackedDist, sink: Hashable):
+        self.dist = tracked_dist
+        self.sink = sink
+        self.used: Set[Hashable] = set()
+
+    def _rebuild_used(self, flow):
+        """Rebuild used set from current flow state."""
+        self.used.clear()
+        for u, neighbors in flow.items():
+            if u == self.sink:
+                continue
+            for v, f in neighbors.items():
+                if f > 0:
+                    self.used.add(u)
+                    break  # at most one outgoing edge, but break on first
+
+    def __call__(self, old_dist, new_dist) -> bool:
+        """Always allow relaxation.  Constraint-checking happens at cycle level."""
+        return True
+
+    def cycle_uses_used_node(self, cycle_edges) -> bool:
+        """Check whether any forward edge source in the cycle is already used."""
+        for e in cycle_edges:
+            if not e["forward"]:
+                continue
+            u_orig, _ = e["orig"]
+            if u_orig != self.sink and u_orig in self.used:
+                return True
+        return False
+
+    def accept_cycle(self, cycle_edges, flow, bottleneck):
+        """Apply cycle cancellation and mark newly-used nodes."""
+        for e in cycle_edges:
+            u_orig, v_orig = e["orig"]
+            if e["forward"]:
+                flow[u_orig][v_orig] = flow[u_orig].get(v_orig, 0) + bottleneck
+                if u_orig != self.sink:
+                    self.used.add(u_orig)
+            else:
+                old = flow[u_orig].get(v_orig, 0)
+                flow[u_orig][v_orig] = old - bottleneck
+        # After all edges processed, remove nodes that lost all outgoing flow
+        for e in cycle_edges:
+            u_orig, _ = e["orig"]
+            if not e["forward"] and u_orig in self.used:
+                if all(f <= 0 for f in flow[u_orig].values()):
+                    self.used.discard(u_orig)
 
 
 def _build_residual(g, flow):
@@ -63,7 +133,6 @@ def _bfs_path(g, flow, src, demand_nodes, remaining):
     while queue:
         u = queue.popleft()
         if u in demand_nodes and remaining.get(u, 0) > 0:
-            # Reconstruct path
             path = [u]
             while u != src:
                 u = parent[u]
@@ -130,12 +199,15 @@ def _find_feasible_flow(g, demands):
     return flow
 
 
-def cycle_canceling_mcf(g, demands):
+def cycle_canceling_mcf(g, demands, sink=None):
     """Solve min-cost flow using cycle-cancellation descent.
 
     Args:
         g: {u: {v: {'weight': cost, 'capacity': cap}}}
         demands: {node: demand} (negative = supply, positive = demand)
+        sink: Optional sink node. When provided, enables the vertex-disjoint
+            constraint: each non-sink node may have at most one outgoing
+            flow edge.  When None (default), no constraint is enforced.
 
     Returns:
         (total_cost, flow_dict) or None if infeasible.
@@ -146,19 +218,35 @@ def cycle_canceling_mcf(g, demands):
         return None
 
     # Stage 2: cancel negative-cost residual cycles
+    use_constraint = sink is not None
+    vf = VertexFilter(TrackedDist({}), sink) if use_constraint else None
+
     while True:
         residual = _build_residual(g, flow)
         if not residual:
             break
 
-        finder = NegCycleFinder(residual)
-        # Collect all nodes from residual (dict keys + target nodes)
+        # Collect all nodes from residual
         all_nodes = set(residual)
         for neighbors in residual.values():
             all_nodes.update(neighbors)
-        dist = {node: 0 for node in all_nodes}
+
+        tracked_dist = TrackedDist({node: 0 for node in all_nodes})
+        if vf is not None:
+            vf.dist = tracked_dist
+            update_ok = vf
+        else:
+            update_ok = lambda old, new: True
+
+        finder = NegCycleFinderQ(residual)
+        get_w = lambda e: e["cost"]
+
         cancelled = False
-        for cycle_edges in finder.howard(dist, lambda e: e["cost"]):
+        for cycle_edges in finder.howard_pred(tracked_dist, get_w, update_ok):
+            # When constraint is active, reject cycles that use already-used nodes
+            if use_constraint and vf.cycle_uses_used_node(cycle_edges):
+                continue
+
             bottleneck = float("inf")
             for edge in cycle_edges:
                 bottleneck = min(bottleneck, edge["capacity"])
@@ -166,12 +254,15 @@ def cycle_canceling_mcf(g, demands):
             if bottleneck <= 0:
                 continue
 
-            for edge in cycle_edges:
-                u_orig, v_orig = edge["orig"]
-                if edge["forward"]:
-                    flow[u_orig][v_orig] = flow[u_orig].get(v_orig, 0) + bottleneck
-                else:
-                    flow[u_orig][v_orig] = flow[u_orig].get(v_orig, 0) - bottleneck
+            if use_constraint:
+                vf.accept_cycle(cycle_edges, flow, bottleneck)
+            else:
+                for edge in cycle_edges:
+                    u_orig, v_orig = edge["orig"]
+                    if edge["forward"]:
+                        flow[u_orig][v_orig] = flow[u_orig].get(v_orig, 0) + bottleneck
+                    else:
+                        flow[u_orig][v_orig] = flow[u_orig].get(v_orig, 0) - bottleneck
 
             cancelled = True
             break
