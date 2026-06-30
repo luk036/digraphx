@@ -252,6 +252,14 @@ def cycle_canceling_mcf(g, demands, sink=None):
     # Stage 2: cancel negative-cost residual cycles (Bellman-Ford)
     use_constraint = sink is not None
     vf = VertexFilter(sink) if use_constraint else None
+    if vf is not None:
+        for u in flow:
+            for v, f in flow[u].items():
+                if f > 0 and u != sink:
+                    vf.used.add(u)
+                    break  # one outgoing edge is enough to mark as used
+    if vf is not None:
+        print(f'Used init: {len(vf.used)}')
 
     while True:
         residual = _build_residual(g, flow)
