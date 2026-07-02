@@ -83,6 +83,20 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinxcontrib.svgbob",
+    "matplotlib.sphinxext.plot_directive",
+]
+
+# -- matplotlib.sphinxext.plot_directive configuration -----------------------
+plot_html_show_source_link = True
+plot_html_show_formats = False
+plot_include_source = True
+plot_working_directory = os.path.join(__location__, "examples")
+plot_pre_code = [
+    "import matplotlib.pyplot as plt",
+    "import networkx as nx",
+    "import numpy as np",
+    "from digraphx.tiny_digraph import TinyDiGraph",
+    "plt.rcParams['figure.dpi'] = 100",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

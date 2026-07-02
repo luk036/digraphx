@@ -103,6 +103,15 @@ class TinyDiGraph(DiGraphAdapter):
 
     This class extends DiGraphAdapter to provide custom storage mechanisms using MapAdapter,
     which is particularly efficient for graphs with a known, fixed number of nodes.
+
+    .. svgbob::
+       :align: center
+
+           o──────►o
+           │       │
+           │       │
+           ▼       ▼
+           o◄──────o
     """
 
     num_nodes = 0  # Class variable to store the total number of nodes in the graph
