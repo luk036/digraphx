@@ -60,13 +60,16 @@ def test_min_cycle_ratio_solver_basic() -> None:
 
 def test_neg_cycle_finder_cycle_list_with_pred() -> None:
     from mywheel.map_adapter import MapAdapter
+
     from digraphx.neg_cycle import NegCycleFinder
 
-    digraph = MapAdapter([
-        {1: "e01", 2: "e02"},
-        {2: "e12"},
-        {0: "e20"},
-    ])
+    digraph = MapAdapter(
+        [
+            {1: "e01", 2: "e02"},
+            {2: "e12"},
+            {0: "e20"},
+        ]
+    )
     finder = NegCycleFinder(digraph)
     finder.pred = {1: (0, "e01"), 2: (1, "e12"), 0: (2, "e20")}
     cycle = finder.cycle_list(0)
@@ -76,13 +79,16 @@ def test_neg_cycle_finder_cycle_list_with_pred() -> None:
 
 def test_neg_cycle_finder_howard_no_cycles() -> None:
     from mywheel.map_adapter import MapAdapter
+
     from digraphx.neg_cycle import NegCycleFinder
 
-    digraph = MapAdapter([
-        {1: 10},
-        {2: 20},
-        {},
-    ])
+    digraph = MapAdapter(
+        [
+            {1: 10},
+            {2: 20},
+            {},
+        ]
+    )
     dist = MapAdapter([0, 0, 0])
     finder = NegCycleFinder(digraph)
     cycles = list(finder.howard(dist, lambda e: e))

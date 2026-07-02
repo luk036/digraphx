@@ -6,7 +6,7 @@ graph structures).  Optional vertex-disjoint constraint via VertexFilter.
 """
 
 from collections import deque
-from typing import Dict, Hashable, List, Optional, Set, Tuple, TypeVar
+from typing import Hashable, Set, TypeVar
 
 Node = TypeVar("Node", bound=Hashable)
 
@@ -259,7 +259,7 @@ def cycle_canceling_mcf(g, demands, sink=None):
                     vf.used.add(u)
                     break  # one outgoing edge is enough to mark as used
     if vf is not None:
-        print(f'Used init: {len(vf.used)}')
+        print(f"Used init: {len(vf.used)}")
 
     while True:
         residual = _build_residual(g, flow)

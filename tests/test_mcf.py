@@ -1,8 +1,5 @@
 """Tests for min-cost flow cycle-cancellation."""
 
-from typing import Dict
-
-import pytest
 
 from digraphx.mcf import cycle_canceling_mcf
 

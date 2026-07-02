@@ -1,7 +1,7 @@
 """Tests for the min_parametric_q module."""
 
 from fractions import Fraction
-from typing import Callable, Dict, List
+from typing import Dict, List
 
 from digraphx.min_parametric_q import MinParametricAPI, MinParametricSolver
 
