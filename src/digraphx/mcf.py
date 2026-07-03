@@ -57,6 +57,45 @@ class VertexFilter:
                     self.used.discard(u_orig)
 
 
+def _residual_edge(g, u, v, flow):
+    cap = g[u][v].get("capacity", float("inf"))
+    wgt = g[u][v].get("weight", 0)
+    f = flow.get(u, {}).get(v, 0)
+    fwd = None
+    bwd = None
+    if f < cap:
+        fwd = {
+            "cost": wgt,
+            "capacity": cap - f,
+            "orig": (u, v),
+            "forward": True,
+        }
+    if f > 0:
+        bwd = {
+            "cost": -wgt,
+            "capacity": f,
+            "orig": (u, v),
+            "forward": False,
+        }
+    return fwd, bwd
+
+
+def _update_residual_edge(residual, g, flow, u, v):
+    if u in residual and v in residual[u]:
+        del residual[u][v]
+        if not residual[u]:
+            del residual[u]
+    if v in residual and u in residual[v]:
+        del residual[v][u]
+        if not residual[v]:
+            del residual[v]
+    fwd, bwd = _residual_edge(g, u, v, flow)
+    if fwd is not None:
+        residual.setdefault(u, {})[v] = fwd
+    if bwd is not None:
+        residual.setdefault(v, {})[u] = bwd
+
+
 def _build_residual(g, flow):
     """Build residual graph from current flow.
 
@@ -261,15 +300,16 @@ def cycle_canceling_mcf(g, demands, sink=None):
     if vf is not None:
         print(f"Used init: {len(vf.used)}")
 
+    all_nodes = None
+
     while True:
-        residual = _build_residual(g, flow)
-        if not residual:
-            break
-
-        all_nodes = set(residual)
-        for neighbors in residual.values():
-            all_nodes.update(neighbors)
-
+        if all_nodes is None:
+            residual = _build_residual(g, flow)
+            if not residual:
+                break
+            all_nodes = set(residual)
+            for neighbors in residual.values():
+                all_nodes.update(neighbors)
         cancelled = False
         for cycle_edges in _find_all_neg_cycles_bf(residual, all_nodes):
             # When constraint is active, reject cycles that use already-used nodes
@@ -289,9 +329,21 @@ def cycle_canceling_mcf(g, demands, sink=None):
                 for edge in cycle_edges:
                     u_orig, v_orig = edge["orig"]
                     if edge["forward"]:
-                        flow[u_orig][v_orig] = flow[u_orig].get(v_orig, 0) + bottleneck
+                        flow[u_orig][v_orig] = (
+                            flow[u_orig].get(v_orig, 0) + bottleneck
+                        )
                     else:
-                        flow[u_orig][v_orig] = flow[u_orig].get(v_orig, 0) - bottleneck
+                        flow[u_orig][v_orig] = (
+                            flow[u_orig].get(v_orig, 0) - bottleneck
+                        )
+
+            seen = set()
+            for edge in cycle_edges:
+                uo, vo = edge["orig"]
+                key = (uo, vo)
+                if key not in seen:
+                    seen.add(key)
+                    _update_residual_edge(residual, g, flow, uo, vo)
 
             cancelled = True
             break
