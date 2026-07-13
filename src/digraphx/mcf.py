@@ -146,7 +146,7 @@ def _find_all_neg_cycles_bf(residual, all_nodes):
     """
     n = len(all_nodes)
     dist = {node: 0 for node in all_nodes}
-    pred = {}  # node → (prev_node, residual_edge)
+    pred = {}  # node → (prevtx, residual_edge)
     updated_in_last = set()
 
     for i in range(n):
@@ -182,9 +182,9 @@ def _find_all_neg_cycles_bf(residual, all_nodes):
         cycle = []
         u = cycle_start
         while True:
-            prev_node, edge = pred[u]
+            prevtx, edge = pred[u]
             cycle.append(edge)
-            u = prev_node
+            u = prevtx
             if u == cycle_start:
                 break
         cycle.reverse()
