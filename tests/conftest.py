@@ -61,26 +61,3 @@ def create_tiny_graph() -> TinyDiGraph:
         ]
     )
     return digraph
-
-
-# --- spareTSV fixtures ---
-
-
-@pytest.fixture
-def sample_positions():
-    """Van der Corput positions (T=12, bases 2/3)."""
-    from digraphx.spare_tsv import vdc
-
-    T = 12
-    xbase, ybase = 2, 3
-    x = [vdc(i, xbase) for i in range(T)]
-    y = [vdc(i, ybase) for i in range(T)]
-    return list(zip(x, y))
-
-
-@pytest.fixture
-def small_graph(sample_positions):
-    """Small geometric graph for spareTSV tests."""
-    from digraphx.spare_tsv import formGraph
-
-    return formGraph(12, sample_positions, 0.12, 1.6, seed=5)

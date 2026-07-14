@@ -1,8 +1,9 @@
-"""Tests for spareTSV (integrated into digraphx)."""
+"""Tests for spareTSV (experimental)."""
 
 import networkx as nx
+import pytest
 
-from digraphx.spare_tsv import (
+from experimental.spare_tsv import (
     formGraph,
     setup_network_flow,
     showPaths,
@@ -11,6 +12,31 @@ from digraphx.spare_tsv import (
     vdcorput,
     vdcorput_iter,
 )
+
+
+def _vdc(n, base=2):
+    v, denom = 0.0, 1.0
+    while n:
+        denom *= base
+        n, remainder = divmod(n, base)
+        v += remainder / denom
+    return v
+
+
+@pytest.fixture
+def sample_positions():
+    """Van der Corput positions (T=12, bases 2/3)."""
+    T = 12
+    xbase, ybase = 2, 3
+    x = [_vdc(i, xbase) for i in range(T)]
+    y = [_vdc(i, ybase) for i in range(T)]
+    return list(zip(x, y))
+
+
+@pytest.fixture
+def small_graph(sample_positions):
+    """Small geometric graph for spareTSV tests."""
+    return formGraph(12, sample_positions, 0.12, 1.6, seed=5)
 
 
 def test_vdc():
@@ -83,9 +109,6 @@ def test_showPaths_with_options(small_graph, sample_positions):
     )
     assert fig is not None
     assert ax is not None
-
-
-# --- Network flow tests ---
 
 
 def test_setup_network_flow(small_graph, sample_positions):
