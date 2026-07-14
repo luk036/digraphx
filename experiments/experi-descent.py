@@ -4,9 +4,14 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
-from digraphx.mcf import cycle_canceling_mcf  # noqa: E402
 
-from digraphx.spare_tsv import formGraph, setup_network_flow, showPaths, vdcorput  # noqa: E402
+from digraphx.mcf import cycle_canceling_mcf  # noqa: E402
+from experimental.spare_tsv import (  # noqa: E402
+    formGraph,
+    setup_network_flow,
+    showPaths,
+    vdcorput,
+)
 
 
 def nx_to_dict_graph(gra, sink):

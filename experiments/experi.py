@@ -2,7 +2,7 @@
 
 import matplotlib.pyplot as plt
 
-from digraphx.spare_tsv import (
+from experimental.spare_tsv import (
     formGraph,
     setup_network_flow,
     showPaths,

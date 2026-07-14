@@ -1,9 +1,9 @@
 # Experiment: spare TSV (OLD method: MCF without vertex-disjoint constraint)
 
 import matplotlib.pyplot as plt
-from digraphx.mcf import cycle_canceling_mcf
 
-from digraphx.spare_tsv import formGraph, setup_network_flow, showPaths, vdcorput
+from digraphx.mcf import cycle_canceling_mcf
+from experimental.spare_tsv import formGraph, setup_network_flow, showPaths, vdcorput
 
 
 def nx_to_dict_graph(gra, sink):
