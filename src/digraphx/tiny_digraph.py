@@ -45,7 +45,7 @@ memory-efficient manner, which could be particularly useful for large graphs or
 in situations where performance is critical.
 """
 
-from typing import ItemsView, Iterator, Mapping, MutableMapping
+from typing import ItemsView, Iterator, MutableMapping
 
 import networkx as nx
 from mywheel.map_adapter import MapAdapter  # type: ignore
@@ -276,9 +276,7 @@ class TinyDiGraph(DiGraphAdapter):
                 else:
                     self.add_edge(u, v)
             else:
-                raise nx.NetworkXError(
-                    f"Edge tuple {e} must be a 2-tuple or 3-tuple."
-                )
+                raise nx.NetworkXError(f"Edge tuple {e} must be a 2-tuple or 3-tuple.")
 
     def __getitem__(self, n):
         if n not in self._node:
@@ -296,9 +294,7 @@ class TinyDiGraph(DiGraphAdapter):
         try:
             return iter(self._succ[n])
         except KeyError as err:
-            raise nx.NetworkXError(
-                f"The node {n} is not in the digraph."
-            ) from err
+            raise nx.NetworkXError(f"The node {n} is not in the digraph.") from err
 
     neighbors = successors  # type: ignore
 
@@ -312,9 +308,7 @@ class TinyDiGraph(DiGraphAdapter):
 
     def remove_edge(self, u, v):  # type: ignore
         if self._adj_init(u) or v not in self._succ[u]:
-            raise nx.NetworkXError(
-                f"The edge {u}-{v} is not in the graph."
-            )
+            raise nx.NetworkXError(f"The edge {u}-{v} is not in the graph.")
         super().remove_edge(u, v)
 
     def get_edge_data(self, u, v, default=None):  # type: ignore

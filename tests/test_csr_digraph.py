@@ -5,7 +5,7 @@ from fractions import Fraction
 import pytest
 
 from digraphx.csr_digraph import CSRDiGraph, _CSRNeighbors
-from digraphx.min_cycle_ratio import MinCycleRatioSolver, set_default
+from digraphx.min_cycle_ratio import MinCycleRatioSolver
 from digraphx.neg_cycle import NegCycleFinder
 
 # =============================================================================

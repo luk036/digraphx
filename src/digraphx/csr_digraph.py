@@ -8,7 +8,7 @@ and the graph is sparse.
 """
 
 from array import array
-from typing import Iterator, ItemsView, KeysView, Mapping, ValuesView
+from typing import Mapping
 
 __all__ = ["CSRDiGraph"]
 
@@ -100,7 +100,6 @@ class CSRDiGraph(Mapping):
         """
         if self._frozen:
             return
-        N = self._num_nodes
         indptr = array("i", [0])  # cumulative counts
         for node_edges in self._edges:
             indptr.append(indptr[-1] + len(node_edges))

@@ -329,13 +329,9 @@ def cycle_canceling_mcf(g, demands, sink=None):
                 for edge in cycle_edges:
                     u_orig, v_orig = edge["orig"]
                     if edge["forward"]:
-                        flow[u_orig][v_orig] = (
-                            flow[u_orig].get(v_orig, 0) + bottleneck
-                        )
+                        flow[u_orig][v_orig] = flow[u_orig].get(v_orig, 0) + bottleneck
                     else:
-                        flow[u_orig][v_orig] = (
-                            flow[u_orig].get(v_orig, 0) - bottleneck
-                        )
+                        flow[u_orig][v_orig] = flow[u_orig].get(v_orig, 0) - bottleneck
 
             seen = set()
             for edge in cycle_edges:

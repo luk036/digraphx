@@ -334,8 +334,6 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
         while not found and self.relax(dist, get_weight):
             for vtx in self.find_cycle():  # Check for cycles in predecessor graph
                 # Will zero cycle be found???
-                assert self.is_negative(
-                    vtx, dist, get_weight
-                )  # Verify it's negative
+                assert self.is_negative(vtx, dist, get_weight)  # Verify it's negative
                 found = True
                 yield self.cycle_list(vtx)  # Return the negative cycle
