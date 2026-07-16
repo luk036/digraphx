@@ -91,6 +91,7 @@ class CSRDiGraph(Mapping):
     def add_edge(self, u: int, v: int, **attr) -> None:  # type: ignore
         """Add a directed edge ``u → v`` with optional attributes."""
         assert not self._frozen, "graph is frozen"
+        assert self._edges is not None
         self._edges[u].append((v, attr if attr else {}))
 
     def freeze(self) -> None:
@@ -100,6 +101,7 @@ class CSRDiGraph(Mapping):
         """
         if self._frozen:
             return
+        assert self._edges is not None
         indptr = array("i", [0])  # cumulative counts
         for node_edges in self._edges:
             indptr.append(indptr[-1] + len(node_edges))
@@ -123,6 +125,9 @@ class CSRDiGraph(Mapping):
     def __getitem__(self, u: int):
         if not self._frozen:
             self.freeze()
+        assert self._indptr is not None
+        assert self._indices is not None
+        assert self._data is not None
         start = self._indptr[u]
         end = self._indptr[u + 1]
         return _CSRNeighbors(self._indices, self._data, start, end)
