@@ -31,7 +31,9 @@ def test_set_default_empty_graph() -> None:
 
 
 def test_cycle_ratio_api_distance() -> None:
-    digraph: Dict[str, Dict[str, Dict[str, int]]] = {"a": {"b": {"cost": 10, "time": 2}}}
+    digraph: Dict[str, Dict[str, Dict[str, int]]] = {
+        "a": {"b": {"cost": 10, "time": 2}}
+    }
     api: "CycleRatioAPI[str, Dict[str, int], Fraction]" = CycleRatioAPI(digraph, Fraction)  # type: ignore[arg-type]
     result = api.distance(Fraction(1, 2), digraph["a"]["b"])
     assert result == Fraction(10 - 1, 1)  # 10 - 0.5*2 = 9

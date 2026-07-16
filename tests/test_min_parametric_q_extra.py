@@ -37,7 +37,9 @@ def test_min_parametric_solver_run_basic() -> None:
         "c": {"a": {"cost": -2, "time": 1}},
     }
     omega: MinParametricAPI[str, Dict[str, int], Fraction] = TestMinAPI()
-    solver: MinParametricSolver[str, Dict[str, int], Fraction, Fraction] = MinParametricSolver(digraph, omega)
+    solver: MinParametricSolver[
+        str, Dict[str, int], Fraction, Fraction
+    ] = MinParametricSolver(digraph, omega)
     dist: dict[str, Fraction] = {node: Fraction(0) for node in digraph}
     ratio, cycle = solver.run(dist, Fraction(1), _update_ok)
     assert isinstance(ratio, Fraction)
@@ -51,7 +53,9 @@ def test_min_parametric_solver_pick_one() -> None:
         "c": {"a": {"cost": -2, "time": 1}},
     }
     omega: MinParametricAPI[str, Dict[str, int], Fraction] = TestMinAPI()
-    solver: MinParametricSolver[str, Dict[str, int], Fraction, Fraction] = MinParametricSolver(digraph, omega)
+    solver: MinParametricSolver[
+        str, Dict[str, int], Fraction, Fraction
+    ] = MinParametricSolver(digraph, omega)
     dist: dict[str, Fraction] = {node: Fraction(0) for node in digraph}
     ratio, cycle = solver.run(dist, Fraction(1), _update_ok, pick_one_only=True)
     assert isinstance(ratio, Fraction)
@@ -64,7 +68,9 @@ def test_min_parametric_solver_no_cycles() -> None:
         "c": {},
     }
     omega: MinParametricAPI[str, Dict[str, int], Fraction] = TestMinAPI()
-    solver: MinParametricSolver[str, Dict[str, int], Fraction, Fraction] = MinParametricSolver(digraph, omega)
+    solver: MinParametricSolver[
+        str, Dict[str, int], Fraction, Fraction
+    ] = MinParametricSolver(digraph, omega)
     dist: dict[str, Fraction] = {node: Fraction(0) for node in digraph}
     ratio, cycle = solver.run(dist, Fraction(10), _update_ok)
     assert ratio == Fraction(10)
@@ -90,7 +96,9 @@ def test_min_parametric_solver_float() -> None:
         "c": {"a": {"cost": -2, "time": 1}},
     }
     omega: MinParametricAPI[str, Dict[str, int], float] = FloatMinAPI()
-    solver: MinParametricSolver[str, Dict[str, int], float, float] = MinParametricSolver(digraph, omega)
+    solver: MinParametricSolver[
+        str, Dict[str, int], float, float
+    ] = MinParametricSolver(digraph, omega)
     dist: dict[str, float] = {node: 0.0 for node in digraph}
     ratio, cycle = solver.run(dist, 10.0, float_update_ok)
     assert isinstance(ratio, float)

@@ -97,9 +97,7 @@ def showPaths(gra, pos, N, edgeProbs=1.0, path=None, visibleNodes=None, guards=N
     # only display edges between non-dummy nodes
     edge_list = list(gra.edges())
     visibleEdges = [
-        e
-        for e in edge_list
-        if e[0] in visibleNodes and e[1] in visibleNodes
+        e for e in edge_list if e[0] in visibleNodes and e[1] in visibleNodes
     ]
 
     if isinstance(edgeProbs, float):
