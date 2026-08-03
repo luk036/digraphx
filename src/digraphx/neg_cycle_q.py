@@ -57,7 +57,6 @@ from typing import (
     Union,
 )
 
-# Type variables for generic graph implementation:
 # Node must be hashable (used as dictionary keys)
 # Arc can be any type (but typically hashable)
 # Domain must support comparison and arithmetic operations (int, Fraction, float)
@@ -65,20 +64,6 @@ Node = TypeVar("Node")  # Hashable
 Arc = TypeVar("Arc")  # Hashable
 Domain = TypeVar("Domain", int, Fraction, float)  # Comparable Ring
 Cycle = List[Arc]  # List of Arcs
-
-
-# def _view_items(
-#     container: Union[Mapping[Node, Arc], Mapping[Node, Arc]]]
-# ) -> Mapping[Node, Arc]]:
-#     """Get a pair-iterable view of a neighbor container.
-
-#     Mirrors C++ `_view_items` in digraphx-cpp/neg_cycle_q.hpp:
-#     - For dict-like containers, use .items() to get (key, value) pairs
-#     - For list-like containers, iterate directly (each element is a pair)
-#     """
-#     if isinstance(container, Mapping):
-#         return container.items()
-#     return container
 
 
 class NegCycleFinderQ(Generic[Node, Arc, Domain]):

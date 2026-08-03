@@ -115,7 +115,6 @@ class MaxParametricSolver(Generic[Node, Arc, Ratio]):
             >>> omega = CycleRatioAPI(digraph, Fraction)
             >>> solver = MaxParametricSolver(digraph, omega)
         """
-        # self.ncf = NegCycleFinder(digraph)
         self.digraph = digraph
         self.omega: ParametricAPI[Node, Arc, Ratio] = omega
 
@@ -164,7 +163,6 @@ class MaxParametricSolver(Generic[Node, Arc, Ratio]):
         if not dist:
             return ratio, []
 
-        # Determine the type of domain values from the first element in dist
         DomainType = type(next(iter(dist.values())))
 
         # Define a weight function that calculates distance based on current ratio

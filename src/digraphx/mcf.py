@@ -297,8 +297,6 @@ def cycle_canceling_mcf(g, demands, sink=None):
                 if f > 0 and u != sink:
                     vf.used.add(u)
                     break  # one outgoing edge is enough to mark as used
-    if vf is not None:
-        print(f"Used init: {len(vf.used)}")
 
     all_nodes = None
 

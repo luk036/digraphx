@@ -117,7 +117,6 @@ class MinParametricSolver(Generic[Node, Arc, Ratio, Domain]):
             >>> digraph = {'a': {'b': {'cost': 5, 'time': 1}}}
             >>> omega = MinParametricAPI()  # Requires concrete implementation
         """
-        # self.ncf = NegCycleFinderQ(digraph)
         self.digraph = digraph
         self.omega: MinParametricAPI[Node, Arc, Ratio] = omega
 

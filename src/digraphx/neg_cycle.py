@@ -64,20 +64,6 @@ Domain = TypeVar(
 Cycle = List[Arc]  # Alias for a list of edges forming a cycle
 
 
-# def _view_items(
-#     container: Union[Mapping[Node, Arc], Mapping[Node, Arc]]]
-# ) -> Mapping[Node, Arc]]:
-#     """Get a pair-iterable view of a neighbor container.
-
-#     Mirrors C++ `_view_items` in digraphx-cpp/neg_cycle.hpp:
-#     - For dict-like containers, use .items() to get (key, value) pairs
-#     - For list-like containers, iterate directly (each element is a pair)
-#     """
-#     if isinstance(container, Mapping):
-#         return container.items()
-#     return container
-
-
 class NegCycleFinder(Generic[Node, Arc, Domain]):
     """Negative Cycle Finder by Howard's method
 
