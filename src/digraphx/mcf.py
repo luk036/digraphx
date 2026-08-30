@@ -106,33 +106,17 @@ def _build_residual(g, flow):
     for u, neighbors in g.items():
         if u not in residual:
             residual[u] = {}
-        for v, data in neighbors.items():
-            cap = data.get("capacity", float("inf"))
-            wgt = data.get("weight", 0)
-            f = flow.get(u, {}).get(v, 0)
-
-            if f < cap:
-                edge = {
-                    "cost": wgt,
-                    "capacity": cap - f,
-                    "orig": (u, v),
-                    "forward": True,
-                }
+        for v in neighbors:
+            fwd, bwd = _residual_edge(g, u, v, flow)
+            if fwd is not None:
                 # Keep the more negative cost when edges collide at same (u,v)
                 prev = residual[u].get(v)
-                if prev is None or edge["cost"] < prev["cost"]:
-                    residual[u][v] = edge
-
-            if f > 0:
-                edge = {
-                    "cost": -wgt,
-                    "capacity": f,
-                    "orig": (u, v),
-                    "forward": False,
-                }
+                if prev is None or fwd["cost"] < prev["cost"]:
+                    residual[u][v] = fwd
+            if bwd is not None:
                 prev = residual.setdefault(v, {}).get(u)
-                if prev is None or edge["cost"] < prev["cost"]:
-                    residual[v][u] = edge
+                if prev is None or bwd["cost"] < prev["cost"]:
+                    residual[v][u] = bwd
 
     return residual
 

@@ -43,14 +43,16 @@ from abc import abstractmethod
 from fractions import Fraction
 from typing import Callable, Generic, Mapping, MutableMapping, Tuple, TypeVar
 
+from ._parametric_base import _run_loop
 from .neg_cycle_q import Arc, Cycle, NegCycleFinderQ, Node
+from .parametric import ParametricAPI
 
 # Define type variables for domain (numeric types) and ratio (fraction or float)
 Domain = TypeVar("Domain", int, Fraction, float)  # Comparable Ring
 Ratio = TypeVar("Ratio", Fraction, float)
 
 
-class MinParametricAPI(Generic[Node, Arc, Ratio]):
+class MinParametricAPI(ParametricAPI[Node, Arc, Ratio]):
     @abstractmethod
     def distance(self, ratio: Ratio, edge: Arc) -> Ratio:
         """
@@ -148,46 +150,13 @@ class MinParametricSolver(Generic[Node, Arc, Ratio, Domain]):
                  - The minimum ratio found (ratio)
                  - The cycle that corresponds to this ratio (cycle)
         """
-        # Determine the numeric type used in distance calculations
-        DomainType = type(next(iter(dist.values())))
-
-        # Helper function to calculate edge weights based on current ratio
-        def get_weight(e: Arc) -> Domain:
-            return DomainType(self.omega.distance(ratio, e))
-
-        # Initialize tracking variables for minimum ratio and corresponding cycle
-        ratio_max = ratio
-        cycle_max = []
-        cycle = []
-        reverse: bool = True  # Flag to alternate search direction
-
-        # Initialize the negative cycle finder with our graph
-        ncf: NegCycleFinderQ[Node, Arc, Domain] = NegCycleFinderQ(self.digraph)
-
-        # Main optimization loop
-        while True:
-            # Search for cycles in either forward or reverse direction
-            if reverse:
-                cycles = ncf.howard_succ(dist, get_weight, update_ok)
-            else:
-                cycles = ncf.howard_pred(dist, get_weight, update_ok)
-
-            # Evaluate all found cycles
-            for c_i in cycles:
-                ratio_i = self.omega.zero_cancel(c_i)
-                if ratio_max < ratio_i:
-                    ratio_max = ratio_i
-                    cycle_max = c_i
-                    if pick_one_only:  # Early exit if we only need one improvement
-                        break
-
-            # Termination condition: no better ratio found
-            if ratio_max <= ratio:
-                break
-
-            # Update state for next iteration
-            cycle = cycle_max
-            ratio = ratio_max
-            reverse = not reverse  # Alternate search direction
-
-        return ratio, cycle
+        return _run_loop(
+            self.digraph,
+            self.omega,
+            dist,
+            ratio,
+            minimize=False,
+            update_ok=update_ok,
+            pick_one_only=pick_one_only,
+            alternate_direction=True,
+        )

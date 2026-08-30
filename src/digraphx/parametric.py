@@ -48,7 +48,8 @@ from abc import abstractmethod
 from fractions import Fraction
 from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar
 
-from .neg_cycle import Arc, Cycle, Domain, NegCycleFinder, Node
+from ._parametric_base import _run_loop
+from .neg_cycle import Arc, Cycle, Domain, Node
 
 # Define a type variable Ratio that can be either Fraction or float
 Ratio = TypeVar("Ratio", Fraction, float)
@@ -163,36 +164,4 @@ class MaxParametricSolver(Generic[Node, Arc, Ratio]):
         if not dist:
             return ratio, []
 
-        DomainType = type(next(iter(dist.values())))
-
-        # Define a weight function that calculates distance based on current ratio
-        def get_weight(e: Arc) -> Domain:
-            return DomainType(self.omega.distance(ratio, e))
-
-        # Initialize minimum ratio and cycle
-        ratio_min = ratio
-        cycle_min = []
-        cycle = []
-
-        # Create a negative cycle finder instance with the graph
-        ncf: NegCycleFinder[Node, Arc, Domain] = NegCycleFinder(self.digraph)
-
-        # Main algorithm loop
-        while True:
-            # Find all negative cycles in the graph
-            for ci in ncf.howard(dist, get_weight):
-                # Calculate the ratio that would make this cycle's total distance zero
-                ratio_i = self.omega.zero_cancel(ci)
-                # Update minimum ratio if a smaller one is found
-                if ratio_min > ratio_i:
-                    ratio_min = ratio_i
-                    cycle_min = ci
-
-            # Termination condition: no better ratio found
-            if ratio_min >= ratio:
-                break
-
-            # Update cycle and ratio for next iteration
-            cycle = cycle_min
-            ratio = ratio_min
-        return ratio, cycle
+        return _run_loop(self.digraph, self.omega, dist, ratio, minimize=True)

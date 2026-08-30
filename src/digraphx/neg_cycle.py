@@ -34,14 +34,11 @@ dictionary. This dictionary keeps track of which node and edge led to each node
 in the shortest path found so far. This information is crucial for
 reconstructing the cycles when they're found.
 
-The code uses some advanced Python features like type hinting and generators,
-but the core logic is based on graph traversal and cycle detection, which are
-fundamental concepts in graph theory and algorithm design. The class provides a
-reusable tool for finding negative cycles in any directed graph, which can be
-useful in many different applications.
+The algorithm skeleton is shared with NegCycleFinderQ (see
+``_cycle_base.howard_search``); the unconstrained predecessor relaxation and
+the negativity check are supplied as strategies there.
 """
 
-from fractions import Fraction
 from typing import (
     Callable,
     Dict,
@@ -51,17 +48,21 @@ from typing import (
     Mapping,
     MutableMapping,
     Tuple,
-    TypeVar,
     Union,
 )
 
-# Type variables for generic graph components
-Node = TypeVar("Node")  # Hashable node type (must implement __hash__)
-Arc = TypeVar("Arc")  # Hashable edge type (must implement __hash__)
-Domain = TypeVar(
-    "Domain", int, Fraction, float
-)  # Numeric type for weights (must support comparison and arithmetic)
-Cycle = List[Arc]  # Alias for a list of edges forming a cycle
+from ._cycle_base import (
+    Arc,
+    Cycle,
+    Domain,
+    Node,
+    _always_true,
+    cycle_list as _cycle_list,
+    find_cycle as _find_cycle,
+    howard_search as _howard_search,
+    is_negative as _is_negative,
+    relax_pred as _relax_pred,
+)
 
 
 class NegCycleFinder(Generic[Node, Arc, Domain]):
@@ -143,17 +144,7 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
             >>> for cycle in finder.find_cycle():
             ...     print(cycle)
         """
-        visited: Dict[Node, Node] = {}  # Maps nodes to their DFS root
-        for vtx in filter(lambda vtx: vtx not in visited, self.digraph):
-            utx = vtx
-            visited[utx] = vtx  # Mark as visited with current DFS root
-            while utx in self.pred:
-                utx, _ = self.pred[utx]  # Move to predecessor
-                if utx in visited:
-                    if visited[utx] == vtx:  # Found a cycle back to current root
-                        yield utx
-                    break
-                visited[utx] = vtx  # Mark predecessor as visited
+        yield from _find_cycle(self.digraph, self.pred)
 
     def relax(
         self,
@@ -190,15 +181,9 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
             >>> dist['c']
             3
         """
-        changed = False
-        for utx, neighbors in self.digraph.items():
-            for vtx, edge in neighbors.items():
-                distance = dist[utx] + get_weight(edge)
-                if dist[vtx] > distance:  # Found a shorter path
-                    dist[vtx] = distance
-                    self.pred[vtx] = (utx, edge)  # Update predecessor
-                    changed = True
-        return changed
+        return _relax_pred(
+            self.digraph, dist, get_weight, _always_true, self.pred
+        )
 
     def cycle_list(self, handle: Node) -> Cycle:
         """Reconstruct the cycle starting from the given node.
@@ -223,15 +208,7 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
             >>> finder.cycle_list('a')
             ['ca', 'bc', 'ab']
         """
-        vtx = handle
-        cycle = list()
-        while True:
-            utx, edge = self.pred[vtx]  # Get predecessor and connecting edge
-            cycle.append(edge)  # Add edge to cycle
-            vtx = utx  # Move to predecessor
-            if vtx == handle:  # Completed the cycle
-                break
-        return cycle
+        return _cycle_list(self.pred, handle)
 
     def is_negative(
         self,
@@ -267,16 +244,7 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
             >>> finder.is_negative('a', dist, lambda edge: edge)
             True
         """
-        vtx = handle
-        # do while loop in C++
-        while True:
-            utx, edge = self.pred[vtx]
-            if dist[vtx] > dist[utx] + get_weight(edge):
-                return True
-            vtx = utx
-            if vtx == handle:  # Completed full cycle
-                break
-        return False
+        return _is_negative(self.pred, handle, dist, get_weight)
 
     def howard(
         self,
@@ -314,12 +282,6 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
             >>> has_neg
             False
         """
-        self.pred = {}  # Reset predecessor information
-        found = False
-        # Continue relaxing until no changes or a cycle is found
-        while not found and self.relax(dist, get_weight):
-            for vtx in self.find_cycle():  # Check for cycles in predecessor graph
-                # Will zero cycle be found???
-                assert self.is_negative(vtx, dist, get_weight)  # Verify it's negative
-                found = True
-                yield self.cycle_list(vtx)  # Return the negative cycle
+        yield from _howard_search(
+            self.digraph, dist, get_weight, _always_true, self.pred, "pred"
+        )

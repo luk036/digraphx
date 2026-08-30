@@ -32,38 +32,34 @@ An important data transformation happening in this code is the maintenance of
 the 'dist' dictionary, which keeps track of the distances between nodes. This
 dictionary is continuously updated during the relaxation process.
 
-The code uses some advanced concepts like generic types and generator functions,
-but the core idea is straightforward: it's trying to find paths in the graph
-where going around in a circle results in a negative total weight, which
-shouldn't happen in many real-world scenarios (like currency exchange rates).
-
-Overall, this code provides a tool for analyzing directed graphs and finding
-problematic cycles, which can be useful in various applications such as
-detecting arbitrage opportunities in currency exchange or finding
-inconsistencies in systems modeled as graphs.
+The algorithm skeleton is shared with NegCycleFinder (see
+``_cycle_base.howard_search``); the constrained predecessor/successor
+relaxation and the optional negativity check are supplied as strategies there.
 """
 
-from fractions import Fraction
 from typing import (
     Callable,
     Dict,
     Generator,
     Generic,
-    List,
     Mapping,
     MutableMapping,
     Tuple,
-    TypeVar,
     Union,
 )
 
-# Node must be hashable (used as dictionary keys)
-# Arc can be any type (but typically hashable)
-# Domain must support comparison and arithmetic operations (int, Fraction, float)
-Node = TypeVar("Node")  # Hashable
-Arc = TypeVar("Arc")  # Hashable
-Domain = TypeVar("Domain", int, Fraction, float)  # Comparable Ring
-Cycle = List[Arc]  # List of Arcs
+from ._cycle_base import (
+    Arc,
+    Cycle,
+    Domain,
+    Node,
+    cycle_list as _cycle_list,
+    find_cycle as _find_cycle,
+    howard_search as _howard_search,
+    is_negative as _is_negative,
+    relax_pred as _relax_pred,
+    relax_succ as _relax_succ,
+)
 
 
 class NegCycleFinderQ(Generic[Node, Arc, Domain]):
@@ -133,18 +129,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
             >>> for cycle in finder.find_cycle(finder.pred):
             ...     print(cycle)
         """
-        visited: Dict[Node, Node] = {}  # Maps nodes to their DFS root
-        for vtx in filter(lambda vtx: vtx not in visited, self.digraph):
-            utx = vtx
-            while True:
-                visited[utx] = vtx  # Mark as visited with current DFS root
-                if utx not in point_to:
-                    break  # Reached a leaf node
-                utx, _ = point_to[utx]  # Move to predecessor/successor
-                if utx in visited:
-                    if visited[utx] == vtx:  # Found cycle back to current root
-                        yield utx
-                    break  # Cycle or different DFS tree
+        yield from _find_cycle(self.digraph, point_to)
 
     def relax_pred(
         self,
@@ -181,15 +166,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
             >>> dist['c']
             3
         """
-        changed = False
-        for utx, neighbors in self.digraph.items():
-            for vtx, edge in neighbors.items():
-                distance = dist[utx] + get_weight(edge)
-                if dist[vtx] > distance and update_ok(dist[vtx], distance):
-                    dist[vtx] = distance
-                    self.pred[vtx] = (utx, edge)  # Update predecessor
-                    changed = True
-        return changed
+        return _relax_pred(self.digraph, dist, get_weight, update_ok, self.pred)
 
     def relax_succ(
         self,
@@ -223,15 +200,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
             >>> dist['a']
             4
         """
-        changed = False
-        for utx, neighbors in self.digraph.items():
-            for vtx, edge in neighbors.items():
-                distance = dist[vtx] - get_weight(edge)
-                if dist[utx] < distance and update_ok(dist[utx], distance):
-                    dist[utx] = distance
-                    self.succ[utx] = (vtx, edge)  # Update successor
-                    changed = True
-        return changed
+        return _relax_succ(self.digraph, dist, get_weight, update_ok, self.succ)
 
     def howard_pred(
         self,
@@ -272,14 +241,9 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
             >>> has_neg
             False
         """
-        self.pred = {}  # Reset predecessor graph
-        found = False
-        while not found and self.relax_pred(dist, get_weight, update_ok):
-            for vtx in self.find_cycle(self.pred):
-                # Safety check - verify the cycle is indeed negative
-                assert self.is_negative(vtx, dist, get_weight)
-                found = True
-                yield self.cycle_list(vtx, self.pred)
+        yield from _howard_search(
+            self.digraph, dist, get_weight, update_ok, self.pred, "pred"
+        )
 
     def howard_succ(
         self,
@@ -318,14 +282,9 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
             >>> has_neg
             False
         """
-        self.succ = {}  # Reset successor graph
-        found = False
-        while not found and self.relax_succ(dist, get_weight, update_ok):
-            for vtx in self.find_cycle(self.succ):
-                # Note: Negative verification currently disabled
-                # assert self.is_negative(vtx, dist, get_weight)
-                found = True
-                yield self.cycle_list(vtx, self.succ)
+        yield from _howard_search(
+            self.digraph, dist, get_weight, update_ok, self.succ, "succ", verify=False
+        )
 
     def cycle_list(self, handle: Node, point_to: Dict[Node, Tuple[Node, Arc]]) -> Cycle:
         """Reconstruct the cycle starting from the given node.
@@ -351,15 +310,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
             >>> finder.cycle_list('a', finder.pred)
             ['ca', 'bc', 'ab']
         """
-        vtx = handle
-        cycle = list()
-        while True:
-            utx, edge = point_to[vtx]  # Get next node and connecting edge
-            cycle.append(edge)  # Add edge to cycle
-            vtx = utx  # Move to next node
-            if vtx == handle:  # Completed the cycle
-                break
-        return cycle
+        return _cycle_list(point_to, handle)
 
     def is_negative(
         self,
@@ -394,13 +345,4 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
             >>> finder.is_negative('a', dist, lambda edge: edge)
             True
         """
-        vtx = handle
-        # C-style do-while loop
-        while True:
-            utx, edge = self.pred[vtx]
-            if dist[vtx] > dist[utx] + get_weight(edge):  # Found negative cycle
-                return True
-            vtx = utx
-            if vtx == handle:  # Completed full cycle
-                break
-        return False
+        return _is_negative(self.pred, handle, dist, get_weight)
