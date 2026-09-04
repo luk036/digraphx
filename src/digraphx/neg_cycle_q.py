@@ -48,18 +48,13 @@ from typing import (
     Union,
 )
 
-from ._cycle_base import (
-    Arc,
-    Cycle,
-    Domain,
-    Node,
-    cycle_list as _cycle_list,
-    find_cycle as _find_cycle,
-    howard_search as _howard_search,
-    is_negative as _is_negative,
-    relax_pred as _relax_pred,
-    relax_succ as _relax_succ,
-)
+from ._cycle_base import Arc, Cycle, Domain, Node
+from ._cycle_base import cycle_list as _cycle_list
+from ._cycle_base import find_cycle as _find_cycle
+from ._cycle_base import howard_search as _howard_search
+from ._cycle_base import is_negative as _is_negative
+from ._cycle_base import relax_pred as _relax_pred
+from ._cycle_base import relax_succ as _relax_succ
 
 
 class NegCycleFinderQ(Generic[Node, Arc, Domain]):

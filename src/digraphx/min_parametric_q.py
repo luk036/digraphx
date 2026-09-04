@@ -44,7 +44,7 @@ from fractions import Fraction
 from typing import Callable, Generic, Mapping, MutableMapping, Tuple, TypeVar
 
 from ._parametric_base import _run_loop
-from .neg_cycle_q import Arc, Cycle, NegCycleFinderQ, Node
+from .neg_cycle_q import Arc, Cycle, Node
 from .parametric import ParametricAPI
 
 # Define type variables for domain (numeric types) and ratio (fraction or float)

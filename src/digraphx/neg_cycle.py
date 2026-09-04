@@ -44,25 +44,18 @@ from typing import (
     Dict,
     Generator,
     Generic,
-    List,
     Mapping,
     MutableMapping,
     Tuple,
     Union,
 )
 
-from ._cycle_base import (
-    Arc,
-    Cycle,
-    Domain,
-    Node,
-    _always_true,
-    cycle_list as _cycle_list,
-    find_cycle as _find_cycle,
-    howard_search as _howard_search,
-    is_negative as _is_negative,
-    relax_pred as _relax_pred,
-)
+from ._cycle_base import Arc, Cycle, Domain, Node, _always_true
+from ._cycle_base import cycle_list as _cycle_list
+from ._cycle_base import find_cycle as _find_cycle
+from ._cycle_base import howard_search as _howard_search
+from ._cycle_base import is_negative as _is_negative
+from ._cycle_base import relax_pred as _relax_pred
 
 
 class NegCycleFinder(Generic[Node, Arc, Domain]):
@@ -181,9 +174,7 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
             >>> dist['c']
             3
         """
-        return _relax_pred(
-            self.digraph, dist, get_weight, _always_true, self.pred
-        )
+        return _relax_pred(self.digraph, dist, get_weight, _always_true, self.pred)
 
     def cycle_list(self, handle: Node) -> Cycle:
         """Reconstruct the cycle starting from the given node.

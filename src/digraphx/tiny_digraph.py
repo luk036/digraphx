@@ -53,15 +53,12 @@ from mywheel.map_adapter import MapAdapter  # type: ignore
 
 class DiGraphAdapter(nx.DiGraph, MutableMapping):
     def __iter__(self) -> Iterator:
-
         return super().__iter__()
 
     def __setitem__(self, key: object, value: object) -> None:
-
         super().__setitem__(key, value)
 
     def __delitem__(self, key: object) -> None:
-
         super().__delitem__(key)
 
     def items(self) -> ItemsView:
