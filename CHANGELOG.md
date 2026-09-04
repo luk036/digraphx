@@ -1,5 +1,27 @@
 # Changelog
 
+## Version 0.6 (2026-09-04)
+
+### Features
+- **Shared cycle/parametric bases**: Extracted `_cycle_base.py` (`find_cycle`, `relax_pred`, `relax_succ`, `cycle_list`, `is_negative`, `howard_search`) and `_parametric_base.py` (`_run_loop`) shared by the max/min parametric solvers. `NegCycleFinder`/`NegCycleFinderQ` now delegate to the shared skeleton, `MinParametricAPI` subclasses `ParametricAPI` (was a duplicate interface), and `mcf.py` reuses `_residual_edge`. Public API unchanged. (#1c60bde)
+- **Public re-exports in `__init__.py`**: Fixes README quick-start imports such as `NegCycleFinder`, `TinyDiGraph`, `MinCycleRatioSolver`. (#1c60bde)
+
+### Bug Fixes
+- **mypy type errors**: Resolved None guards, test generics and networkx config issues. (#13dc943)
+- **RTD doc build**: Added matplotlib and numpy to `docs/requirements.txt`. (#1f49779)
+
+### Testing & Code Quality
+- **Coverage raised 85%→99%**: Added coverage extras for MCF solver, TinyDiGraph and solvers. (#2cabc4e)
+- **Style pass**: Reformatted list comprehensions and type annotations. (#2973013)
+
+### Code Cleanup
+- **Removed AI slop**: Stripped boilerplate from docstrings and comments. (#be4456a)
+- **Import tidy-up**: Dropped unused `NegCycleFinderQ` import in `min_parametric_q`, split multi-name `_cycle_base` imports, stripped stray blank lines in `tiny_digraph`. (#5e37f7c)
+
+### Build & CI
+- **Removed stale `.bak` workflow**: Deleted `ci.bak`. (#5f50fe3)
+- **Updated GitHub Actions**: checkout→v4, setup-python→v5, codecov-action→v4 to fix Codecov tokenless upload failure and Node 20 deprecation. (#5334192)
+
 ## Version 0.5 (2026-07-16)
 
 ### Features
