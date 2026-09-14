@@ -158,7 +158,9 @@ class TinyDiGraph(DiGraphAdapter):
             >>> adj_list = graph.cheat_adjlist_outer_dict()
             >>> list(adj_list.keys())
             [0, 1]
-            >>> adj_list[0] is _UNINIT
+            >>> adj_list[0]
+            {}
+            >>> adj_list.lst[0] is _UNINIT
             True
         """
         return _LazyMapAdapter([_UNINIT] * self.num_nodes)
