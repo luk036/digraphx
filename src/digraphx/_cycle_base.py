@@ -110,6 +110,57 @@ def relax_succ(
     return changed
 
 
+def prepare_edges(
+    digraph: Mapping[Node, Mapping[Node, Arc]],
+    get_weight: Callable[[Arc], Domain],
+) -> List[Tuple[Node, Node, Arc, Domain]]:
+    """Flatten the graph into ``(u, v, edge, weight)`` tuples.
+
+    ``get_weight`` is evaluated exactly once per edge.  Callers that keep the
+    ratio (and hence every edge weight) fixed for the whole search can reuse the
+    result across many relaxation passes instead of recomputing it each time.
+    """
+    return [
+        (utx, vtx, edge, get_weight(edge))
+        for utx, neighbors in digraph.items()
+        for vtx, edge in neighbors.items()
+    ]
+
+
+def relax_pred_flat(
+    edges: List[Tuple[Node, Node, Arc, Domain]],
+    dist: MutableMapping[Node, Domain],
+    update_ok: Callable[[Domain, Domain], bool],
+    pred: PointTo,
+) -> bool:
+    """Predecessor relaxation over a pre-flattened, pre-weighted edge list."""
+    changed = False
+    for utx, vtx, edge, weight in edges:
+        distance = dist[utx] + weight
+        if dist[vtx] > distance and update_ok(dist[vtx], distance):
+            dist[vtx] = distance
+            pred[vtx] = (utx, edge)
+            changed = True
+    return changed
+
+
+def relax_succ_flat(
+    edges: List[Tuple[Node, Node, Arc, Domain]],
+    dist: MutableMapping[Node, Domain],
+    update_ok: Callable[[Domain, Domain], bool],
+    succ: PointTo,
+) -> bool:
+    """Successor relaxation over a pre-flattened, pre-weighted edge list."""
+    changed = False
+    for utx, vtx, edge, weight in edges:
+        distance = dist[vtx] - weight
+        if dist[utx] < distance and update_ok(dist[utx], distance):
+            dist[utx] = distance
+            succ[utx] = (vtx, edge)
+            changed = True
+    return changed
+
+
 def cycle_list(point_to: PointTo, handle: Node) -> Cycle:
     """Reconstruct the cycle starting from ``handle`` in the point-to map.
 
@@ -170,8 +221,18 @@ def howard_search(
     """
     point_to.clear()
     found = False
-    relax = relax_pred if direction == "pred" else relax_succ
-    while not found and relax(digraph, dist, get_weight, update_ok, point_to):
+    edges = prepare_edges(digraph, get_weight)
+    if direction == "pred":
+
+        def relax() -> bool:
+            return relax_pred_flat(edges, dist, update_ok, point_to)
+
+    else:
+
+        def relax() -> bool:
+            return relax_succ_flat(edges, dist, update_ok, point_to)
+
+    while not found and relax():
         for vtx in find_cycle(digraph, point_to):
             if verify:
                 # Safety check - verify the cycle is indeed negative

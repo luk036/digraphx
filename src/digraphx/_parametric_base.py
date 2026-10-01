@@ -50,11 +50,8 @@ def _run_loop(
     if not dist:  # empty graph case - return early with no cycle found
         return ratio, []
 
-    DomainType = type(next(iter(dist.values())))
-
-    # Define a weight function that calculates distance based on current ratio
     def get_weight(e: Arc) -> Domain:
-        return DomainType(omega.distance(ratio, e))
+        return omega.distance(ratio, e)
 
     # Initialize min/max ratio and cycle
     ratio_best = ratio
