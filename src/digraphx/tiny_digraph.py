@@ -240,18 +240,44 @@ class TinyDiGraph(DiGraphAdapter):
         return self._succ.lst[n] is _UNINIT
 
     def add_edge(self, u_of_edge, v_of_edge, **attr):  # type: ignore
+        """Add the edge ``u_of_edge -> v_of_edge`` with optional attributes.
+
+        Resolves the lazy adjacency slots with direct list access instead of
+        routing through ``nx.DiGraph.add_edge``, which performs several
+        Python-level ``_LazyMapAdapter`` lookups per edge.
+        """
         u, v = u_of_edge, v_of_edge
-        self._ensure_adj(u)
-        self._ensure_adj(v)
-        super().add_edge(u, v, **attr)
+        succ = self._succ.lst
+        pred = self._pred.lst
+        if succ[u] is _UNINIT:
+            succ[u] = {}
+            pred[u] = {}
+        if succ[v] is _UNINIT:
+            succ[v] = {}
+            pred[v] = {}
+        neighbors = succ[u]
+        datadict = neighbors.get(v)
+        if datadict is None:
+            datadict = {}
+            neighbors[v] = datadict
+        if attr:
+            datadict.update(attr)
+        pred[v][u] = datadict
+        nx._clear_cache(self)
 
     def add_edges_from(self, ebunch_to_add, **attr):  # type: ignore
         for e in ebunch_to_add:
             ne = len(e)
             if ne == 3:
                 u, v, dd = e
-                d = {**attr, **dd}
-                self.add_edge(u, v, **d)
+                if attr and dd:
+                    self.add_edge(u, v, **{**attr, **dd})
+                elif attr:
+                    self.add_edge(u, v, **attr)
+                elif dd:
+                    self.add_edge(u, v, **dd)
+                else:
+                    self.add_edge(u, v)
             elif ne == 2:
                 u, v = e
                 if attr:
