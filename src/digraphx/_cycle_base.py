@@ -17,6 +17,7 @@ from typing import (
     List,
     Mapping,
     MutableMapping,
+    Optional,
     Tuple,
     TypeVar,
 )
@@ -208,6 +209,7 @@ def howard_search(
     point_to: PointTo,
     direction: str,
     verify: bool = True,
+    max_iter: Optional[int] = None,
 ) -> Generator[Cycle, None, None]:
     """Template Method: Howard's policy-iteration skeleton.
 
@@ -218,9 +220,14 @@ def howard_search(
     (``"pred"`` for predecessor relaxation, ``"succ"`` for successor).  When
     ``verify`` is ``True``, each candidate cycle is asserted to be negative
     before being yielded (matching the predecessor variants).
+
+    ``max_iter`` optionally caps the number of relaxation rounds.  ``None``
+    (default) means unbounded; when set and exceeded without finding a negative
+    cycle, ``RuntimeError`` is raised rather than looping forever.
     """
     point_to.clear()
     found = False
+    num_iter = 0
     edges = prepare_edges(digraph, get_weight)
     if direction == "pred":
 
@@ -233,9 +240,14 @@ def howard_search(
             return relax_succ_flat(edges, dist, update_ok, point_to)
 
     while not found and relax():
+        num_iter += 1
         for vtx in find_cycle(digraph, point_to):
             if verify:
                 # Safety check - verify the cycle is indeed negative
                 assert is_negative(point_to, vtx, dist, get_weight)
             found = True
             yield cycle_list(point_to, vtx)
+        if not found and max_iter is not None and num_iter >= max_iter:
+            raise RuntimeError(
+                f"howard_search did not converge within max_iter={max_iter}"
+            )

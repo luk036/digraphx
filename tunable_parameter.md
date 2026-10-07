@@ -23,13 +23,13 @@ internal `src/digraphx/_cycle_base.py`.
 | API | Parameters | Default |
 | --- | --- | --- |
 | `NegCycleFinder(digraph)` | `digraph` | required |
-| `NegCycleFinder.howard(dist, get_weight)` | — | no tunables |
+| `NegCycleFinder.howard(dist, get_weight, max_iter=None)` | `max_iter: int \| None` | `None` (unbounded) |
 | `NegCycleFinderQ(digraph)` | `digraph` | required |
 | `NegCycleFinderQ.relax_pred(dist, get_weight, update_ok)` | `update_ok` (predicate) | required |
 | `NegCycleFinderQ.relax_succ(dist, get_weight, update_ok)` | `update_ok` | required |
-| `NegCycleFinderQ.howard_pred(dist, get_weight, update_ok)` | `update_ok` | required |
-| `NegCycleFinderQ.howard_succ(dist, get_weight, update_ok)` | `update_ok` | required |
-| `howard_search(..., direction, verify=True)` (internal) | `verify: bool` | `True` |
+| `NegCycleFinderQ.howard_pred(dist, get_weight, update_ok, max_iter=None)` | `update_ok`; `max_iter` | required; `None` |
+| `NegCycleFinderQ.howard_succ(dist, get_weight, update_ok, max_iter=None)` | `update_ok`; `max_iter` | required; `None` |
+| `howard_search(..., direction, verify=True, max_iter=None)` (internal) | `verify: bool`; `max_iter` | `True`; `None` |
 
 Notes:
 
@@ -138,6 +138,7 @@ File: `experimental/spare_tsv.py`.
 | Tunable | Default | Location |
 | --- | --- | --- |
 | `update_ok` predicate (relaxation gate) | `lambda old, new: True` | `src/digraphx/_cycle_base.py:37`, `src/digraphx/_parametric_base.py:37` |
+| `howard`/`howard_pred`/`howard_succ` `max_iter` | `None` (unbounded; raises `RuntimeError` if set and exceeded) | `src/digraphx/neg_cycle.py`, `src/digraphx/neg_cycle_q.py` |
 | `MinParametricSolver.run(..., pick_one_only)` | `False` | `src/digraphx/min_parametric_q.py:130` |
 | `cycle_canceling_mcf(..., sink)` | `None` | `src/digraphx/mcf.py:254` |
 | `CycleRatioAPI(..., result_type)` | required (`Fraction` / `float`) | `src/digraphx/min_cycle_ratio.py:113` |

@@ -44,6 +44,7 @@ from typing import (
     Generic,
     Mapping,
     MutableMapping,
+    Optional,
     Tuple,
     Union,
 )
@@ -202,6 +203,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
         dist: MutableMapping[Node, Domain],
         get_weight: Callable[[Arc], Domain],
         update_ok: Callable[[Domain, Domain], bool],
+        max_iter: Optional[int] = None,
     ) -> Generator[Cycle, None, None]:
         """Find negative cycles using predecessor-based Howard's algorithm.
 
@@ -209,6 +211,9 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
             dist: Initial distance estimates (often zero-initialized)
             get_weight: Function to get weight of an edge
             update_ok: Function to determine if distance updates are allowed
+            max_iter: Optional cap on relaxation rounds; ``None`` (default) is
+                unbounded. Exceeding the cap without a negative cycle raises
+                ``RuntimeError``.
 
         Yields:
             Generator[Cycle, None, None]: Each negative cycle found as a list of edges
@@ -237,7 +242,13 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
             False
         """
         yield from _howard_search(
-            self.digraph, dist, get_weight, update_ok, self.pred, "pred"
+            self.digraph,
+            dist,
+            get_weight,
+            update_ok,
+            self.pred,
+            "pred",
+            max_iter=max_iter,
         )
 
     def howard_succ(
@@ -245,6 +256,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
         dist: MutableMapping[Node, Domain],
         get_weight: Callable[[Arc], Domain],
         update_ok: Callable[[Domain, Domain], bool],
+        max_iter: Optional[int] = None,
     ) -> Generator[Cycle, None, None]:
         """Find negative cycles using successor-based Howard's algorithm.
 
@@ -252,9 +264,9 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
             dist: Initial distance estimates (often zero-initialized)
             get_weight: Function to get weight of an edge
             update_ok: Function to determine if distance updates are allowed
-
-        Yields:
-            Generator[Cycle, None, None]: Each negative cycle found as a list of edges
+            max_iter: Optional cap on relaxation rounds; ``None`` (default) is
+                unbounded. Exceeding the cap without a negative cycle raises
+                ``RuntimeError``.
 
         Note:
             Similar to howard_pred but uses successor updates instead of predecessor
@@ -278,7 +290,14 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
             False
         """
         yield from _howard_search(
-            self.digraph, dist, get_weight, update_ok, self.succ, "succ", verify=False
+            self.digraph,
+            dist,
+            get_weight,
+            update_ok,
+            self.succ,
+            "succ",
+            verify=False,
+            max_iter=max_iter,
         )
 
     def cycle_list(self, handle: Node, point_to: Dict[Node, Tuple[Node, Arc]]) -> Cycle:

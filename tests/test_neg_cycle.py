@@ -3,6 +3,7 @@ from __future__ import print_function
 
 from typing import Any, Callable, Dict, Union
 
+import pytest
 from mywheel.map_adapter import MapAdapter
 
 from digraphx.neg_cycle import NegCycleFinder
@@ -112,3 +113,31 @@ def test_neg_cycle_is_negative_edge_case() -> None:
 
     # This should return False as the triangle inequality is not violated
     assert not finder.is_negative(0, dist, lambda edge: edge.get("weight", 1))
+
+
+def test_howard_max_iter_default_unbounded() -> None:
+    digraph: DiGraphAdapter = DiGraphAdapter()
+    digraph.add_edge(0, 1, weight=1)
+    dist: Dict[int, int] = {0: 0, 1: 5}
+    finder: NegCycleFinder[Any, Any, Any] = NegCycleFinder(digraph)
+    assert list(finder.howard(dist, lambda edge: edge.get("weight", 1))) == []
+
+
+def test_howard_max_iter_finds_cycle() -> None:
+    digraph: DiGraphAdapter = DiGraphAdapter()
+    digraph.add_edge(0, 1, weight=1)
+    digraph.add_edge(1, 0, weight=-3)
+    dist: Dict[int, int] = {0: 0, 1: 0}
+    finder: NegCycleFinder[Any, Any, Any] = NegCycleFinder(digraph)
+    cycles = list(finder.howard(dist, lambda edge: edge.get("weight", 1), max_iter=100))
+    assert len(cycles) >= 1
+
+
+def test_howard_max_iter_raises_when_exceeded() -> None:
+    digraph: DiGraphAdapter = DiGraphAdapter()
+    digraph.add_edge(0, 1, weight=1)
+    dist: Dict[int, int] = {0: 0, 1: 5}
+    finder: NegCycleFinder[Any, Any, Any] = NegCycleFinder(digraph)
+    with pytest.raises(RuntimeError):
+        for _ in finder.howard(dist, lambda edge: edge.get("weight", 1), max_iter=1):
+            pass

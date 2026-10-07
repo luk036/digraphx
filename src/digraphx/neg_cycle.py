@@ -46,6 +46,7 @@ from typing import (
     Generic,
     Mapping,
     MutableMapping,
+    Optional,
     Tuple,
     Union,
 )
@@ -241,12 +242,16 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
         self,
         dist: MutableMapping[Node, Domain],
         get_weight: Callable[[Arc], Domain],
+        max_iter: Optional[int] = None,
     ) -> Generator[Cycle, None, None]:
         """Main algorithm to find negative cycles using Howard's method.
 
         Args:
             dist: Initial distance estimates (often initialized to zero)
             get_weight: Function to get edge weights
+            max_iter: Optional cap on relaxation rounds; ``None`` (default) is
+                unbounded. Exceeding the cap without a negative cycle raises
+                ``RuntimeError``.
 
         Yields:
             Generator[Cycle, None, None]: Each found negative cycle as a list of edges
@@ -274,5 +279,11 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
             False
         """
         yield from _howard_search(
-            self.digraph, dist, get_weight, _always_true, self.pred, "pred"
+            self.digraph,
+            dist,
+            get_weight,
+            _always_true,
+            self.pred,
+            "pred",
+            max_iter=max_iter,
         )
