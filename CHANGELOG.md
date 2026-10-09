@@ -1,5 +1,24 @@
 # Changelog
 
+## Version 0.7 (2026-10-09)
+
+### Features
+- **Optional `max_iter` cap for Howard's method**: `howard` / `howard_pred` / `howard_succ` accept an optional `max_iter` (default `None` = unbounded); a set cap raises `RuntimeError` instead of looping forever on degenerate graphs. (#8669cdd)
+
+### Performance
+- **Fast-path `TinyDiGraph.add_edge`**: Lazy-slot resolution avoids unnecessary work on edge insertion. (#a7ed9c3)
+- **Pre-weighted edge list reuse**: Howard relaxation reuses the pre-weighted edge list instead of recomputing it. (#da93374)
+
+### Bug Fixes
+- **`cheat_adjlist_outer_dict` doctest**: Aligned the doctest with the lazy-sentinel behavior. (#20e7c11)
+
+### Testing & Code Quality
+- **Runtime benchmarks**: Added benchmarks for the core graph algorithms. (#0c7329a)
+- **Neg-cycle tests**: Added tests covering the `max_iter` cap. (#8669cdd)
+
+### Documentation
+- **Tunable parameter reference**: Added `tunable_parameter.md`. (#9e0639b)
+
 ## Version 0.6 (2026-09-04)
 
 ### Features
