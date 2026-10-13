@@ -19,7 +19,7 @@ built, not in the solver.
 | C-PROP   | ``mu``                     | ``sigma``             |
 +----------+----------------------------+-----------------------+
 
-``min_cycle_ratio`` solves ``min_C sum(cost)/sum(time)`` for any such columns
+``css_ratio`` solves ``min_C sum(cost)/sum(time)`` for any such columns
 and is the single code path shared by the objective facades.
 """
 
@@ -53,7 +53,7 @@ def _default_cost_time(edge: Any) -> Tuple[float, float]:
     return edge["cost"], edge["time"]
 
 
-def min_cycle_ratio(
+def css_ratio(
     g: Mapping[Node, Mapping[Node, Any]],
     dist: MutableMapping[Node, float],
     hi: float = HI,
@@ -86,7 +86,7 @@ def even(
     def cost_time(e: Any) -> Tuple[float, float]:
         return e["delay"], 0.0 if e["type"] == "p" else 1.0
 
-    return min_cycle_ratio(g, dist, hi, cost_time=cost_time)
+    return css_ratio(g, dist, hi, cost_time=cost_time)
 
 
 def prop(
@@ -95,7 +95,7 @@ def prop(
     hi: float = HI,
 ) -> Tuple[float, Cycle]:
     """PROP: variance-proportional slack (edges carry ``cost`` / ``time``)."""
-    return min_cycle_ratio(g, dist, hi)
+    return css_ratio(g, dist, hi)
 
 
 def cprop(
@@ -108,7 +108,7 @@ def cprop(
     def cost_time(e: Any) -> Tuple[float, float]:
         return e["mu"], e["sigma"]
 
-    return min_cycle_ratio(g, dist, hi, cost_time=cost_time)
+    return css_ratio(g, dist, hi, cost_time=cost_time)
 
 
 def min_clock_period(
@@ -126,5 +126,5 @@ def min_clock_period(
     def cost_time(e: Any) -> Tuple[float, float]:
         return (-e["delay"], 1.0) if e["type"] == "s" else (e["delay"], 0.0)
 
-    ratio, cycle = min_cycle_ratio(g, dist, hi, cost_time=cost_time)
+    ratio, cycle = css_ratio(g, dist, hi, cost_time=cost_time)
     return -ratio, cycle

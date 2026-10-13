@@ -15,7 +15,7 @@ finally:
 
 # Public API re-exports (matching the README quick-start examples)
 from .csr_digraph import CSRDiGraph  # noqa: E402
-from .css import cprop, even, min_clock_period, min_cycle_ratio, prop  # noqa: E402
+from .css import cprop, css_ratio, even, min_clock_period, prop  # noqa: E402
 from .mcf import cycle_canceling_mcf  # noqa: E402
 from .min_cycle_ratio import MinCycleRatioSolver  # noqa: E402
 from .min_parametric_q import MinParametricSolver  # noqa: E402
@@ -34,9 +34,9 @@ __all__ = [
     "NegCycleFinderQ",
     "TinyDiGraph",
     "cprop",
+    "css_ratio",
     "cycle_canceling_mcf",
     "even",
     "min_clock_period",
-    "min_cycle_ratio",
     "prop",
 ]

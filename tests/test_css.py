@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from pytest import approx
 
-from digraphx.css import cprop, even, min_clock_period, min_cycle_ratio, prop
+from digraphx.css import cprop, css_ratio, even, min_clock_period, prop
 
 
 def test_min_clock_period() -> None:
@@ -27,7 +27,7 @@ def test_even_weights() -> None:
         "v4": {"v3": TCP - 8.0, "v1": 3.0},
     }
     dist: Dict[str, float] = {v: 0.0 for v in digraph}
-    beta, _ = min_cycle_ratio(digraph, dist, 10.0, cost_time=lambda e: (e, 1.0))
+    beta, _ = css_ratio(digraph, dist, 10.0, cost_time=lambda e: (e, 1.0))
     assert beta == approx(1.0)
 
 
