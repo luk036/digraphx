@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 0.8 (2026-10-12)
+
+### Features
+- **Clock Skew Scheduling API (`css.py`)**: Added `min_cycle_ratio`, `even`, `prop`, `cprop`, and `min_clock_period`, expressing the single-parameter CSS family (Min CP, EVEN, PROP, C-PROP) as one min-ratio-cycle engine over a shared `(cost, time)` abstraction. `min_clock_period` handles the max-ratio case via the negated-cost transformation. Exported from the package root.
+
+### Testing & Code Quality
+- **Canonical CSS tests**: Added `tests/test_css.py` with the preserved golden values. Removed the duplicated `find_beta`/`even`/`prop` helpers by deleting `test_timing_example_howard.py` and `test_delay_padding_example_howard.py`; their golden values now live in `test_css.py`.
+
 ## Version 0.7 (2026-10-09)
 
 ### Features
