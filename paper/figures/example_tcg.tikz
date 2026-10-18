@@ -1,0 +1,25 @@
+\begin{tikzpicture}[>=latex, every node/.style={font=\small},
+  ff/.style={circle, draw, fill=cyan!20, minimum size=6mm, inner sep=1pt},
+  lbl/.style={draw=none, fill=none, inner sep=1.5pt, font=\scriptsize}]
+\node[ff] (A) at (0,2.6) {A};
+\node[ff] (B) at (6,2.6) {B};
+\node[ff] (C) at (6,-2.6) {C};
+\node[ff] (D) at (0,-2.6) {D};
+
+% hold (short) edges: dashed, forward i->j
+\draw[->, dashed] (A) to[bend left=16] node[lbl, above]{$d_{AB}=3$} (B);
+\draw[->, dashed] (B) to[bend left=16] node[lbl, right]{$d_{BC}=4$} (C);
+\draw[->, dashed] (C) to[bend left=16] node[lbl, below]{$d_{CD}=4$} (D);
+\draw[->, dashed] (D) to[bend left=16] node[lbl, left]{$d_{DA}=4$} (A);
+
+% setup (long) edges: solid, reverse j->i
+\draw[->, thick] (B) to[bend left=16] node[lbl, below]{$D_{AB}=12$} (A);
+\draw[->, thick] (C) to[bend left=16] node[lbl, left]{$D_{BC}=4$} (B);
+\draw[->, thick] (D) to[bend left=16] node[lbl, above]{$D_{CD}=4$} (C);
+\draw[->, thick] (A) to[bend left=16] node[lbl, right]{$D_{DA}=4$} (D);
+
+% critical cycle highlighted red: hold A->B plus setup B->A
+\draw[->, very thick, red, dashed] (A) to[bend left=16] (B);
+\draw[->, very thick, red] (B) to[bend left=16] (A);
+\node[red, font=\scriptsize, anchor=south] at (3,3.5){critical cycle: $D_{AB}-d_{AB}=9$};
+\end{tikzpicture}

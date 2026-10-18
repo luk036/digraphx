@@ -1,0 +1,52 @@
+\providecommand{\myff}[3]{%
+  \node[draw, fill=yellow!20, minimum width=0.8cm, minimum height=0.8cm, inner sep=1pt] (#1) at (#2,#3) {};
+  \node[font=\tiny, anchor=north west, inner sep=1pt] at (#1.north west) {D};
+  \node[font=\tiny, anchor=north east, inner sep=1pt] at (#1.north east) {Q};
+  \draw[line width=0.5pt] ($(#1.south west)+(0.05,0.05)$) -- ++(0.13,0) -- ++(-0.13,0.13);
+}
+\begin{tikzpicture}[circuit logic US, scale=0.8, transform shape, >=latex,
+   every node/.style={font=\tiny},
+   sp/.style={draw=red!80!black,thick}, hp/.style={draw=blue!80!black,thick}, sh/.style={draw=violet,thick}]
+\myff{fa}{0}{0}\node[anchor=north] at (fa.south){FF$_A$};
+\myff{fb}{8}{0}\node[anchor=north] at (fb.south){FF$_B$};
+\myff{fc}{12}{0}\node[anchor=north] at (fc.south){FF$_C$};
+\myff{fd}{16}{0}\node[anchor=north] at (fd.south){FF$_D$};
+
+% reconvergent cone A -> B : shared prefix G1, long branch G2-G3, short branch G4
+\node[and gate US,draw=violet,logic gate inputs=nn] (g1) at (1.8,0){};
+\node[and gate US,draw=red!80!black,logic gate inputs=nn] (g2) at (4.0,1.8){};
+\node[or gate US,draw=red!80!black,logic gate inputs=nn] (g3) at (5.8,1.8){};
+\node[buffer gate US,draw=blue!80!black] (g4) at (5.0,-1.8){};
+\draw[->,sh] (0.4,0)--(g1.west);
+\draw[->,sp] (g1.east)--(2.8,0)--(2.8,1.8)--(g2.west);
+\draw[->,sp] (g2.east)--(g3.west);
+\draw[->,sp] (g3.east)--(7.2,1.8)--(7.2,0);
+\draw[->,hp] (g1.east)--(2.8,0)--(2.8,-1.8)--(g4.west);
+\draw[->,hp] (g4.east)--(7.2,-1.8)--(7.2,0);
+
+% simple paths B -> C, C -> D and the feedback D -> A
+\node[and gate US,draw,logic gate inputs=nn] (g5) at (9.6,0){};
+\node[or gate US,draw,logic gate inputs=nn] (g6) at (13.6,0){};
+\node[and gate US,draw,logic gate inputs=nn] (g7) at (13,4.2){};
+\draw[->] (fb.east)--(g5.west);
+\draw[->] (g5.east)--(fc.west);
+\draw[->] (fc.east)--(g6.west);
+\draw[->] (g6.east)--(fd.west);
+\draw[->] (fd.east)--(16.6,0)--(16.6,4.2)--(g7.east);
+\draw[->] (g7.west)--(-0.9,4.2)--(-0.9,0)--(fa.west);
+
+% insertion points
+\draw[red,dashed] ($(g1)+(-0.6,-0.55)$) rectangle ($(g1)+(0.6,0.55)$);
+\node[red,anchor=north] at (1.8,-0.85){shared: D \& d together};
+\draw[red,dashed] ($(6.0,-1.8)+(-0.55,-0.5)$) rectangle ($(6.0,-1.8)+(0.55,0.5)$);
+\node[red,anchor=north] at (6.0,-2.45){min-only: d alone};
+
+% annotations
+\node[red!80!black,anchor=south] at (4.9,2.15){long (setup)};
+\node[blue!80!black,anchor=north] at (5.0,-2.15){short (min)};
+\node[violet,anchor=south] at (1.8,0.6){prefix};
+\node[red!80!black,anchor=south,align=center] at (4.3,2.95){$D_{AB}=12,\ d_{AB}=3$};
+\node[anchor=north] at (9.6,0.55){$D_{BC}=d_{BC}=4$};
+\node[anchor=north] at (13.6,0.55){$D_{CD}=d_{CD}=4$};
+\node[anchor=south] at (7.5,4.45){$D_{DA}=d_{DA}=4$};
+\end{tikzpicture}

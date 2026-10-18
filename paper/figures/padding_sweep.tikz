@@ -1,0 +1,23 @@
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.82\linewidth,
+  height=5.4cm,
+  xlabel={added delay on the $A\to B$ logic},
+  ylabel={minimum clock period},
+  xmin=0, xmax=5, ymin=0, ymax=10,
+  domain=0:5,
+  grid=both, grid style={gray!25},
+  legend pos=north east, legend cell align=left,
+  every axis plot/.append style={thick},
+]
+% padding the min-only branch lowers the period ...
+\addplot[color=red, mark=*] coordinates {(0,9)(1,8)(2,7)(3,6)(4,6)(5,6)};
+\addlegendentry{pad min-only branch}
+% ... padding the shared prefix moves both delays and changes nothing.
+\addplot[color=blue, mark=square*] coordinates {(0,9)(1,9)(2,9)(3,9)(4,9)(5,9)};
+\addlegendentry{pad shared prefix}
+% setup-only floor: no hold padding can beat it.
+\addplot[color=black, dashed, mark=none] {6};
+\addlegendentry{setup-only floor}
+\end{axis}
+\end{tikzpicture}

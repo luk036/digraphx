@@ -1,0 +1,19 @@
+---
+# LaTeX/PDF rendering options, loaded as a metadata file by the Makefile.
+# Kept close to the sibling paper in netoptim/paper/latex.yaml so the toolchain
+# (pandoc + pdflatex, single column, native TikZ) is identical across repos.
+institute: Fudan University
+date: \today
+link-citations: true
+colorlinks: true
+header-includes:
+  - '\usepackage{tikz}'
+  - '\usetikzlibrary{arrows,arrows.meta,positioning,calc,shapes,shapes.geometric,trees,fit,backgrounds,circuits.logic.US}'
+  - '\usepackage{pgfplots}'
+  - '\pgfplotsset{compat=1.18}'
+  - '\usepackage{amsmath,amssymb}'
+  - '\usepackage{booktabs}'
+  - '\usepackage{subcaption}'
+  - '\usepackage[ruled,vlined,linesnumbered]{algorithm2e}'
+  - '\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}'
+...

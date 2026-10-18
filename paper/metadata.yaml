@@ -1,0 +1,42 @@
+---
+title: "Novel Multi-Corner Delay Padding using Path Relationship Analysis and Dual Decomposition"
+author:
+  - "Wai-Shing Luk"
+date: "\\today"
+abstract: |
+  Delay padding inserts extra delay into selected data paths to repair the hold
+  violations that clock skew scheduling cannot, but applying it consistently
+  across process, voltage, and temperature corners remains hard. We present a
+  multi-corner delay padding methodology built on two ideas. First, path
+  relationship analysis (PRA) decides *where* delay may physically be inserted
+  before deciding *how much* to insert: the maximum-delay (setup) and
+  minimum-delay (hold) paths of every register pair are classified into four
+  structural configurations, and the timing constraint graph is augmented with
+  auxiliary nodes and coupling edges to encode them. Second, a dual
+  decomposition coordinates the per-corner padding subproblems---each a network
+  flow problem---through shared delay variables and Lagrange multipliers, which
+  enforces a single physical padding assignment and removes the oscillatory
+  "ping-pong" effect of corner-by-corner optimization. Statistical robustness is
+  provided by modeling path delays with the generalized extreme value (GEV)
+  distribution, whose quantile function converts probabilistic timing
+  constraints into deterministic difference constraints. The resulting flow
+  couples a binary search on the clock period with a negative-cycle feasibility
+  test and the dual decomposition solver. On the OpenCore and OpenABC-D
+  benchmarks with the ASAP7 7\,nm library across the FF, SS, and TT corners at a
+  0.99 timing yield, the method reduces the optimized clock period by an average
+  of 6.12% relative to the single worst-case (SS) corner, with a largest gain of
+  9.22%.
+keywords:
+  - delay padding
+  - clock skew scheduling
+  - multi-corner timing
+  - path relationship analysis
+  - dual decomposition
+  - Lagrangian relaxation
+  - statistical static timing analysis
+  - generalized extreme value distribution
+  - timing constraint graph
+lang: en
+bibliography: refs.bib
+reference-section-title: References
+...
