@@ -33,7 +33,7 @@ PDFFLAGS = -s -t latex -N --pdf-engine=pdflatex \
            --citeproc --csl=$(CSL) \
            -V geometry:margin=1in
 
-.PHONY: paper pdf html tex clean
+.PHONY: paper pdf html tex figures clean
 
 paper: pdf
 
@@ -41,6 +41,11 @@ pdf: $(OUT)
 
 $(OUT): $(MD) metadata.yaml latex.yaml $(BIB) $(CSL) $(wildcard figures/*.tikz)
 	$(PANDOC) $(PDFFLAGS) metadata.yaml latex.yaml $(MD) -o $(OUT)
+
+figures: figures/padding_sweep.tikz
+
+figures/padding_sweep.tikz: ../examples/delay_padding.py
+	python ../examples/delay_padding.py --tikz $@
 
 html: $(MD) metadata.yaml latex.yaml $(BIB) $(CSL)
 	$(PANDOC) -s -t html5 --citeproc --csl=$(CSL) --mathjax --embed-resources \

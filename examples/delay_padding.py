@@ -14,15 +14,18 @@ not move.
 
 from __future__ import annotations
 
-from typing import Dict, Tuple
+import argparse
+from pathlib import Path
+from typing import Dict, List, Optional, Sequence, Tuple
 
 from digraphx import min_clock_period
 
-Path = Tuple[str, str]
+Path_ = Tuple[str, str]
 Edge = Dict[str, object]
 Graph = Dict[str, Dict[str, Dict[str, object]]]
+Sweep = List[Tuple[float, float, float]]
 
-DATA_PATHS: Dict[Path, Tuple[float, float]] = {
+DATA_PATHS: Dict[Path_, Tuple[float, float]] = {
     ("A", "B"): (12.0, 3.0),
     ("B", "C"): (4.0, 4.0),
     ("C", "D"): (4.0, 4.0),
@@ -32,13 +35,15 @@ DATA_PATHS: Dict[Path, Tuple[float, float]] = {
 
 ``A -> B`` is a reconvergent cone: a shared prefix (delay 2) that fans out into
 a long branch (5 + 5) and a short branch (1), so ``D_AB = 12`` and ``d_AB = 3``.
-The other three paths are simple (``D = d``).
 """
+
+SWEEP: Sequence[float] = (0.0, 1.0, 2.0, 3.0, 4.0, 5.0)
+"""Padding amounts swept by both the printed table and the paper figure."""
 
 
 def build(
-    delta_D: Dict[Path, float] | None = None,
-    delta_d: Dict[Path, float] | None = None,
+    delta_D: Dict[Path_, float] | None = None,
+    delta_d: Dict[Path_, float] | None = None,
 ) -> Graph:
     """Build the timing constraint graph, optionally perturbing delays.
 
@@ -58,8 +63,8 @@ def build(
 
 
 def period(
-    delta_D: Dict[Path, float] | None = None,
-    delta_d: Dict[Path, float] | None = None,
+    delta_D: Dict[Path_, float] | None = None,
+    delta_d: Dict[Path_, float] | None = None,
 ) -> float:
     """Minimum feasible clock period after the given perturbations."""
     g = build(delta_D, delta_d)
@@ -76,7 +81,51 @@ def pad_min_only(amount: float) -> float:
     return period(delta_d={("A", "B"): amount})
 
 
-def main() -> None:
+def setup_floor() -> float:
+    """Setup-only bound: no amount of hold padding can beat it."""
+    return sum(D for D, _ in DATA_PATHS.values()) / len(DATA_PATHS)
+
+
+def sweep() -> Sweep:
+    """``(padding, min-only period, shared period)`` for every padding amount."""
+    return [(amount, pad_min_only(amount), pad_shared(amount)) for amount in SWEEP]
+
+
+def tikz(rows: Optional[Sweep] = None) -> str:
+    """Render the padding sweep as a pgfplots axis, ready for ``\\input``."""
+    rows = sweep() if rows is None else rows
+    min_only = "".join(f"({a:g},{p:g})" for a, p, _ in rows)
+    shared = "".join(f"({a:g},{p:g})" for a, _, p in rows)
+    x_max = max(a for a, _, _ in rows)
+    y_max = max(max(p, q) for _, p, q in rows) + 1.0
+    return f"""\\begin{{tikzpicture}}
+\\begin{{axis}}[
+  width=0.82\\linewidth,
+  height=5.4cm,
+  xlabel={{added delay on the $A\\to B$ logic}},
+  ylabel={{minimum clock period}},
+  xmin=0, xmax={x_max:g}, ymin=0, ymax={y_max:g},
+  domain=0:{x_max:g},
+  grid=both, grid style={{gray!25}},
+  legend pos=north east, legend cell align=left,
+  every axis plot/.append style={{thick}},
+]
+% padding the min-only branch lowers the period ...
+\\addplot[color=red, mark=*] coordinates {{{min_only}}};
+\\addlegendentry{{pad min-only branch}}
+% ... padding the shared prefix moves both delays and changes nothing.
+\\addplot[color=blue, mark=square*] coordinates {{{shared}}};
+\\addlegendentry{{pad shared prefix}}
+% setup-only floor: no hold padding can beat it.
+\\addplot[color=black, dashed, mark=none] {{{setup_floor():g}}};
+\\addlegendentry{{setup-only floor}}
+\\end{{axis}}
+\\end{{tikzpicture}}
+"""
+
+
+def report() -> None:
+    """Print the narrative used in the paper."""
     print("Delay padding demo: a 4-flip-flop ring with a reconvergent path\n")
     print("Model")
     print("  a local data path i -> j is ONE block of logic with")
@@ -106,15 +155,30 @@ def main() -> None:
 
     print("[4] Sweep of padding on A -> B")
     print("      pad   min-only   shared")
-    for amount in (0.0, 1.0, 2.0, 3.0, 4.0, 5.0):
-        print(
-            f"      {amount:4.1f}   {pad_min_only(amount):8.2f}   {pad_shared(amount):6.2f}"
-        )
-    floor = (12.0 + 4.0 + 4.0 + 4.0) / 4.0
-    print(f"      floor at {floor:.2f} = (12 + 4 + 4 + 4) / 4 setup-only bound\n")
+    for amount, min_only_period, shared_period in sweep():
+        print(f"      {amount:4.1f}   {min_only_period:8.2f}   {shared_period:6.2f}")
+    print(
+        f"      floor at {setup_floor():.2f} = (12 + 4 + 4 + 4) / 4 setup-only bound\n"
+    )
 
     print("[5] The simple paths B -> C, C -> D, D -> A have D = d,")
     print("      so no insertion can separate their setup and hold delays.")
+
+
+def main(argv: Optional[Sequence[str]] = None) -> None:
+    parser = argparse.ArgumentParser(description="Delay padding demo")
+    parser.add_argument(
+        "--tikz",
+        type=Path,
+        metavar="PATH",
+        help="write the padding-sweep figure as TikZ and exit",
+    )
+    args = parser.parse_args(argv)
+    if args.tikz is not None:
+        with args.tikz.open("w", encoding="utf-8", newline="\n") as handle:
+            handle.write(tikz())
+        return
+    report()
 
 
 if __name__ == "__main__":
