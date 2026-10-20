@@ -23,34 +23,14 @@ built, not in the solver.
 and is the single code path shared by the objective facades.
 """
 
-from typing import Any, Callable, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Mapping, MutableMapping, Optional, Tuple
 
-from .neg_cycle import Cycle, Node
-from .parametric import MaxParametricSolver, ParametricAPI
+from ._cost_time import CostTime, CostTimeAPI, default_cost_time
+from ._types import Cycle, Node
+from .parametric import MaxParametricSolver
 
 HI = 1e12
 """Finite initial ratio; the parametric solver rejects ``inf``."""
-
-CostTime = Callable[[Any], Tuple[float, float]]
-"""Maps an edge to its ``(cost, time)`` column values."""
-
-
-class _Ratio(ParametricAPI[Any, Any, float]):
-    def __init__(self, cost_time: CostTime) -> None:
-        self._cost_time = cost_time
-
-    def distance(self, ratio: float, edge: Any) -> float:
-        cost, time = self._cost_time(edge)
-        return cost - ratio * time
-
-    def zero_cancel(self, cycle: Any) -> float:
-        cost = sum(self._cost_time(e)[0] for e in cycle)
-        time = sum(self._cost_time(e)[1] for e in cycle)
-        return cost / time if time else float("inf")
-
-
-def _default_cost_time(edge: Any) -> Tuple[float, float]:
-    return edge["cost"], edge["time"]
 
 
 def css_ratio(
@@ -68,7 +48,7 @@ def css_ratio(
     ``cost_time`` maps an edge to ``(cost, time)``; by default edges are
     assumed to be mappings with keys ``"cost"`` and ``"time"``.
     """
-    omega = _Ratio(cost_time or _default_cost_time)
+    omega = CostTimeAPI(cost_time or default_cost_time, float)
     return MaxParametricSolver(g, omega).run(dist, hi)
 
 

@@ -39,27 +39,17 @@ The algorithm skeleton is shared with NegCycleFinderQ (see
 the negativity check are supplied as strategies there.
 """
 
-from typing import (
-    Callable,
-    Dict,
-    Generator,
-    Generic,
-    Mapping,
-    MutableMapping,
-    Optional,
-    Tuple,
-    Union,
-)
+from typing import Callable, Generator, MutableMapping, Optional
 
-from ._cycle_base import Arc, Cycle, Domain, Node, _always_true
+from ._cycle_base import HowardFinderBase, PredecessorRelaxation, _always_true
 from ._cycle_base import cycle_list as _cycle_list
 from ._cycle_base import find_cycle as _find_cycle
 from ._cycle_base import howard_search as _howard_search
-from ._cycle_base import is_negative as _is_negative
 from ._cycle_base import relax_pred as _relax_pred
+from ._types import Arc, Cycle, Domain, Node
 
 
-class NegCycleFinder(Generic[Node, Arc, Domain]):
+class NegCycleFinder(HowardFinderBase[Node, Arc, Domain]):
     """Negative Cycle Finder by Howard's method
 
     This code defines a `NegCycleFinder` class, which is used to find negative
@@ -97,23 +87,6 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
         graph and is based on the Bellman-Ford Algorithm. It runs in O(V*E +
         V*E^2) time complexity in the worst case.
     """
-
-    # Dictionary to store predecessor information (node -> (predecessor_node, edge))
-    pred: Dict[Node, Tuple[Node, Arc]]
-
-    def __init__(
-        self, digraph: Mapping[Node, Union[Mapping[Node, Arc], Mapping[Node, Arc]]]
-    ) -> None:
-        """Initialize the negative cycle finder with a directed graph.
-
-        Args:
-            digraph: A mapping representing a directed graph where:
-                - Keys are source nodes
-                - Values are iterables of (target_node, edge) pairs
-                Example: {u: [(v, edge_uv), (w, edge_uw)], v: [(u, edge_vu)]}
-        """
-        self.digraph = digraph
-        self.pred: Dict[Node, Tuple[Node, Arc]] = {}
 
     def find_cycle(self) -> Generator[Node, None, None]:
         """Find cycles in the current predecessor graph using depth-first search.
@@ -236,7 +209,7 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
             >>> finder.is_negative('a', dist, lambda edge: edge)
             True
         """
-        return _is_negative(self.pred, handle, dist, get_weight)
+        return super().is_negative(handle, dist, get_weight)
 
     def howard(
         self,
@@ -284,6 +257,6 @@ class NegCycleFinder(Generic[Node, Arc, Domain]):
             get_weight,
             _always_true,
             self.pred,
-            "pred",
+            PredecessorRelaxation(),
             max_iter=max_iter,
         )

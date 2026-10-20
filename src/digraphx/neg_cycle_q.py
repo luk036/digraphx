@@ -41,7 +41,6 @@ from typing import (
     Callable,
     Dict,
     Generator,
-    Generic,
     Mapping,
     MutableMapping,
     Optional,
@@ -49,16 +48,16 @@ from typing import (
     Union,
 )
 
-from ._cycle_base import Arc, Cycle, Domain, Node
+from ._cycle_base import HowardFinderBase, PredecessorRelaxation, SuccessorRelaxation
 from ._cycle_base import cycle_list as _cycle_list
 from ._cycle_base import find_cycle as _find_cycle
 from ._cycle_base import howard_search as _howard_search
-from ._cycle_base import is_negative as _is_negative
 from ._cycle_base import relax_pred as _relax_pred
 from ._cycle_base import relax_succ as _relax_succ
+from ._types import Arc, Cycle, Domain, Node
 
 
-class NegCycleFinderQ(Generic[Node, Arc, Domain]):
+class NegCycleFinderQ(HowardFinderBase[Node, Arc, Domain]):
     """Negative Cycle Finder with constraints by Howard's method
 
     Howard's method is a minimum cycle ratio (MCR) algorithm that uses a policy
@@ -76,9 +75,6 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
     processed.
     """
 
-    # Predecessor dictionary: maps each node to (predecessor_node, connecting_edge)
-    pred: Dict[Node, Tuple[Node, Arc]]
-
     # Successor dictionary: maps each node to (successor_node, connecting_edge)
     succ: Dict[Node, Tuple[Node, Arc]]
 
@@ -93,8 +89,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
                 - Inner values: iterables of (target_node, edge) pairs
                 Example: {u: [(v, edge_uv), (w, edge_uw)], v: [(u, edge_vu)]}
         """
-        self.digraph = digraph
-        self.pred: Dict[Node, Tuple[Node, Arc]] = {}
+        super().__init__(digraph)
         self.succ: Dict[Node, Tuple[Node, Arc]] = {}
 
     def find_cycle(
@@ -247,7 +242,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
             get_weight,
             update_ok,
             self.pred,
-            "pred",
+            PredecessorRelaxation(),
             max_iter=max_iter,
         )
 
@@ -269,8 +264,9 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
                 ``RuntimeError``.
 
         Note:
-            Similar to howard_pred but uses successor updates instead of predecessor
-            Currently skips the negative cycle verification (commented assert)
+            Similar to howard_pred but uses successor updates instead of
+            predecessor updates.  Candidate cycles are verified with the
+            successor form of the negativity test.
 
         Examples:
             >>> digraph = {
@@ -295,8 +291,7 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
             get_weight,
             update_ok,
             self.succ,
-            "succ",
-            verify=False,
+            SuccessorRelaxation(),
             max_iter=max_iter,
         )
 
@@ -359,4 +354,4 @@ class NegCycleFinderQ(Generic[Node, Arc, Domain]):
             >>> finder.is_negative('a', dist, lambda edge: edge)
             True
         """
-        return _is_negative(self.pred, handle, dist, get_weight)
+        return super().is_negative(handle, dist, get_weight)

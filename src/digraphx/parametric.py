@@ -44,42 +44,13 @@ optimization problem on graphs, where the goal is to maximize a ratio while
 maintaining certain constraints on the distances between nodes in the graph.
 """
 
-from abc import abstractmethod
-from fractions import Fraction
-from typing import Generic, Mapping, MutableMapping, Tuple, TypeVar
+from typing import Generic, Mapping, MutableMapping, Tuple
 
-from ._parametric_base import _run_loop
-from .neg_cycle import Arc, Cycle, Domain, Node
+from ._parametric_api import ParametricAPI
+from ._parametric_base import HowardSearch, KeepSmaller, parametric_search
+from ._types import Arc, Cycle, Domain, Node, Ratio
 
-# Define a type variable Ratio that can be either Fraction or float
-Ratio = TypeVar("Ratio", Fraction, float)
-
-
-class ParametricAPI(Generic[Node, Arc, Ratio]):
-    @abstractmethod
-    def distance(self, ratio: Ratio, edge: Arc) -> Ratio:
-        """
-        The `distance` function calculates the distance between a given ratio and edge.
-
-        :param ratio: The `ratio` parameter is of type `Ratio`. It represents a ratio or proportion
-        :type ratio: Ratio
-        :param edge: The `edge` parameter represents an edge in a graph. It is of type `Arc`
-        :type edge: Arc
-        :return: Returns the calculated distance as a Ratio type
-        :rtype: Ratio
-        """
-
-    @abstractmethod
-    def zero_cancel(self, cycle: Cycle) -> Ratio:
-        """
-        The `zero_cancel` function takes a `Cycle` object as input and returns a `Ratio` object.
-        This function calculates the ratio that would make the total distance of the cycle zero.
-
-        :param cycle: The `cycle` parameter is of type `Cycle`. It represents a cycle in the graph
-        :type cycle: Cycle
-        :return: Returns the calculated ratio that makes the cycle's total distance zero
-        :rtype: Ratio
-        """
+__all__ = ["MaxParametricSolver", "ParametricAPI"]
 
 
 class MaxParametricSolver(Generic[Node, Arc, Ratio]):
@@ -160,8 +131,10 @@ class MaxParametricSolver(Generic[Node, Arc, Ratio]):
             >>> ratio
             Fraction(2, 1)
         """
-        # Handle empty graph case - return early with no cycle found
-        if not dist:
-            return ratio, []
-
-        return _run_loop(self.digraph, self.omega, dist, ratio, minimize=True)
+        return parametric_search(
+            self.omega,
+            dist,
+            ratio,
+            KeepSmaller(),
+            HowardSearch(self.digraph),
+        )

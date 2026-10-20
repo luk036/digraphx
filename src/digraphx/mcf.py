@@ -2,62 +2,110 @@
 
 Uses Bellman-Ford to find negative-cost cycles in the residual graph
 (replacing Howard's algorithm which had detection gaps on certain
-graph structures).  Optional vertex-disjoint constraint via VertexFilter.
+graph structures).  Optional vertex-disjoint constraint via
+:class:`VertexDisjointConstraint`.
 """
 
 from collections import deque
-from typing import Hashable, Set, TypeVar
+from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 
-Node = TypeVar("Node", bound=Hashable)
+from ._cycle_base import cycle_list
+from ._types import Node, PointTo
+
+EdgeData = Dict[str, Any]
+EdgeList = List[EdgeData]
+Graph = Dict[Node, Dict[Node, EdgeData]]
+FlowMap = Dict[Node, Dict[Node, int]]
 
 
-class VertexFilter:
-    """Tracks used nodes for vertex-disjoint constraint enforcement.
+def _augment_dict(flow: FlowMap, edges: EdgeList, delta: int) -> None:
+    for e in edges:
+        u, v = e["orig"]
+        signed = delta if e["forward"] else -delta
+        flow.setdefault(u, {})[v] = flow.get(u, {}).get(v, 0) + signed
 
-    A node is 'used' when it has outgoing flow.  The used set persists
-    across the entire cycle-cancellation loop.
+
+class Flow:
+    """Integer flow values on the edges of a fixed graph."""
+
+    def __init__(self, g: Graph, initial: Optional[FlowMap] = None) -> None:
+        self._map: FlowMap = (
+            {u: {v: 0 for v in g[u]} for u in g} if initial is None else initial
+        )
+
+    def get(self, u: Node, v: Node) -> int:
+        return self._map.get(u, {}).get(v, 0)
+
+    def set(self, u: Node, v: Node, value: int) -> None:
+        self._map.setdefault(u, {})[v] = value
+
+    def row(self, u: Node) -> Dict[Node, int]:
+        return self._map.setdefault(u, {})
+
+    def augment(self, edges: EdgeList, delta: int) -> None:
+        """Push ``delta`` units around a residual cycle."""
+        _augment_dict(self._map, edges, delta)
+
+    @property
+    def values(self) -> FlowMap:
+        return self._map
+
+
+class VertexDisjointConstraint:
+    """At most one outgoing flow edge for every non-sink node.
+
+    A node is 'used' when it has outgoing flow.  The used set persists across
+    the entire cycle-cancellation loop.
     """
 
-    def __init__(self, sink: Hashable):
+    def __init__(self, sink: Node) -> None:
         self.sink = sink
-        self.used: Set[Hashable] = set()
+        self.used: Set[Node] = set()
 
-    def cycle_uses_used_node(self, cycle_edges) -> bool:
+    def cycle_uses_used_node(self, edges: EdgeList) -> bool:
         """Reject if a used node gains outflow without offsetting reduction."""
-        fwd_nodes = set()
-        bwd_nodes = set()
-        for e in cycle_edges:
-            u_orig, _ = e["orig"]
-            if u_orig == self.sink:
+        forward: Set[Node] = set()
+        backward: Set[Node] = set()
+        for e in edges:
+            u, _ = e["orig"]
+            if u == self.sink:
                 continue
-            if e["forward"]:
-                fwd_nodes.add(u_orig)
-            else:
-                bwd_nodes.add(u_orig)
-        for u in fwd_nodes - bwd_nodes:
-            if u in self.used:
-                return True
-        return False
+            (forward if e["forward"] else backward).add(u)
+        return any(u in self.used for u in forward - backward)
 
-    def accept_cycle(self, cycle_edges, flow, bottleneck):
-        """Apply cycle cancellation and update used set."""
-        for e in cycle_edges:
-            u_orig, v_orig = e["orig"]
-            if e["forward"]:
-                flow[u_orig][v_orig] = flow[u_orig].get(v_orig, 0) + bottleneck
-                if u_orig != self.sink:
-                    self.used.add(u_orig)
-            else:
-                old = flow[u_orig].get(v_orig, 0)
-                flow[u_orig][v_orig] = old - bottleneck
-        for e in cycle_edges:
-            u_orig, _ = e["orig"]
-            if not e["forward"] and u_orig in self.used:
-                if all(f <= 0 for f in flow[u_orig].values()):
-                    self.used.discard(u_orig)
+    def accepts(self, edges: EdgeList) -> bool:
+        return not self.cycle_uses_used_node(edges)
+
+    def accept_cycle(self, edges: EdgeList, flow: FlowMap, delta: int) -> None:
+        _augment_dict(flow, edges, delta)
+        self._mark_used(edges)
+        self._release_exhausted(edges, flow)
+
+    def on_augment(self, edges: EdgeList, flow: Flow, delta: int) -> None:
+        """Update the used set after ``flow`` has been augmented."""
+        self._mark_used(edges)
+        self._release_exhausted(edges, flow.values)
+
+    def _mark_used(self, edges: EdgeList) -> None:
+        for e in edges:
+            u, _ = e["orig"]
+            if e["forward"] and u != self.sink:
+                self.used.add(u)
+
+    def _release_exhausted(self, edges: EdgeList, flow: FlowMap) -> None:
+        for e in edges:
+            u, _ = e["orig"]
+            if not e["forward"] and u in self.used:
+                if all(f <= 0 for f in flow.get(u, {}).values()):
+                    self.used.discard(u)
 
 
-def _residual_edge(g, u, v, flow):
+VertexFilter = VertexDisjointConstraint
+
+
+def _residual_edge(
+    g: Graph, u: Node, v: Node, flow: FlowMap
+) -> Tuple[Optional[EdgeData], Optional[EdgeData]]:
     cap = g[u][v].get("capacity", float("inf"))
     wgt = g[u][v].get("weight", 0)
     f = flow.get(u, {}).get(v, 0)
@@ -80,7 +128,35 @@ def _residual_edge(g, u, v, flow):
     return fwd, bwd
 
 
-def _update_residual_edge(residual, g, flow, u, v):
+def _build_residual(g: Graph, flow: FlowMap) -> Dict[Node, Dict[Node, EdgeData]]:
+    """Build residual graph from current flow.
+
+    Each edge is a dict with ``cost`` (for the Bellman-Ford pass), ``capacity``
+    (for bottleneck), and ``orig`` / ``forward`` (for flow updates).
+    """
+    residual: Dict[Node, Dict[Node, EdgeData]] = {}
+    for u, neighbors in g.items():
+        residual.setdefault(u, {})
+        for v in neighbors:
+            fwd, bwd = _residual_edge(g, u, v, flow)
+            if fwd is not None:
+                prev = residual[u].get(v)
+                if prev is None or fwd["cost"] < prev["cost"]:
+                    residual[u][v] = fwd
+            if bwd is not None:
+                prev = residual.setdefault(v, {}).get(u)
+                if prev is None or bwd["cost"] < prev["cost"]:
+                    residual[v][u] = bwd
+    return residual
+
+
+def _update_residual_edge(
+    residual: Dict[Node, Dict[Node, EdgeData]],
+    g: Graph,
+    flow: FlowMap,
+    u: Node,
+    v: Node,
+) -> None:
     if u in residual and v in residual[u]:
         del residual[u][v]
         if not residual[u]:
@@ -96,42 +172,49 @@ def _update_residual_edge(residual, g, flow, u, v):
         residual.setdefault(v, {})[u] = bwd
 
 
-def _build_residual(g, flow):
-    """Build residual graph from current flow.
+class ResidualNetwork:
+    """Residual graph built from a flow, kept in sync as the flow changes."""
 
-    Each edge is a dict with ``cost`` (for NegCycleFinder), ``capacity``
-    (for bottleneck), and ``orig`` / ``forward`` (for flow updates).
-    """
-    residual: dict = {}
-    for u, neighbors in g.items():
-        if u not in residual:
-            residual[u] = {}
-        for v in neighbors:
-            fwd, bwd = _residual_edge(g, u, v, flow)
-            if fwd is not None:
-                # Keep the more negative cost when edges collide at same (u,v)
-                prev = residual[u].get(v)
-                if prev is None or fwd["cost"] < prev["cost"]:
-                    residual[u][v] = fwd
-            if bwd is not None:
-                prev = residual.setdefault(v, {}).get(u)
-                if prev is None or bwd["cost"] < prev["cost"]:
-                    residual[v][u] = bwd
+    def __init__(self, g: Graph, flow: Flow) -> None:
+        self._g = g
+        self._flow = flow
+        self.residual: Dict[Node, Dict[Node, EdgeData]] = _build_residual(
+            g, flow.values
+        )
 
-    return residual
+    def __bool__(self) -> bool:
+        return bool(self.residual)
+
+    def nodes(self) -> Set[Node]:
+        found = set(self.residual)
+        for neighbors in self.residual.values():
+            found.update(neighbors)
+        return found
+
+    def augment(self, edges: EdgeList, delta: int) -> None:
+        self._flow.augment(edges, delta)
+        seen: Set[Tuple[Node, Node]] = set()
+        for e in edges:
+            u, v = e["orig"]
+            if (u, v) not in seen:
+                seen.add((u, v))
+                _update_residual_edge(self.residual, self._g, self._flow.values, u, v)
 
 
-def _find_all_neg_cycles_bf(residual, all_nodes):
+def _find_all_neg_cycles_bf(
+    residual: Dict[Node, Dict[Node, EdgeData]],
+    all_nodes: Set[Node],
+) -> Iterator[EdgeList]:
     """Find all negative-cost cycles in a single Bellman-Ford pass.
 
     Runs |V| passes; in the V-th pass, every node whose distance still
-    improves is part of a negative cycle.  Yields each cycle as a list
-    of residual edge dicts.
+    improves is part of a negative cycle.  Yields each cycle as a list of
+    residual edge dicts.
     """
     n = len(all_nodes)
-    dist = {node: 0 for node in all_nodes}
-    pred = {}  # node → (prevtx, residual_edge)
-    updated_in_last = set()
+    dist: Dict[Node, float] = {node: 0 for node in all_nodes}
+    pred: PointTo = {}
+    updated_in_last: Set[Node] = set()
 
     for i in range(n):
         changed = False
@@ -146,40 +229,36 @@ def _find_all_neg_cycles_bf(residual, all_nodes):
                     if i == n - 1:
                         updated_in_last.add(v)
         if not changed and i < n - 1:
-            return  # converged before V passes
+            return
 
     if not updated_in_last:
         return
 
-    yielded_nodes = set()
+    yielded_nodes: Set[Node] = set()
     for start_node in sorted(updated_in_last):
         if start_node in yielded_nodes:
             continue
-        # Trace back to find cycle start
-        visited = set()
+        visited: Set[Node] = set()
         u = start_node
         while u not in visited:
             visited.add(u)
             u = pred[u][0]
         cycle_start = u
-        # Reconstruct cycle
-        cycle = []
-        u = cycle_start
-        while True:
-            prevtx, edge = pred[u]
-            cycle.append(edge)
-            u = prevtx
-            if u == cycle_start:
-                break
-        cycle.reverse()
+        cycle = list(reversed(cycle_list(pred, cycle_start)))
         yielded_nodes.update(e["orig"][0] for e in cycle)
         yield cycle
 
 
-def _bfs_path(g, flow, src, demand_nodes, remaining):
+def _bfs_path(
+    g: Graph,
+    flow: FlowMap,
+    src: Node,
+    demand_nodes: List[Node],
+    remaining: Dict[Node, int],
+) -> Optional[List[Node]]:
     """BFS to find a path from src to a node with remaining demand."""
     visited = {src}
-    parent: dict = {}
+    parent: Dict[Node, Node] = {}
     queue = deque([src])
 
     while queue:
@@ -196,8 +275,7 @@ def _bfs_path(g, flow, src, demand_nodes, remaining):
             if v in visited:
                 continue
             cap = data.get("capacity", float("inf"))
-            existing = flow.get(u, {}).get(v, 0)
-            if existing < cap:
+            if flow[u].get(v, 0) < cap:
                 visited.add(v)
                 parent[v] = u
                 queue.append(v)
@@ -205,18 +283,13 @@ def _bfs_path(g, flow, src, demand_nodes, remaining):
     return None
 
 
-def _find_feasible_flow(g, demands):
+def _find_feasible_flow(g: Graph, demands: Dict[Node, int]) -> Optional[Flow]:
     """Find initial feasible flow via greedy BFS routing.
 
     Routes flow from supply nodes (demand < 0) to demand nodes (demand > 0)
     along capacity-respecting paths.  Returns None if infeasible.
     """
-    nodes = list(g.keys())
-    flow = {u: {} for u in nodes}
-    for u in g:
-        for v in g[u]:
-            flow[u][v] = 0
-
+    flow: FlowMap = {u: {v: 0 for v in g[u]} for u in g}
     remaining = dict(demands)
     supply_nodes = [n for n, d in remaining.items() if d < 0]
     demand_nodes = [n for n, d in remaining.items() if d > 0]
@@ -233,8 +306,7 @@ def _find_feasible_flow(g, demands):
             for i in range(len(path) - 1):
                 u, v = path[i], path[i + 1]
                 cap = g[u][v].get("capacity", float("inf"))
-                existing = flow[u].get(v, 0)
-                bottleneck = min(bottleneck, cap - existing)
+                bottleneck = min(bottleneck, cap - flow[u].get(v, 0))
             bottleneck = min(bottleneck, remaining[dst], supply_amount)
             bottleneck = int(bottleneck)
             if bottleneck <= 0:
@@ -248,80 +320,64 @@ def _find_feasible_flow(g, demands):
             remaining[dst] -= bottleneck
             supply_amount -= bottleneck
 
-    return flow
+    return Flow(g, flow)
 
 
-def cycle_canceling_mcf(g, demands, sink=None):
+def _total_cost(g: Graph, flow: Flow) -> float:
+    return sum(flow.get(u, v) * data["weight"] for u in g for v, data in g[u].items())
+
+
+def cycle_canceling_mcf(
+    g: Graph,
+    demands: Dict[Node, int],
+    sink: Optional[Node] = None,
+) -> Optional[Tuple[float, FlowMap]]:
     """Solve min-cost flow using cycle-cancellation descent.
 
     Uses Bellman-Ford for negative-cycle detection (no Howard gap).
-    Optional vertex-disjoint constraint via VertexFilter.
+    Optional vertex-disjoint constraint via :class:`VertexDisjointConstraint`.
 
     Args:
-        g: {u: {v: {'weight': cost, 'capacity': cap}}}
-        demands: {node: demand} (negative = supply, positive = demand)
+        g: ``{u: {v: {'weight': cost, 'capacity': cap}}}``
+        demands: ``{node: demand}`` (negative = supply, positive = demand)
         sink: Optional sink node. When provided, enables the vertex-disjoint
             constraint: each non-sink node may have at most one outgoing
             flow edge.  When None (default), no constraint is enforced.
 
     Returns:
-        (total_cost, flow_dict) or None if infeasible.
+        ``(total_cost, flow_dict)`` or ``None`` if infeasible.
     """
-    # Stage 1: find feasible initial flow
     flow = _find_feasible_flow(g, demands)
     if flow is None:
         return None
 
-    # Stage 2: cancel negative-cost residual cycles (Bellman-Ford)
-    use_constraint = sink is not None
-    vf = VertexFilter(sink) if use_constraint else None
-    if vf is not None:
-        for u in flow:
-            for v, f in flow[u].items():
-                if f > 0 and u != sink:
-                    vf.used.add(u)
-                    break  # one outgoing edge is enough to mark as used
+    constraint = VertexDisjointConstraint(sink) if sink is not None else None
+    if constraint is not None:
+        for u, row in flow.values.items():
+            if u == sink:
+                continue
+            if any(f > 0 for f in row.values()):
+                constraint.used.add(u)
 
-    all_nodes = None
+    network = ResidualNetwork(g, flow)
+    if not network:
+        return _total_cost(g, flow), flow.values
+
+    all_nodes = network.nodes()
 
     while True:
-        if all_nodes is None:
-            residual = _build_residual(g, flow)
-            if not residual:
-                break
-            all_nodes = set(residual)
-            for neighbors in residual.values():
-                all_nodes.update(neighbors)
         cancelled = False
-        for cycle_edges in _find_all_neg_cycles_bf(residual, all_nodes):
-            # When constraint is active, reject cycles that use already-used nodes
-            if use_constraint and vf.cycle_uses_used_node(cycle_edges):
+        for cycle_edges in _find_all_neg_cycles_bf(network.residual, all_nodes):
+            if constraint is not None and not constraint.accepts(cycle_edges):
                 continue
 
-            bottleneck = float("inf")
-            for edge in cycle_edges:
-                bottleneck = min(bottleneck, edge["capacity"])
-            bottleneck = int(bottleneck)
+            bottleneck = int(min(e["capacity"] for e in cycle_edges))
             if bottleneck <= 0:
                 continue
 
-            if use_constraint:
-                vf.accept_cycle(cycle_edges, flow, bottleneck)
-            else:
-                for edge in cycle_edges:
-                    u_orig, v_orig = edge["orig"]
-                    if edge["forward"]:
-                        flow[u_orig][v_orig] = flow[u_orig].get(v_orig, 0) + bottleneck
-                    else:
-                        flow[u_orig][v_orig] = flow[u_orig].get(v_orig, 0) - bottleneck
-
-            seen = set()
-            for edge in cycle_edges:
-                uo, vo = edge["orig"]
-                key = (uo, vo)
-                if key not in seen:
-                    seen.add(key)
-                    _update_residual_edge(residual, g, flow, uo, vo)
+            network.augment(cycle_edges, bottleneck)
+            if constraint is not None:
+                constraint.on_augment(cycle_edges, flow, bottleneck)
 
             cancelled = True
             break
@@ -329,7 +385,4 @@ def cycle_canceling_mcf(g, demands, sink=None):
         if not cancelled:
             break
 
-    total_cost = sum(
-        flow[u].get(v, 0) * data["weight"] for u in g for v, data in g[u].items()
-    )
-    return total_cost, flow
+    return _total_cost(g, flow), flow.values

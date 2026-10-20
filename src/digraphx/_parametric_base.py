@@ -2,97 +2,160 @@
 
 This module centralises the parametric-search loop (Template Method) shared by
 :class:`MaxParametricSolver` (parametric.py) and :class:`MinParametricSolver`
-(min_parametric_q.py).  The ratio-comparison direction and the cycle-search
-direction alternation are injected as strategies.
+(min_parametric_q.py).  The two things that used to be encoded as keyword flags
+are injected as strategies instead:
+
+* :class:`KeepSmaller` / :class:`KeepLarger` decide which cycle ratio wins and
+  when the search has converged.  The names describe the behaviour, so call
+  sites no longer read as if their meaning were inverted.
+* :class:`HowardSearch` / :class:`AlternatingSearch` decide which cycles are
+  produced each round; the alternation state lives in the strategy that uses it.
 
 It is an implementation detail of the package; the public API lives in
 ``parametric`` / ``min_parametric_q`` and is unchanged.
 """
 
-from typing import Callable, Generic, Mapping, MutableMapping, Tuple, TypeVar
+from typing import Callable, Iterator, MutableMapping, Protocol, Tuple
 
-from .neg_cycle import Arc, Cycle, Domain, NegCycleFinder, Node
+from ._parametric_api import ParametricAPI
+from ._types import Arc, Cycle, Domain, Graph, Node, Ratio
+from .neg_cycle import NegCycleFinder
 from .neg_cycle_q import NegCycleFinderQ
 
-Ratio = TypeVar("Ratio", int, float)  # Comparable Ring
+__all__ = [
+    "AlternatingSearch",
+    "CycleSearch",
+    "HowardSearch",
+    "KeepLarger",
+    "KeepSmaller",
+    "RatioDirection",
+    "parametric_search",
+]
 
 
-class _API(Generic[Node, Arc, Ratio]):
-    """Protocol-ish base for the parametric API strategies."""
+class RatioDirection(Protocol[Ratio]):
+    """Which ratio wins, and when to stop looking for a better one."""
 
-    def distance(self, ratio: Ratio, edge: Arc) -> Ratio:
-        raise NotImplementedError
+    def better(self, candidate: Ratio, best: Ratio) -> bool:
+        ...
 
-    def zero_cancel(self, cycle: Cycle) -> Ratio:
-        raise NotImplementedError
+    def converged(self, best: Ratio, current: Ratio) -> bool:
+        ...
 
 
-def _run_loop(
-    digraph: Mapping[Node, Mapping[Node, Arc]],
-    omega: _API,
+class KeepSmaller:
+    """Keep the smallest cycle ratio; stop once the incumbent stops falling."""
+
+    def better(self, candidate: Ratio, best: Ratio) -> bool:
+        return candidate < best
+
+    def converged(self, best: Ratio, current: Ratio) -> bool:
+        return best >= current
+
+
+class KeepLarger:
+    """Keep the largest cycle ratio; stop once the incumbent stops rising."""
+
+    def better(self, candidate: Ratio, best: Ratio) -> bool:
+        return candidate > best
+
+    def converged(self, best: Ratio, current: Ratio) -> bool:
+        return best <= current
+
+
+class CycleSearch(Protocol[Node, Arc, Domain]):
+    """Produces the negative cycles of one relaxation round."""
+
+    def cycles(
+        self,
+        dist: MutableMapping[Node, Domain],
+        get_weight: Callable[[Arc], Domain],
+    ) -> Iterator[Cycle]:
+        ...
+
+
+class HowardSearch:
+    """Single-direction Howard search (predecessor relaxation)."""
+
+    def __init__(self, digraph: Graph) -> None:
+        self._finder: NegCycleFinder[Node, Arc, Domain] = NegCycleFinder(digraph)
+
+    def cycles(
+        self,
+        dist: MutableMapping[Node, Domain],
+        get_weight: Callable[[Arc], Domain],
+    ) -> Iterator[Cycle]:
+        return self._finder.howard(dist, get_weight)
+
+
+class AlternatingSearch:
+    """Alternates successor and predecessor relaxation between rounds.
+
+    The alternation is what lets the constrained solver escape the corner where
+    one relaxation direction alone keeps re-finding the same cycle.
+    """
+
+    def __init__(
+        self,
+        digraph: Graph,
+        update_ok: Callable[[Domain, Domain], bool],
+    ) -> None:
+        self._finder: NegCycleFinderQ[Node, Arc, Domain] = NegCycleFinderQ(digraph)
+        self._update_ok = update_ok
+        self._reverse = True
+
+    def cycles(
+        self,
+        dist: MutableMapping[Node, Domain],
+        get_weight: Callable[[Arc], Domain],
+    ) -> Iterator[Cycle]:
+        if self._reverse:
+            found = self._finder.howard_succ(dist, get_weight, self._update_ok)
+        else:
+            found = self._finder.howard_pred(dist, get_weight, self._update_ok)
+        self._reverse = not self._reverse
+        return found
+
+
+def parametric_search(
+    omega: ParametricAPI[Node, Arc, Ratio],
     dist: MutableMapping[Node, Domain],
     ratio: Ratio,
+    direction: RatioDirection[Ratio],
+    search: CycleSearch[Node, Arc, Domain],
     *,
-    minimize: bool,
-    update_ok: Callable[[Domain, Domain], bool] = lambda old, new: True,
-    pick_one_only: bool = False,
-    alternate_direction: bool = False,
+    first_only: bool = False,
 ) -> Tuple[Ratio, Cycle]:
     """Template Method: the parametric-search loop.
 
-    Repeatedly finds negative cycles at the current ratio and updates the ratio
-    until no improving cycle exists.  ``minimize`` selects the comparison
-    direction; ``alternate_direction`` (with ``update_ok``) enables the
-    predecessor/successor alternation used by the constrained solver.
+    Repeatedly finds negative cycles at the current ratio and moves the ratio to
+    the best cycle ratio found, until no cycle improves it.
 
     Returns ``(final_ratio, critical_cycle)``.
     """
-    if not dist:  # empty graph case - return early with no cycle found
+    if not dist:
         return ratio, []
 
     def get_weight(e: Arc) -> Domain:
         return omega.distance(ratio, e)
 
-    # Initialize min/max ratio and cycle
     ratio_best = ratio
-    cycle_best = []
-    cycle = []
-    reverse: bool = True  # Flag to alternate search direction
+    cycle_best: Cycle = []
+    cycle: Cycle = []
 
-    if alternate_direction:
-        ncf: NegCycleFinderQ[Node, Arc, Domain] = NegCycleFinderQ(digraph)
-    else:
-        ncf = NegCycleFinder(digraph)
-
-    # Main algorithm loop
     while True:
-        if alternate_direction:
-            # Search for cycles in either forward or reverse direction
-            cycles = (
-                ncf.howard_succ(dist, get_weight, update_ok)
-                if reverse
-                else ncf.howard_pred(dist, get_weight, update_ok)
-            )
-        else:
-            cycles = ncf.howard(dist, get_weight)
-
-        # Evaluate all found cycles
-        for c_i in cycles:
+        for c_i in search.cycles(dist, get_weight):
             ratio_i = omega.zero_cancel(c_i)
-            if (ratio_best > ratio_i) if minimize else (ratio_best < ratio_i):
+            if direction.better(ratio_i, ratio_best):
                 ratio_best = ratio_i
                 cycle_best = c_i
-                if pick_one_only:  # Early exit if we only need one improvement
+                if first_only:
                     break
 
-        # Termination condition: no better ratio found
-        if (ratio_best >= ratio) if minimize else (ratio_best <= ratio):
+        if direction.converged(ratio_best, ratio):
             break
 
-        # Update state for next iteration
         cycle = cycle_best
         ratio = ratio_best
-        if alternate_direction:
-            reverse = not reverse  # Alternate search direction
 
     return ratio, cycle

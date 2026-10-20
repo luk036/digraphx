@@ -44,16 +44,13 @@ graphs, particularly useful in scenarios where understanding the most
 "efficient" or "tightest" cycles in a system is important.
 """
 
-from fractions import Fraction
 from typing import Any, Generic, List, Mapping, MutableMapping, Tuple, TypeVar
 
-from .neg_cycle import Cycle, Domain, Node
-from .parametric import MaxParametricSolver, ParametricAPI
-
-ArcDC = MutableMapping[str, Any]
+from ._cost_time import CostTimeAPI, default_cost_time
+from ._types import Cycle, Domain, Node, Ratio
+from .parametric import MaxParametricSolver
 
 # Define type variables for generic programming
-Ratio = TypeVar("Ratio", Fraction, float)
 EdgeType = TypeVar("EdgeType", bound=MutableMapping[str, Any])
 # Define graph types for type hints
 Graph = Mapping[Node, Mapping[Node, EdgeType]]
@@ -103,7 +100,7 @@ def set_default(digraph: GraphMut, weight: str, value: Domain) -> None:
                 e[weight] = value
 
 
-class CycleRatioAPI(ParametricAPI[Node, EdgeType, Ratio]):
+class CycleRatioAPI(CostTimeAPI):
     """
     This class implements the parametric API for cycle ratio calculations.
     It provides methods to compute distances based on a given ratio and to
@@ -127,6 +124,7 @@ class CycleRatioAPI(ParametricAPI[Node, EdgeType, Ratio]):
         """
         self.digraph: Graph = digraph
         self.result_type = result_type
+        super().__init__(default_cost_time, result_type)
 
     def distance(self, ratio: Ratio, edge: EdgeType) -> Ratio:
         """
@@ -153,7 +151,7 @@ class CycleRatioAPI(ParametricAPI[Node, EdgeType, Ratio]):
             >>> api.distance(Fraction(1, 2), digraph['a']['b'])
             Fraction(9, 2)
         """
-        return self.result_type(edge["cost"]) - ratio * edge["time"]
+        return super().distance(ratio, edge)
 
     def zero_cancel(self, cycle: List[EdgeType]) -> Ratio:
         """
@@ -178,9 +176,7 @@ class CycleRatioAPI(ParametricAPI[Node, EdgeType, Ratio]):
             >>> api.zero_cancel(cycle)
             Fraction(2, 1)
         """
-        total_cost = sum(edge["cost"] for edge in cycle)
-        total_time = sum(edge["time"] for edge in cycle)
-        return self.result_type(total_cost) / total_time
+        return super().zero_cancel(cycle)
 
 
 class MinCycleRatioSolver(Generic[Node, EdgeType, Ratio]):

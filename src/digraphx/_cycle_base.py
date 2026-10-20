@@ -9,29 +9,20 @@ It is an implementation detail of the package; the public API lives in
 ``neg_cycle`` / ``neg_cycle_q`` and is unchanged.
 """
 
-from fractions import Fraction
 from typing import (
     Callable,
     Dict,
     Generator,
+    Generic,
     List,
     Mapping,
     MutableMapping,
     Optional,
+    Protocol,
     Tuple,
-    TypeVar,
 )
 
-# Type variables for generic graph components
-Node = TypeVar("Node")  # Hashable node type (must implement __hash__)
-Arc = TypeVar("Arc")  # Hashable edge type (must implement __hash__)
-Domain = TypeVar(
-    "Domain", int, Fraction, float
-)  # Numeric type for weights (must support comparison and arithmetic)
-Cycle = List[Arc]  # Alias for a list of edges forming a cycle
-
-# A point-to map: node -> (predecessor/successor node, connecting edge)
-PointTo = Dict[Node, Tuple[Node, Arc]]
+from ._types import Arc, Cycle, Domain, Node, PointTo
 
 
 def _always_true(old: Domain, new: Domain) -> bool:
@@ -178,7 +169,7 @@ def cycle_list(point_to: PointTo, handle: Node) -> Cycle:
     return cycle
 
 
-def is_negative(
+def is_negative_pred(
     point_to: PointTo,
     handle: Node,
     dist: MutableMapping[Node, Domain],
@@ -201,25 +192,137 @@ def is_negative(
     return False
 
 
+def is_negative_succ(
+    point_to: PointTo,
+    handle: Node,
+    dist: MutableMapping[Node, Domain],
+    get_weight: Callable[[Arc], Domain],
+) -> bool:
+    """Predecessor check mirrored for successor relaxation.
+
+    The successor policy keeps ``dist[u] >= dist[v] - weight(u, v)`` for
+    ``point_to[u] == (v, edge)``, so a negative cycle violates the inequality in
+    the opposite direction: ``dist[u] < dist[v] - weight(u, v)``.
+    """
+    vtx = handle
+    while True:
+        utx, edge = point_to[vtx]
+        if dist[vtx] < dist[utx] - get_weight(edge):
+            return True
+        vtx = utx
+        if vtx == handle:
+            break
+    return False
+
+
+class Relaxation(Protocol[Node, Arc, Domain]):
+    """The two orientation-specific operations Howard's method needs."""
+
+    def relax(
+        self,
+        edges: List[Tuple[Node, Node, Arc, Domain]],
+        dist: MutableMapping[Node, Domain],
+        update_ok: Callable[[Domain, Domain], bool],
+        point_to: PointTo,
+    ) -> bool:
+        ...
+
+    def is_negative(
+        self,
+        point_to: PointTo,
+        handle: Node,
+        dist: MutableMapping[Node, Domain],
+        get_weight: Callable[[Arc], Domain],
+    ) -> bool:
+        ...
+
+
+class PredecessorRelaxation:
+    """Bellman-Ford relaxation of ``dist[v]`` through each incoming edge."""
+
+    def relax(
+        self,
+        edges: List[Tuple[Node, Node, Arc, Domain]],
+        dist: MutableMapping[Node, Domain],
+        update_ok: Callable[[Domain, Domain], bool],
+        point_to: PointTo,
+    ) -> bool:
+        return relax_pred_flat(edges, dist, update_ok, point_to)
+
+    def is_negative(
+        self,
+        point_to: PointTo,
+        handle: Node,
+        dist: MutableMapping[Node, Domain],
+        get_weight: Callable[[Arc], Domain],
+    ) -> bool:
+        return is_negative_pred(point_to, handle, dist, get_weight)
+
+
+class SuccessorRelaxation:
+    """Reverse Bellman-Ford relaxation of ``dist[u]`` through each outgoing edge."""
+
+    def relax(
+        self,
+        edges: List[Tuple[Node, Node, Arc, Domain]],
+        dist: MutableMapping[Node, Domain],
+        update_ok: Callable[[Domain, Domain], bool],
+        point_to: PointTo,
+    ) -> bool:
+        return relax_succ_flat(edges, dist, update_ok, point_to)
+
+    def is_negative(
+        self,
+        point_to: PointTo,
+        handle: Node,
+        dist: MutableMapping[Node, Domain],
+        get_weight: Callable[[Arc], Domain],
+    ) -> bool:
+        return is_negative_succ(point_to, handle, dist, get_weight)
+
+
+class HowardFinderBase(Generic[Node, Arc, Domain]):
+    """State shared by the two Howard finders.
+
+    Both keep the graph and a predecessor policy map; the successor map and the
+    public method signatures differ, so only these members are shared.
+    """
+
+    digraph: Mapping[Node, Mapping[Node, Arc]]
+    pred: PointTo
+
+    def __init__(self, digraph: Mapping[Node, Mapping[Node, Arc]]) -> None:
+        self.digraph = digraph
+        self.pred = {}
+
+    def is_negative(
+        self,
+        handle: Node,
+        dist: MutableMapping[Node, Domain],
+        get_weight: Callable[[Arc], Domain],
+    ) -> bool:
+        """Return ``True`` if the cycle starting at ``handle`` is negative."""
+        return is_negative_pred(self.pred, handle, dist, get_weight)
+
+
 def howard_search(
     digraph: Mapping[Node, Mapping[Node, Arc]],
     dist: MutableMapping[Node, Domain],
     get_weight: Callable[[Arc], Domain],
     update_ok: Callable[[Domain, Domain], bool],
     point_to: PointTo,
-    direction: str,
-    verify: bool = True,
+    relaxation: Relaxation[Node, Arc, Domain],
+    *,
     max_iter: Optional[int] = None,
 ) -> Generator[Cycle, None, None]:
     """Template Method: Howard's policy-iteration skeleton.
 
     Repeatedly relaxes the distance estimates until no improvement is made or a
-    cycle is found, then yields each detected cycle as a list of edge weights.
+    cycle is found, then yields each detected cycle as a list of its edges.
 
-    The relaxation pass and the point-to map are selected by ``direction``
-    (``"pred"`` for predecessor relaxation, ``"succ"`` for successor).  When
-    ``verify`` is ``True``, each candidate cycle is asserted to be negative
-    before being yielded (matching the predecessor variants).
+    ``relaxation`` supplies both the relaxation pass and the orientation-specific
+    negativity test, so the skeleton no longer branches on a direction string and
+    every yielded cycle is verified.
 
     ``max_iter`` optionally caps the number of relaxation rounds.  ``None``
     (default) means unbounded; when set and exceeded without finding a negative
@@ -229,22 +332,13 @@ def howard_search(
     found = False
     num_iter = 0
     edges = prepare_edges(digraph, get_weight)
-    if direction == "pred":
-
-        def relax() -> bool:
-            return relax_pred_flat(edges, dist, update_ok, point_to)
-
-    else:
-
-        def relax() -> bool:
-            return relax_succ_flat(edges, dist, update_ok, point_to)
-
-    while not found and relax():
+    while not found and relaxation.relax(edges, dist, update_ok, point_to):
         num_iter += 1
         for vtx in find_cycle(digraph, point_to):
-            if verify:
-                # Safety check - verify the cycle is indeed negative
-                assert is_negative(point_to, vtx, dist, get_weight)
+            if not relaxation.is_negative(point_to, vtx, dist, get_weight):
+                raise AssertionError(
+                    "Howard's method produced a cycle that is not negative"
+                )
             found = True
             yield cycle_list(point_to, vtx)
         if not found and max_iter is not None and num_iter >= max_iter:

@@ -128,8 +128,13 @@ class CSRDiGraph(Mapping):
         assert self._indptr is not None
         assert self._indices is not None
         assert self._data is not None
-        start = self._indptr[u]
-        end = self._indptr[u + 1]
+        try:
+            if u < 0:  # negative indexes would wrap around the CSR arrays
+                raise KeyError(u)
+            start = self._indptr[u]
+            end = self._indptr[u + 1]
+        except (IndexError, TypeError):
+            raise KeyError(u) from None
         return _CSRNeighbors(self._indices, self._data, start, end)
 
     def __iter__(self):

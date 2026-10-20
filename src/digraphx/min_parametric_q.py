@@ -39,52 +39,19 @@ optimization problems, particularly those where a single parameter needs to be
 minimized while satisfying constraints across the entire network.
 """
 
-from abc import abstractmethod
-from fractions import Fraction
-from typing import Callable, Generic, Mapping, MutableMapping, Tuple, TypeVar
+from typing import Callable, Generic, Mapping, MutableMapping, Tuple
 
-from ._parametric_base import _run_loop
-from .neg_cycle_q import Arc, Cycle, Node
-from .parametric import ParametricAPI
-
-# Define type variables for domain (numeric types) and ratio (fraction or float)
-Domain = TypeVar("Domain", int, Fraction, float)  # Comparable Ring
-Ratio = TypeVar("Ratio", Fraction, float)
+from ._parametric_api import ParametricAPI
+from ._parametric_base import AlternatingSearch, KeepLarger, parametric_search
+from ._types import Arc, Cycle, Domain, Node, Ratio
 
 
 class MinParametricAPI(ParametricAPI[Node, Arc, Ratio]):
-    @abstractmethod
-    def distance(self, ratio: Ratio, edge: Arc) -> Ratio:
-        """
-        The `distance` function calculates the distance between a given ratio and
-        edge. This is an abstract method that must be implemented by concrete
-        subclasses.
+    """Name kept for callers of the constrained solver.
 
-        :param ratio: The `ratio` parameter is of type `Ratio`. It represents a
-            ratio or proportion that affects the distance calculation.
-        :type ratio: Ratio
-        :param edge: The `edge` parameter represents an edge in a graph. It is of
-            type `Arc`
-        :type edge: Arc
-        :return: The calculated distance based on the given ratio and edge
-        :rtype: Ratio
-        """
-        pass
-
-    @abstractmethod
-    def zero_cancel(self, cycle: Cycle) -> Ratio:
-        """
-        The `zero_cancel` function takes a `Cycle` object as input and returns a
-        `Ratio` object. This calculates the ratio that would make the cycle's
-        total distance sum to zero.
-
-        :param cycle: The `cycle` parameter is of type `Cycle`. It represents a
-            cycle in the graph that needs to be evaluated.
-        :type cycle: Cycle
-        :return: The ratio that would make the cycle's total distance zero
-        :rtype: Ratio
-        """
-        pass
+    It deliberately adds no methods: both the maximizing and the minimizing
+    solver consume the same two operations, so the interface lives in one place.
+    """
 
 
 class MinParametricSolver(Generic[Node, Arc, Ratio, Domain]):
@@ -150,13 +117,11 @@ class MinParametricSolver(Generic[Node, Arc, Ratio, Domain]):
                  - The minimum ratio found (ratio)
                  - The cycle that corresponds to this ratio (cycle)
         """
-        return _run_loop(
-            self.digraph,
+        return parametric_search(
             self.omega,
             dist,
             ratio,
-            minimize=False,
-            update_ok=update_ok,
-            pick_one_only=pick_one_only,
-            alternate_direction=True,
+            KeepLarger(),
+            AlternatingSearch(self.digraph, update_ok),
+            first_only=pick_one_only,
         )
