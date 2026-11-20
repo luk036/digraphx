@@ -1,12 +1,23 @@
 # Changelog
 
-## Version 0.8 (2026-10-12)
+## Version 0.8 (2026-11-20)
 
 ### Features
 - **Clock Skew Scheduling API (`css.py`)**: Added `min_cycle_ratio`, `even`, `prop`, `cprop`, and `min_clock_period`, expressing the single-parameter CSS family (Min CP, EVEN, PROP, C-PROP) as one min-ratio-cycle engine over a shared `(cost, time)` abstraction. `min_clock_period` handles the max-ratio case via the negated-cost transformation. Exported from the package root.
+- **Delay-padding example and figure**: Added `examples/delay_padding.py` with a `--tikz` mode that derives `paper/figures/padding_sweep.tikz` from the same demo calls, plus a `figures` Makefile target. The output is byte-identical to the hand-written figure. (#7c3f039, #05902fa)
+
+### Bug Fixes
+- **CSS ratio name clash**: Renamed `css.min_cycle_ratio` to `css_ratio`; the new engine shadowed the pre-existing `min_cycle_ratio` submodule, so the root re-export was not the intended object. (#67d2b75)
+
+### Refactoring
+- **Shared parametric/cycle cores and injected strategies**: Added `_types` as the single source for `Node`/`Arc`/`Domain`/`Ratio`/`Cycle` and a real `_parametric_api` ABC; replaced the minimize/alternate_direction flag matrix with `KeepSmaller`/`KeepLarger` and `HowardSearch`/`AlternatingSearch` strategies; moved negativity checking into the relaxation strategy; unified cost/time arithmetic in `CostTimeAPI`; gave MCF explicit `Flow`/`ResidualNetwork`/constraint objects. Public API unchanged. (#8d8205a)
 
 ### Testing & Code Quality
 - **Canonical CSS tests**: Added `tests/test_css.py` with the preserved golden values. Removed the duplicated `find_beta`/`even`/`prop` helpers by deleting `test_timing_example_howard.py` and `test_delay_padding_example_howard.py`; their golden values now live in `test_css.py`.
+- **Graph-contract and parity tests**: Added graph-contract, successor-verification and cost/time parity coverage alongside the refactor. (#8d8205a)
+
+### Documentation
+- **Multi-corner delay-padding paper**: Added the paper source. (#f96413e)
 
 ## Version 0.7 (2026-10-09)
 
